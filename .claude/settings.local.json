@@ -117,7 +117,14 @@
       "Bash(DATABASE_URL=\"postgresql://placeholder\" DATABASE_URL_UNPOOLED=\"postgresql://placeholder\" npm run build)",
       "Bash(python3 -c \"import PIL; print\\('Pillow', PIL.__version__\\)\")",
       "Bash(python3 -m pip install --user --quiet Pillow)",
-      "Bash(python3 -c \"from PIL import Image, ImageDraw, ImageFont; print\\('Pillow ready'\\)\")"
+      "Bash(python3 -c \"from PIL import Image, ImageDraw, ImageFont; print\\('Pillow ready'\\)\")",
+      "Bash(curl -s -o /dev/null -w 'HTTP %{http_code}\\\\n' -L --max-time 25 https://value-investor-6ouvui50m-vladimirfabregues-1828s-projects.vercel.app/)",
+      "Bash(curl -s -L --max-time 25 https://value-investor-6ouvui50m-vladimirfabregues-1828s-projects.vercel.app/screen)",
+      "Bash(curl -s -L --max-time 25 https://value-investor-6ouvui50m-vladimirfabregues-1828s-projects.vercel.app/)",
+      "Bash(node --check prisma/seed.mjs)",
+      "Bash(git add *)",
+      "Bash(git commit -q -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }

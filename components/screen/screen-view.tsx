@@ -209,7 +209,7 @@ function PeVsSectorBadge({ pe, sectorMedian }: { pe: number | null; sectorMedian
 }
 
 export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
-  const [activeIndex, setActiveIndex] = useState<ActiveIndex>("SP500");
+  const [activeIndex, setActiveIndex] = useState<ActiveIndex>("RUSSELL2000");
   const [results, setResults] = useState<ScreenResultRecord[]>(initialResults);
   const [allResults, setAllResults] = useState<ScreenResultRecord[]>(initialResults);
   const [meta, setMeta] = useState<ScreenMeta>(initialMeta);

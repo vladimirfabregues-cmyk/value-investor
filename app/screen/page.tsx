@@ -8,8 +8,8 @@ import { getScreenResults, getScreenMeta } from "@/lib/db/screen-queries";
 export default async function ScreenPage() {
   const [history, results, meta] = await Promise.all([
     getHistorySummaries(),
-    getScreenResults({ screenerIndex: "SP500", sortBy: "compositeScore", sortDir: "desc" }),
-    getScreenMeta("SP500"),
+    getScreenResults({ screenerIndex: "RUSSELL2000", sortBy: "compositeScore", sortDir: "desc" }),
+    getScreenMeta("RUSSELL2000"),
   ]);
 
   return (

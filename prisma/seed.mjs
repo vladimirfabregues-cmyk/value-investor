@@ -29,17 +29,42 @@ async function chunkedCreate(model, rows, mapRow, size = 500) {
 }
 
 async function main() {
-  const existing = await prisma.screenResult.count();
-  if (existing > 0) {
-    console.log(`[seed] ScreenResult already has ${existing} rows — skipping seed.`);
-    return;
-  }
-
   const screenResults = load("ScreenResult");
   const screenSnapshots = load("ScreenSnapshot");
   const analyses = load("Analysis");
-  console.log(`[seed] loading ${screenResults.length} results, ${screenSnapshots.length} snapshots, ${analyses.length} analyses…`);
 
+  // ScreenResult: gap-fill per index. Insert an index's rows only if the cloud
+  // DB has none for it yet — so newly-added markets (e.g. a later SP500/AIM
+  // backfill) land on the next deploy without touching markets already present.
+  const byIndex = new Map();
+  for (const r of screenResults) {
+    if (!byIndex.has(r.screenerIndex)) byIndex.set(r.screenerIndex, []);
+    byIndex.get(r.screenerIndex).push(r);
+  }
+  for (const [index, rows] of byIndex) {
+    const have = await prisma.screenResult.count({ where: { screenerIndex: index } });
+    if (have > 0) {
+      console.log(`[seed] ${index}: ${have} rows present — skipping.`);
+      continue;
+    }
+    console.log(`[seed] ${index}: inserting ${rows.length} rows…`);
+    await seedScreenResults(rows);
+  }
+
+  // Snapshots and analyses: seed only when their table is entirely empty.
+  if ((await prisma.screenSnapshot.count()) === 0 && screenSnapshots.length > 0) {
+    console.log(`[seed] inserting ${screenSnapshots.length} snapshots…`);
+    await seedSnapshots(screenSnapshots);
+  }
+  if ((await prisma.analysis.count()) === 0 && analyses.length > 0) {
+    console.log(`[seed] inserting ${analyses.length} analyses…`);
+    await seedAnalyses(analyses);
+  }
+
+  console.log("[seed] done.");
+}
+
+async function seedScreenResults(screenResults) {
   await chunkedCreate(prisma.screenResult, screenResults, (r) => ({
     id: r.id,
     ticker: r.ticker,
@@ -64,7 +89,9 @@ async function main() {
     createdAt: toDate(r.createdAt),
     updatedAt: toDate(r.updatedAt),
   }));
+}
 
+async function seedSnapshots(screenSnapshots) {
   await chunkedCreate(prisma.screenSnapshot, screenSnapshots, (r) => ({
     id: r.id,
     ticker: r.ticker,
@@ -79,7 +106,9 @@ async function main() {
     verdictCaps: r.verdictCaps,
     createdAt: toDate(r.createdAt),
   }));
+}
 
+async function seedAnalyses(analyses) {
   await chunkedCreate(prisma.analysis, analyses, (r) => ({
     id: r.id,
     ticker: r.ticker,
@@ -96,8 +125,6 @@ async function main() {
     createdAt: toDate(r.createdAt),
     updatedAt: toDate(r.updatedAt),
   }));
-
-  console.log("[seed] done.");
 }
 
 main()
