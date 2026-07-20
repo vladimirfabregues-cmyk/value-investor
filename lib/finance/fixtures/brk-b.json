@@ -1,0 +1,39 @@
+{
+  "ticker": "BRK.B",
+  "company_name": "Berkshire Hathaway Inc. Class B",
+  "currency": "USD",
+  "price": 474.82,
+  "market_cap": 1040000000000,
+  "enterprise_value": 1010000000000,
+  "shares_outstanding": 2180000000,
+  "latest": {
+    "revenue": 371400000000,
+    "ebitda": 64800000000,
+    "ebit": 48700000000,
+    "net_income": 96200000000,
+    "diluted_eps": 43.8,
+    "bvps": 300.5,
+    "free_cash_flow": 27700000000,
+    "total_debt": 129000000000,
+    "total_equity": 621000000000,
+    "cash_and_equivalents": 167000000000,
+    "current_assets": 581000000000,
+    "current_liabilities": 217000000000,
+    "interest_expense": 3900000000,
+    "gross_margin_pct": null,
+    "operating_margin_pct": 13.1,
+    "roe_pct": 15.5,
+    "roic_pct": 9.8
+  },
+  "history_5y": {
+    "revenue": [245500000000, 276100000000, 302100000000, 364500000000, 371400000000],
+    "free_cash_flow": [20900000000, 23300000000, 25300000000, 26600000000, 27700000000],
+    "diluted_eps": [15.11, 18.44, 23.87, 37.82, 43.8],
+    "gross_margin_pct": [null, null, null, null, null],
+    "operating_margin_pct": [10.4, 11.3, 11.8, 12.8, 13.1],
+    "roe_pct": [9.7, 11.8, 13.1, 14.8, 15.5],
+    "roic_pct": [6.8, 7.4, 8.2, 9.1, 9.8]
+  },
+  "as_of_date": "2025-12-31",
+  "source_name": "Mock Finance Provider Fixtures"
+}

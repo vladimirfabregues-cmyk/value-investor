@@ -1,0 +1,39 @@
+{
+  "ticker": "AAPL",
+  "company_name": "Apple Inc.",
+  "currency": "USD",
+  "price": 214.29,
+  "market_cap": 3300000000000,
+  "enterprise_value": 3380000000000,
+  "shares_outstanding": 15400000000,
+  "latest": {
+    "revenue": 391000000000,
+    "ebitda": 134000000000,
+    "ebit": 123000000000,
+    "net_income": 97000000000,
+    "diluted_eps": 6.29,
+    "bvps": 4.74,
+    "free_cash_flow": 99500000000,
+    "total_debt": 109000000000,
+    "total_equity": 73000000000,
+    "cash_and_equivalents": 63000000000,
+    "current_assets": 143000000000,
+    "current_liabilities": 146000000000,
+    "interest_expense": 3900000000,
+    "gross_margin_pct": 46.5,
+    "operating_margin_pct": 31.4,
+    "roe_pct": 132.9,
+    "roic_pct": 54.2
+  },
+  "history_5y": {
+    "revenue": [274500000000, 365800000000, 394300000000, 383300000000, 391000000000],
+    "free_cash_flow": [73300000000, 92950000000, 111400000000, 99580000000, 99500000000],
+    "diluted_eps": [3.28, 5.61, 6.11, 6.13, 6.29],
+    "gross_margin_pct": [38.2, 41.8, 43.3, 44.1, 46.5],
+    "operating_margin_pct": [24.1, 29.8, 30.3, 29.8, 31.4],
+    "roe_pct": [73.7, 147.4, 175.5, 160.1, 132.9],
+    "roic_pct": [29.4, 45.2, 48.5, 49.3, 54.2]
+  },
+  "as_of_date": "2025-09-28",
+  "source_name": "Mock Finance Provider Fixtures"
+}

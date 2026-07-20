@@ -1,0 +1,39 @@
+{
+  "ticker": "INTC",
+  "company_name": "Intel Corporation",
+  "currency": "USD",
+  "price": 24.18,
+  "market_cap": 105000000000,
+  "enterprise_value": 151000000000,
+  "shares_outstanding": 4340000000,
+  "latest": {
+    "revenue": 54200000000,
+    "ebitda": 9500000000,
+    "ebit": -2100000000,
+    "net_income": -18700000000,
+    "diluted_eps": -4.31,
+    "bvps": 24.7,
+    "free_cash_flow": -4200000000,
+    "total_debt": 52000000000,
+    "total_equity": 103000000000,
+    "cash_and_equivalents": 28900000000,
+    "current_assets": 69900000000,
+    "current_liabilities": 33600000000,
+    "interest_expense": 1900000000,
+    "gross_margin_pct": 41.8,
+    "operating_margin_pct": -3.9,
+    "roe_pct": -18.2,
+    "roic_pct": -2.5
+  },
+  "history_5y": {
+    "revenue": [77900000000, 63100000000, 54200000000, 53800000000, 54200000000],
+    "free_cash_flow": [20800000000, 9900000000, -9250000000, -14000000000, -4200000000],
+    "diluted_eps": [4.86, 1.94, -0.31, -4.27, -4.31],
+    "gross_margin_pct": [55.4, 42.6, 39.2, 40.5, 41.8],
+    "operating_margin_pct": [28, 16.4, -2.3, -7.8, -3.9],
+    "roe_pct": [25.2, 8.7, -1.4, -17.9, -18.2],
+    "roic_pct": [16.1, 6.4, -0.8, -4.1, -2.5]
+  },
+  "as_of_date": "2025-12-28",
+  "source_name": "Mock Finance Provider Fixtures"
+}

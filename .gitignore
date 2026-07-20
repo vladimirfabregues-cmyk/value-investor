@@ -1,0 +1,39 @@
+# dependencies
+node_modules
+
+# next.js build output
+.next
+out
+
+# production / hosting
+.vercel
+build
+
+# prisma local sqlite database (never commit — cloud uses Postgres)
+dev.db
+dev.db-journal
+prisma/dev.db
+prisma/dev.db-journal
+prisma/*.db
+prisma/*.db-journal
+
+# environment variables (secrets — never commit)
+.env
+.env.local
+.env.production.local
+.env.development.local
+*.env
+
+# logs
+*.log
+npm-debug.log*
+
+# iCloud / macOS sync duplicates that break builds
+* 2.*
+* 2/
+*\ 2.*
+.DS_Store
+
+# editor
+.idea
+.vscode

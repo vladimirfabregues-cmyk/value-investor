@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // Pooled connection for serverless runtime; direct connection for migrations.
+  // Vercel's Neon integration provides both; falls back to DATABASE_URL locally.
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model Analysis {
+  id                String   @id @default(cuid())
+  ticker            String
+  companyName       String
+  currency          String
+  currentPrice      Float
+  analysisDate      DateTime
+  finalVerdictLabel String
+  confidencePct     Float
+  marginOfSafetyPct Float?
+  oneLineVerdict    String
+  fullJson          Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([ticker, createdAt])
+  @@index([createdAt])
+}
+
+model ScreenResult {
+  id             String   @id @default(cuid())
+  /// Unique per (ticker, screenerIndex): the same company may legitimately be a
+  /// constituent of several indices (e.g. FTSE 250 ∩ MSCI Europe Small Cap)
+  ticker         String
+  companyName    String
+  currency       String
+  price          Float
+  marketCap      Float?
+  sector         String?
+  verdictLabel   String
+  compositeScore Float
+  valuationScore Float
+  healthScore    Float
+  qualityScore   Float
+  moatScore      Float
+  marginOfSafety Float?
+  pe             Float?
+  pb             Float?
+  ps             Float?
+  evEbitda       Float?
+  priceFcf       Float?
+  grahamNumber   Float?
+  screenerIndex  String   @default("SP500")
+  screenerAt     DateTime
+  /// Comma-separated red flags that capped the verdict (e.g. "peak_earnings,recent_ipo")
+  verdictCaps    String?
+  errorMessage   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([ticker, screenerIndex])
+  @@index([verdictLabel])
+  @@index([compositeScore])
+  @@index([sector])
+  @@index([screenerIndex])
+}
+
+/// Append-only, point-in-time record of every screening result. ScreenResult
+/// holds only the latest state per ticker; this table preserves history so
+/// verdicts can be backtested against subsequent price performance.
+model ScreenSnapshot {
+  id             String   @id @default(cuid())
+  ticker         String
+  screenerIndex  String
+  screenerAt     DateTime
+  verdictLabel   String
+  compositeScore Float
+  marginOfSafety Float?
+  price          Float
+  currency       String
+  sector         String?
+  verdictCaps    String?
+  createdAt      DateTime @default(now())
+
+  @@index([screenerIndex, screenerAt])
+  @@index([ticker, screenerAt])
+  @@index([verdictLabel])
+}

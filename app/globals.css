@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: "Avenir Next", "Segoe UI Variable Text", "Helvetica Neue", sans-serif;
+    --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --background: 220 42% 7%;
+    --foreground: 42 18% 92%;
+    --card: 220 34% 11%;
+    --card-foreground: 42 18% 92%;
+    --popover: 220 34% 10%;
+    --popover-foreground: 42 18% 92%;
+    --primary: 40 38% 58%;
+    --primary-foreground: 220 42% 10%;
+    --secondary: 220 26% 18%;
+    --secondary-foreground: 42 12% 92%;
+    --muted: 221 18% 24%;
+    --muted-foreground: 218 12% 66%;
+    --accent: 43 28% 24%;
+    --accent-foreground: 42 18% 92%;
+    --border: 219 18% 19%;
+    --input: 219 18% 19%;
+    --ring: 40 38% 58%;
+    --chart-1: 40 38% 58%;
+    --chart-2: 157 55% 43%;
+    --chart-3: 204 62% 58%;
+    --chart-4: 28 74% 57%;
+    --chart-5: 350 69% 58%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background-image:
+      radial-gradient(circle at top left, rgba(181, 148, 88, 0.16), transparent 28%),
+      radial-gradient(circle at 85% 12%, rgba(68, 92, 134, 0.18), transparent 26%),
+      linear-gradient(180deg, #060b13 0%, #09111d 54%, #060a12 100%);
+    min-height: 100vh;
+    /* Respect the iPhone notch / home indicator when installed as a PWA */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right)
+      env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.38), transparent 88%);
+    opacity: 0.3;
+  }
+
+  ::selection {
+    background: rgba(181, 148, 88, 0.28);
+    color: white;
+  }
+
+  /* Restrained, theme-consistent scrollbars (data tables scroll a lot) */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(181, 148, 88, 0.28) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: rgba(181, 148, 88, 0.22);
+    border-radius: 8px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: rgba(181, 148, 88, 0.4);
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* Visible, on-brand keyboard focus */
+  :focus-visible {
+    outline: 2px solid rgba(181, 148, 88, 0.55);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Financial figures should always align */
+  td,
+  th {
+    font-variant-numeric: tabular-nums;
+  }
+}
