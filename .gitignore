@@ -37,3 +37,7 @@ npm-debug.log*
 # editor
 .idea
 .vscode
+
+# temporary backfill/diagnostic artifacts (never commit)
+prisma/seed-data/_backfill.jsonl
+__tests__/finance/_*.test.ts

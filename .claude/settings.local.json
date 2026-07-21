@@ -124,7 +124,10 @@
       "Bash(node --check prisma/seed.mjs)",
       "Bash(git add *)",
       "Bash(git commit -q -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(echo \"exit $?\")",
+      "Bash(python3 -c \"import json; json.load\\(open\\('prisma/seed-data/ScreenResult.json'\\)\\); print\\('valid JSON ✓'\\)\")",
+      "Bash(rm -f __tests__/finance/_backfill.test.ts)"
     ]
   }
 }
