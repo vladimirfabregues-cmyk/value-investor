@@ -18,6 +18,7 @@ const NAV = [
   { href: "/", label: "Analyze" },
   { href: "/screen", label: "Screener" },
   { href: "/compare", label: "Compare" },
+  { href: "/about", label: "About" },
 ] as const;
 
 export function Topbar({ history }: TopbarProps) {
