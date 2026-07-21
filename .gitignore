@@ -41,3 +41,6 @@ npm-debug.log*
 # temporary backfill/diagnostic artifacts (never commit)
 prisma/seed-data/_backfill.jsonl
 __tests__/finance/_*.test.ts
+
+# local Claude Code settings (machine-specific)
+.claude/settings.local.json

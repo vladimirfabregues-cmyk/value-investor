@@ -1,6 +1,7 @@
-// One-time data migration: loads the exported SQLite rows into the cloud
-// Postgres database on first deploy. Idempotent — if the tables already have
-// rows it does nothing, so it's safe to run on every build.
+// Data sync: loads the exported screening rows into the cloud Postgres
+// database. Idempotent and safe on every build — each index is inserted when
+// absent, replaced when the seed carries strictly newer data, and left alone
+// when the database's copy is newer (e.g. screens run in the deployed app).
 //
 // Run automatically by the Vercel build command (see vercel.json).
 
@@ -33,9 +34,11 @@ async function main() {
   const screenSnapshots = load("ScreenSnapshot");
   const analyses = load("Analysis");
 
-  // ScreenResult: gap-fill per index. Insert an index's rows only if the cloud
-  // DB has none for it yet — so newly-added markets (e.g. a later SP500/AIM
-  // backfill) land on the next deploy without touching markets already present.
+  // ScreenResult: per-index sync. An index is (re)loaded from the seed when the
+  // DB has no rows for it, or when the seed's data is strictly newer AND at
+  // least as complete as what the DB holds — so local backfills/refreshes land
+  // on the next deploy, while screens run in the deployed app itself (which
+  // produce newer DB timestamps) are never clobbered by an old seed.
   const byIndex = new Map();
   for (const r of screenResults) {
     if (!byIndex.has(r.screenerIndex)) byIndex.set(r.screenerIndex, []);
@@ -43,11 +46,24 @@ async function main() {
   }
   for (const [index, rows] of byIndex) {
     const have = await prisma.screenResult.count({ where: { screenerIndex: index } });
+    const seedMax = Math.max(...rows.map((r) => Number(r.screenerAt) || 0));
     if (have > 0) {
-      console.log(`[seed] ${index}: ${have} rows present — skipping.`);
-      continue;
+      const dbLatest = await prisma.screenResult.findFirst({
+        where: { screenerIndex: index },
+        orderBy: { screenerAt: "desc" },
+        select: { screenerAt: true },
+      });
+      const dbMax = dbLatest?.screenerAt?.getTime() ?? 0;
+      const seedValid = rows.filter((r) => !r.errorMessage).length;
+      if (seedMax <= dbMax || seedValid < have * 0.5) {
+        console.log(`[seed] ${index}: DB has ${have} rows (newer or fuller) — skipping.`);
+        continue;
+      }
+      console.log(`[seed] ${index}: replacing ${have} stale rows with ${rows.length} newer seed rows…`);
+      await prisma.screenResult.deleteMany({ where: { screenerIndex: index } });
+    } else {
+      console.log(`[seed] ${index}: inserting ${rows.length} rows…`);
     }
-    console.log(`[seed] ${index}: inserting ${rows.length} rows…`);
     await seedScreenResults(rows);
   }
 
