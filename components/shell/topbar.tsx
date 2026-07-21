@@ -26,7 +26,7 @@ export function Topbar({ history }: TopbarProps) {
 
   return (
     <div className="sticky top-0 z-40 border-b border-white/[0.06] bg-[rgba(4,9,17,0.82)] backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2.5 px-4 py-3 sm:flex-nowrap sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <Sheet>
             <SheetTrigger asChild>
@@ -57,14 +57,15 @@ export function Topbar({ history }: TopbarProps) {
           </Link>
         </div>
 
-        <nav className="flex items-center gap-1 rounded-full border border-white/[0.07] bg-white/[0.03] p-1">
+        {/* Own full-width row on mobile so four items never force horizontal page scroll */}
+        <nav className="order-3 flex w-full items-center gap-1 overflow-x-auto rounded-full border border-white/[0.07] bg-white/[0.03] p-1 sm:order-none sm:w-auto sm:overflow-visible">
           {NAV.map(({ href, label }) => {
             const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
             return (
               <Link
                 key={href}
                 href={href}
-                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors sm:px-4 ${
                   active
                     ? "bg-primary/15 text-primary shadow-[inset_0_0_0_1px_rgba(181,148,88,0.35)]"
                     : "text-muted-foreground hover:bg-white/[0.04] hover:text-foreground"
