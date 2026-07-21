@@ -39,8 +39,11 @@ npm-debug.log*
 .vscode
 
 # temporary backfill/diagnostic artifacts (never commit)
-prisma/seed-data/_backfill.jsonl
+prisma/seed-data/_*.jsonl
 __tests__/finance/_*.test.ts
 
 # local Claude Code settings (machine-specific)
 .claude/settings.local.json
+
+# typescript incremental build cache
+tsconfig.tsbuildinfo
