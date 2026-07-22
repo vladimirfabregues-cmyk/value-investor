@@ -6,9 +6,12 @@ export const analyzeRequestSchema = z
       .string()
       .trim()
       .min(1)
-      .max(10)
+      .max(20)
       .regex(/^[A-Z0-9.\-]+$/i, "Ticker must contain only letters, digits, dots, or hyphens.")
       .transform((v) => v.toUpperCase()),
+    // Half of the security identity. Optional so existing links keep working;
+    // when absent it is inferred from the ticker suffix.
+    exchange: z.string().trim().min(1).max(12).optional(),
   })
   .strict();
 
@@ -25,6 +28,29 @@ export const analysisSourceSchema = z
     title: z.string().min(1),
     url: z.string().url(),
     used_for: z.string().min(1),
+  })
+  .strict();
+
+const verdictCheckSchema = z
+  .object({
+    name: z.string().min(1),
+    status: z.enum(["pass", "warn", "fail"]),
+    score: z.number().finite().nullable(),
+    detail: z.string().min(1),
+  })
+  .strict();
+
+const verdictExplanationSchema = z
+  .object({
+    final_verdict: z.enum(["STRONG_BUY", "BUY", "WATCH", "HOLD", "AVOID"]),
+    overall_score: z.number().finite(),
+    valuation_method: z.enum(["dcf", "nav", "ddm", "pbroe"]),
+    valuation_method_label: z.string().min(1),
+    checks: z.array(verdictCheckSchema),
+    hard_gates: z.array(
+      z.object({ name: z.string().min(1), detail: z.string().min(1) }).strict(),
+    ),
+    explanation: z.string().min(1),
   })
   .strict();
 
@@ -97,6 +123,9 @@ export const valueInvestingAnalysisSchema = z
         reasoning: z.string().min(1),
       })
       .strict(),
+    // Optional: absent on analyses saved before these fields existed
+    exchange: z.string().min(1).max(12).optional(),
+    verdict_explanation: verdictExplanationSchema.optional(),
     sources: z.array(analysisSourceSchema),
   })
   .strict();
@@ -105,6 +134,7 @@ export const savedAnalysisSummarySchema = z
   .object({
     id: z.string().min(1),
     ticker: z.string().min(1),
+    exchange: z.string().min(1).max(12),
     companyName: z.string().min(1),
     analysisDate: z.string().min(1),
     finalVerdictLabel: z.enum(["STRONG_BUY", "BUY", "WATCH", "HOLD", "AVOID"]),

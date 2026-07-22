@@ -7,7 +7,8 @@ import {
   analyzeTicker,
 } from "@/lib/claude/analyze-stock";
 import { saveAnalysis } from "@/lib/db/queries";
-import { findRecentByTicker } from "@/lib/db/queries";
+import { findRecentBySecurity } from "@/lib/db/queries";
+import { resolveSecurity } from "@/lib/finance/exchanges";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { analyzeRequestSchema, valueInvestingAnalysisSchema } from "@/lib/validation/analysis";
 
@@ -71,9 +72,13 @@ function errorMessage(error: unknown): { message: string; status: number } {
 export async function POST(request: Request) {
   // Validate request before opening the stream
   let ticker: string;
+  let exchange: string | undefined;
   try {
     const body = analyzeRequestSchema.parse(await request.json());
-    ticker = body.ticker;
+    // Market + symbol is the identity; an absent market is inferred from the suffix.
+    const security = resolveSecurity(body.ticker, body.exchange);
+    ticker = security.ticker;
+    exchange = security.exchange;
   } catch (error) {
     if (error instanceof ZodError) {
       return Response.json(
@@ -99,7 +104,7 @@ export async function POST(request: Request) {
   }
 
   // Return cached analysis if one exists from the last 24 hours
-  const recent = await findRecentByTicker(ticker);
+  const recent = await findRecentBySecurity(ticker, exchange);
   if (recent) {
     return Response.json({ id: recent.id, analysis: recent.fullJson });
   }
@@ -116,7 +121,7 @@ export async function POST(request: Request) {
         const saved = await saveAnalysis(analysis);
         controller.enqueue(sseEvent("complete", { id: saved.id, analysis }));
       } catch (error) {
-        console.error("Analyze route failed", { ticker, error });
+        console.error("Analyze route failed", { ticker, exchange, error });
         const { message } = errorMessage(error);
         controller.enqueue(sseEvent("error", { message }));
       } finally {

@@ -6,6 +6,7 @@ import { AlertTriangle, ArrowRight, ExternalLink, Loader2 } from "lucide-react";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { describeValuationGap } from "@/lib/finance/valuation-gap";
+import { inferExchangeFromTicker } from "@/lib/finance/exchanges";
 import { CAP_LABELS } from "@/lib/finance/verdict-explanation";
 import type { ScreenResultRecord } from "@/lib/db/screen-queries";
 import type { NewsArticle } from "@/app/api/screen/news/route";
@@ -262,7 +263,7 @@ export function VerdictModal({ row, children }: VerdictModalProps) {
               Yahoo Finance + SEC EDGAR · Deterministic scoring
             </p>
             <Link
-              href={`/?ticker=${row.ticker}`}
+              href={`/?exchange=${inferExchangeFromTicker(row.ticker).code}&ticker=${encodeURIComponent(row.ticker)}`}
               className="inline-flex items-center gap-1.5 rounded-lg border border-primary/35 bg-primary/10 px-3.5 py-1.5 text-xs font-medium text-primary transition-all hover:bg-primary/20 hover:shadow-[0_4px_16px_rgba(181,148,88,0.2)]"
             >
               Run full analysis <ArrowRight className="h-3 w-3" />

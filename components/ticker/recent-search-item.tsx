@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils/cn";
 import { formatIsoDate } from "@/lib/utils/dates";
 import { verdictClasses } from "@/lib/utils/format";
+import { exchangeByCode } from "@/lib/finance/exchanges";
 import type { SavedAnalysisSummary } from "@/types/analysis";
 
 interface RecentSearchItemProps {
@@ -14,7 +15,7 @@ interface RecentSearchItemProps {
 export function RecentSearchItem({ item, active = false }: RecentSearchItemProps) {
   return (
     <Link
-      href={`/?analysis=${item.id}&ticker=${encodeURIComponent(item.ticker)}`}
+      href={`/?analysis=${item.id}&exchange=${encodeURIComponent(item.exchange)}&ticker=${encodeURIComponent(item.ticker)}`}
       className={cn(
         "group block rounded-2xl border px-4 py-3 transition-all",
         active
@@ -24,8 +25,15 @@ export function RecentSearchItem({ item, active = false }: RecentSearchItemProps
     >
       <div className="mb-2 flex items-start justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold tracking-[0.18em] text-foreground">
-            {item.ticker}
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-sm font-semibold tracking-[0.18em] text-foreground">
+              {item.ticker}
+            </span>
+            {exchangeByCode(item.exchange) && (
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                {exchangeByCode(item.exchange)!.shortCode}
+              </span>
+            )}
           </div>
           <div className="mt-1 text-sm text-muted-foreground">{item.companyName}</div>
         </div>

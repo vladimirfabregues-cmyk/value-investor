@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { VerdictModal } from "@/components/screen/verdict-modal";
 import { describeValuationGap } from "@/lib/finance/valuation-gap";
+import { inferExchangeFromTicker } from "@/lib/finance/exchanges";
 import { CAP_LABELS } from "@/lib/finance/verdict-explanation";
 import type { ScreenResultRecord, ScreenResultFilters } from "@/lib/db/screen-queries";
 import type { BatchScreenComplete, BatchScreenProgress } from "@/lib/screener/batch";
@@ -565,7 +566,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                     return (
                       <tr key={`${row.ticker}-${row.screenerIndex}`} className="group transition-colors hover:bg-primary/[0.04]">
                         <td className="px-4 py-2.5">
-                          <Link href={`/?ticker=${row.ticker}`} className="block">
+                          <Link href={`/?exchange=${inferExchangeFromTicker(row.ticker).code}&ticker=${encodeURIComponent(row.ticker)}`} className="block">
                             <span className="font-mono text-[13px] font-semibold text-primary group-hover:underline">
                               {row.ticker}
                             </span>

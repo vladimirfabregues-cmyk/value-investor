@@ -33,6 +33,9 @@ export interface AnalysisSource {
 
 export interface ValueInvestingAnalysis {
   ticker: string;
+  /** Exchange code — with `ticker` this forms the security identity.
+   *  Optional: absent on analyses saved before exchanges were tracked. */
+  exchange?: string;
   company_name: string;
   currency: string;
   current_price: number;
@@ -95,6 +98,8 @@ export interface ValueInvestingAnalysis {
 export interface SavedAnalysisSummary {
   id: string;
   ticker: string;
+  /** Exchange code; inferred from the ticker suffix for older rows */
+  exchange: string;
   companyName: string;
   analysisDate: string;
   finalVerdictLabel: VerdictLabel;

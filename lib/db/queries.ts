@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db/client";
+import { inferExchangeFromTicker, resolveSecurity } from "@/lib/finance/exchanges";
 import {
   savedAnalysisSummarySchema,
   valueInvestingAnalysisSchema,
@@ -14,6 +15,7 @@ import type {
 function mapSummary(row: {
   id: string;
   ticker: string;
+  exchange?: string | null;
   companyName: string;
   analysisDate: Date;
   finalVerdictLabel: string;
@@ -25,6 +27,8 @@ function mapSummary(row: {
   return {
     id: row.id,
     ticker: row.ticker,
+    // Older rows predate the column; infer so identity is never ambiguous.
+    exchange: row.exchange ?? inferExchangeFromTicker(row.ticker).code,
     companyName: row.companyName,
     analysisDate: row.analysisDate.toISOString(),
     finalVerdictLabel: savedAnalysisSummarySchema.shape.finalVerdictLabel.parse(
@@ -40,6 +44,7 @@ function mapSummary(row: {
 function mapRecord(row: {
   id: string;
   ticker: string;
+  exchange?: string | null;
   companyName: string;
   currency: string;
   currentPrice: number;
@@ -66,9 +71,12 @@ export async function saveAnalysis(analysis: ValueInvestingAnalysis) {
     ? new Date()
     : new Date(analysis.analysis_date);
 
+  const security = resolveSecurity(analysis.ticker, analysis.exchange);
+
   const row = await prisma.analysis.create({
     data: {
-      ticker: analysis.ticker,
+      ticker: security.ticker,
+      exchange: security.exchange,
       companyName: analysis.company_name,
       currency: analysis.currency,
       currentPrice: analysis.current_price,
@@ -91,6 +99,7 @@ export async function getHistorySummaries(): Promise<SavedAnalysisSummary[]> {
     select: {
       id: true,
       ticker: true,
+      exchange: true,
       companyName: true,
       analysisDate: true,
       finalVerdictLabel: true,
@@ -131,14 +140,21 @@ export async function getAnalysesByIds(ids: string[]): Promise<SavedAnalysisReco
     .sort((left, right) => (order.get(left.id) ?? 0) - (order.get(right.id) ?? 0));
 }
 
-export async function findRecentByTicker(
+/**
+ * Cache lookup keyed on the full security identity. Keying on ticker alone
+ * would let the same symbol on a different market return the wrong analysis.
+ */
+export async function findRecentBySecurity(
   ticker: string,
+  exchange?: string | null,
   withinHours = 24,
 ): Promise<SavedAnalysisRecord | null> {
+  const security = resolveSecurity(ticker, exchange);
   const cutoff = new Date(Date.now() - withinHours * 60 * 60 * 1000);
   const row = await prisma.analysis.findFirst({
     where: {
-      ticker: ticker.toUpperCase(),
+      ticker: security.ticker,
+      exchange: security.exchange,
       createdAt: { gte: cutoff },
     },
     orderBy: { createdAt: "desc" },

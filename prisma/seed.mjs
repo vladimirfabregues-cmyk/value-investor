@@ -77,7 +77,33 @@ async function main() {
     await seedAnalyses(analyses);
   }
 
+  // One-time correction: rows saved before exchanges were tracked default to
+  // "US". Infer the real market from the ticker suffix so identity is right.
+  await backfillExchanges();
+
   console.log("[seed] done.");
+}
+
+const SUFFIX_TO_EXCHANGE = [
+  [".L", "XLON"], [".PA", "XPAR"], [".DE", "XETR"], [".SW", "XSWX"], [".ST", "XSTO"],
+  [".CO", "XCSE"], [".OL", "XOSL"], [".HE", "XHEL"], [".MI", "XMIL"], [".MC", "XMAD"],
+  [".AS", "XAMS"], [".BR", "XBRU"], [".LS", "XLIS"], [".IR", "XDUB"], [".VI", "XWBO"],
+  [".AT", "XATH"], [".T", "XTKS"], [".F", "XFRA"],
+];
+
+async function backfillExchanges() {
+  const rows = await prisma.analysis.findMany({ select: { id: true, ticker: true, exchange: true } });
+  let fixed = 0;
+  for (const row of rows) {
+    const upper = (row.ticker || "").toUpperCase();
+    const match = SUFFIX_TO_EXCHANGE.find(([suffix]) => upper.endsWith(suffix));
+    const correct = match ? match[1] : "US";
+    if (row.exchange !== correct) {
+      await prisma.analysis.update({ where: { id: row.id }, data: { exchange: correct } });
+      fixed++;
+    }
+  }
+  if (fixed > 0) console.log(`[seed] corrected exchange on ${fixed} analysis row(s).`);
 }
 
 async function seedScreenResults(screenResults) {

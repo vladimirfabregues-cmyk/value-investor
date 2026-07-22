@@ -3,6 +3,7 @@ import { FinanceProviderError } from "@/lib/finance/provider";
 import { calculateValueMetrics } from "@/lib/finance/scoring";
 import { buildVerdictExplanation } from "@/lib/finance/verdict-explanation";
 import { describeValuationGap } from "@/lib/finance/valuation-gap";
+import { resolveSecurity } from "@/lib/finance/exchanges";
 import type { ValueMetricsResult } from "@/types/finance";
 import type { ValueInvestingAnalysis, VerdictLabel } from "@/types/analysis";
 
@@ -244,8 +245,11 @@ export async function analyzeTicker(
 
   onProgress?.("Building analysis...");
 
+  const security = resolveSecurity(m.ticker);
+
   return {
     ticker: m.ticker,
+    exchange: security.exchange,
     company_name: m.company_name,
     currency: m.currency,
     current_price: m.current_price,

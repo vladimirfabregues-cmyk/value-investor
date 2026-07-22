@@ -13,6 +13,10 @@ datasource db {
 model Analysis {
   id                String   @id @default(cuid())
   ticker            String
+  /// Exchange code (see lib/finance/exchanges.ts). Together with `ticker` this
+  /// forms the security identity — the same symbol on two markets is two
+  /// distinct securities and must never collide.
+  exchange          String   @default("US")
   companyName       String
   currency          String
   currentPrice      Float
@@ -25,6 +29,7 @@ model Analysis {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
+  @@index([exchange, ticker, createdAt])
   @@index([ticker, createdAt])
   @@index([createdAt])
 }

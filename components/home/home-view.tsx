@@ -14,6 +14,7 @@ import { VerdictBanner } from "@/components/analysis/verdict-banner";
 import { WhyThisVerdict } from "@/components/analysis/why-this-verdict";
 import { AppShell } from "@/components/shell/app-shell";
 import { TickerSearchForm } from "@/components/ticker/ticker-search-form";
+import { DEFAULT_EXCHANGE_CODE, toYahooTicker } from "@/lib/finance/exchanges";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -23,6 +24,7 @@ import type { SavedAnalysisRecord, SavedAnalysisSummary, ValueInvestingAnalysis 
 interface HomeViewProps {
   initialHistory: SavedAnalysisSummary[];
   initialTicker?: string;
+  initialExchange?: string;
   initialAnalysis?: SavedAnalysisRecord | null;
 }
 
@@ -53,11 +55,13 @@ async function* readSseStream(response: Response): AsyncGenerator<SseEvent> {
 export function HomeView({
   initialHistory,
   initialTicker = "",
+  initialExchange = DEFAULT_EXCHANGE_CODE,
   initialAnalysis = null,
 }: HomeViewProps) {
   const router = useRouter();
   const [history, setHistory] = useState(initialHistory);
   const [ticker, setTicker] = useState(initialTicker);
+  const [exchange, setExchange] = useState(initialExchange);
   const [analysis, setAnalysis] = useState(initialAnalysis?.fullJson ?? null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -82,7 +86,8 @@ export function HomeView({
   }
 
   async function handleAnalyze() {
-    const normalizedTicker = ticker.trim().toUpperCase();
+    // Market + symbol is the identity; resolve to the ticker the provider needs.
+    const normalizedTicker = toYahooTicker(exchange, ticker);
 
     if (!normalizedTicker) {
       return;
@@ -98,7 +103,7 @@ export function HomeView({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ticker: normalizedTicker }),
+        body: JSON.stringify({ ticker: normalizedTicker, exchange }),
       });
 
       if (!response.ok) {
@@ -113,7 +118,7 @@ export function HomeView({
         setAnalysis(payload.analysis);
         await refreshHistory();
         router.replace(
-          `/?analysis=${payload.id}&ticker=${encodeURIComponent(normalizedTicker)}`,
+          `/?analysis=${payload.id}&exchange=${encodeURIComponent(exchange)}&ticker=${encodeURIComponent(normalizedTicker)}`,
         );
         return;
       }
@@ -125,7 +130,7 @@ export function HomeView({
           setAnalysis(event.analysis);
           await refreshHistory();
           router.replace(
-            `/?analysis=${event.id}&ticker=${encodeURIComponent(normalizedTicker)}`,
+            `/?analysis=${event.id}&exchange=${encodeURIComponent(exchange)}&ticker=${encodeURIComponent(normalizedTicker)}`,
           );
           return;
         } else if (event.type === "error") {
@@ -166,8 +171,11 @@ export function HomeView({
 
           <TickerSearchForm
             ticker={ticker}
+            exchange={exchange}
             isLoading={isLoading}
+            error={error}
             onTickerChange={setTicker}
+            onExchangeChange={setExchange}
             onSubmit={handleAnalyze}
           />
 
