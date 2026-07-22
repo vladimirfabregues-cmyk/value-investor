@@ -91,3 +91,35 @@ describe("valuation range", () => {
     expect(reit.agreement).toBe("Low"); // NAV vs a near-zero FCF DCF
   });
 });
+
+describe("range coherence", () => {
+  it("always brackets the base case", () => {
+    // A base produced by a model not in the displayed set must still fall inside
+    const range = buildValuationRange({
+      pbroe_value_per_share: null,
+      graham_value_per_share: 124.12,
+      blended_intrinsic_value_per_share: 41.29,
+      intrinsic_method: "pbroe",
+    });
+    expect(range.low).toBeLessThanOrEqual(range.base!);
+    expect(range.high).toBeGreaterThanOrEqual(range.base!);
+  });
+
+  it("keeps the base inside the span for every method", () => {
+    for (const method of ["dcf", "nav", "ddm", "pbroe"] as const) {
+      const r = buildValuationRange({
+        dcf_value_per_share: 10,
+        graham_value_per_share: 90,
+        nav_value_per_share: 30,
+        ddm_value_per_share: 20,
+        pbroe_value_per_share: 45,
+        blended_intrinsic_value_per_share: 55,
+        intrinsic_method: method,
+      });
+      if (r.base !== null && r.low !== null && r.high !== null) {
+        expect(r.low).toBeLessThanOrEqual(r.base);
+        expect(r.high).toBeGreaterThanOrEqual(r.base);
+      }
+    }
+  });
+});

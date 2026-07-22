@@ -74,7 +74,10 @@ export function buildValuationRange(iv: IntrinsicValueInput): ValuationRange {
     };
   }
 
+  // Include the base so the range always brackets the anchor. A range that
+  // excludes its own base case is incoherent to a reader.
   const values = models.map((m) => m.value);
+  if (base !== null && Number.isFinite(base) && base > 0) values.push(base);
   const low = Math.min(...values);
   const high = Math.max(...values);
 

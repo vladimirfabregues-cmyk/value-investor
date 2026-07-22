@@ -517,7 +517,10 @@ export function calculateValueMetrics(
     },
     intrinsic_value: {
       dcf_value_per_share: dcf.dcf_value_per_share,
-      graham_value_per_share: grahamValuePerShare,
+      // Report the Graham value actually used in the blend. When earnings are at
+      // a cyclical peak this is the averaged-earnings figure, not the raw one —
+      // reporting the raw number would contradict the base case shown alongside it.
+      graham_value_per_share: grahamForIntrinsic,
       nav_value_per_share: navValuePerShare,
       ddm_value_per_share: ddm.ddm_value_per_share,
       pbroe_value_per_share: pbroe.pbroe_value_per_share,
