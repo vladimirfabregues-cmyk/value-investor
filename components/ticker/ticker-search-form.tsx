@@ -1,12 +1,12 @@
 "use client";
 
-import { useId } from "react";
-import { Search, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 
 import { MarketSelector } from "@/components/ticker/market-selector";
+import { SecuritySearch } from "@/components/ticker/security-search";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { exchangeByCode, toYahooTicker } from "@/lib/finance/exchanges";
+import type { SecuritySearchResult } from "@/lib/finance/security-search";
 
 interface TickerSearchFormProps {
   ticker: string;
@@ -35,8 +35,6 @@ export function TickerSearchForm({
   onExchangeChange,
   onSubmit,
 }: TickerSearchFormProps) {
-  const tickerId = useId();
-  const errorId = `${tickerId}-error`;
   const selected = exchangeByCode(exchange);
   const resolved = ticker.trim() ? toYahooTicker(exchange, ticker) : "";
 
@@ -53,39 +51,25 @@ export function TickerSearchForm({
         <MarketSelector value={exchange} onChange={onExchangeChange} disabled={isLoading} />
 
         {/* 2. Then the company, scoped to that market */}
-        <div>
-          <label htmlFor={tickerId} className="mb-1.5 block text-sm font-medium text-foreground">
-            Ticker or company
-          </label>
-          <div className="relative">
-            <Search
-              className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <Input
-              id={tickerId}
-              value={ticker}
-              onChange={(event) => onTickerChange(event.target.value)}
-              placeholder={selected ? `Ticker on ${selected.shortCode}` : "Ticker"}
-              className="h-12 pl-11"
-              autoComplete="off"
-              spellCheck={false}
-              aria-invalid={error ? true : undefined}
-              aria-describedby={error ? errorId : undefined}
-            />
-          </div>
-          {resolved && resolved !== ticker.trim().toUpperCase() && (
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Will be analysed as{" "}
-              <span className="font-mono text-primary">{resolved}</span> on {selected?.name}.
-            </p>
-          )}
-          {error && (
-            <p id={errorId} role="alert" className="mt-1.5 text-xs text-red-300">
-              {error}
-            </p>
-          )}
-        </div>
+        <SecuritySearch
+          value={ticker}
+          exchange={exchange}
+          isLoading={isLoading}
+          error={error}
+          onValueChange={onTickerChange}
+          onSelect={(result: SecuritySearchResult) => {
+            // Carry the market with the pick so the wrong listing can't be chosen.
+            onExchangeChange(result.exchange);
+            onTickerChange(result.ticker);
+          }}
+        />
+
+        {resolved && resolved !== ticker.trim().toUpperCase() && (
+          <p className="-mt-2 text-xs text-muted-foreground">
+            Will be analysed as <span className="font-mono text-primary">{resolved}</span> on{" "}
+            {selected?.name}.
+          </p>
+        )}
 
         {/* 3. Action */}
         <Button
