@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { AlertTriangle, Clock, Play, RefreshCw, TrendingUp, TrendingDown, X } from "lucide-react";
 
@@ -206,6 +206,48 @@ function PeVsSectorBadge({ pe, sectorMedian }: { pe: number | null; sectorMedian
   );
 }
 
+/** Header cell that can be sorted, exposing state via aria-sort. */
+function SortableTh({
+  label,
+  field,
+  align = "left",
+  title,
+  sortBy,
+  sortDir,
+  onSort,
+}: {
+  label: string;
+  field: "compositeScore" | "marginOfSafety" | "ticker";
+  align?: "left" | "right";
+  title?: string;
+  sortBy: string;
+  sortDir: "asc" | "desc";
+  onSort: (field: "compositeScore" | "marginOfSafety" | "ticker") => void;
+}) {
+  const active = sortBy === field;
+  return (
+    <th
+      scope="col"
+      title={title}
+      aria-sort={active ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
+      className={`px-4 py-3 font-medium ${align === "right" ? "text-right" : ""}`}
+    >
+      <button
+        type="button"
+        onClick={() => onSort(field)}
+        className={`inline-flex items-center gap-1 uppercase tracking-[0.14em] transition hover:text-foreground ${
+          active ? "text-primary" : ""
+        }`}
+      >
+        {label}
+        <span aria-hidden="true" className="text-[9px]">
+          {active ? (sortDir === "asc" ? "▲" : "▼") : "↕"}
+        </span>
+      </button>
+    </th>
+  );
+}
+
 export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
   const [activeIndex, setActiveIndex] = useState<ActiveIndex>("RUSSELL2000");
   const [results, setResults] = useState<ScreenResultRecord[]>(initialResults);
@@ -214,8 +256,14 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState<{ processed: number; total: number; lastTicker: string } | null>(null);
   const [filters, setFilters] = useState<ScreenResultFilters>({});
+  // Actionable candidates are shown first; seeing every rejected company is a
+  // deliberate choice, not the default.
+  const [candidatesOnly, setCandidatesOnly] = useState(true);
   const [isFiltering, setIsFiltering] = useState(false);
   const runAbortRef = useRef<AbortController | null>(null);
+  const didInit = useRef(false);
+
+  const ACTIONABLE = ["STRONG_BUY", "BUY", "WATCH"];
 
   const fetchResults = useCallback(async (f: ScreenResultFilters, index: ActiveIndex, updateBaseline = false) => {
     setIsFiltering(true);
@@ -223,6 +271,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
     params.set("index", index);
     if (f.sector) params.set("sector", f.sector);
     if (f.verdict) params.set("verdict", f.verdict);
+    if (f.verdicts?.length) params.set("verdicts", f.verdicts.join(","));
     if (f.minCompositeScore !== undefined) params.set("minScore", String(f.minCompositeScore));
     if (f.marketCapTier) params.set("marketCap", f.marketCapTier);
     if (f.sortBy) params.set("sortBy", f.sortBy);
@@ -238,6 +287,27 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
 
   const handleFilterChange = useCallback((key: keyof ScreenResultFilters, value: string | undefined) => {
     const next = { ...filters, [key]: value || undefined };
+    // Picking a specific verdict leaves candidate mode.
+    if (key === "verdict" && value) { setCandidatesOnly(false); next.verdicts = undefined; }
+    setFilters(next);
+    void fetchResults(next, activeIndex);
+  }, [filters, fetchResults, activeIndex]);
+
+  const applyCandidateMode = useCallback((on: boolean) => {
+    setCandidatesOnly(on);
+    const next: ScreenResultFilters = {
+      ...filters,
+      verdict: undefined,
+      verdicts: on ? ACTIONABLE : undefined,
+    };
+    setFilters(next);
+    void fetchResults(next, activeIndex);
+  }, [filters, fetchResults, activeIndex]);
+
+  const handleSort = useCallback((field: "compositeScore" | "marginOfSafety" | "ticker") => {
+    const sameField = (filters.sortBy ?? "compositeScore") === field;
+    const nextDir: "asc" | "desc" = sameField && (filters.sortDir ?? "desc") === "desc" ? "asc" : "desc";
+    const next = { ...filters, sortBy: field, sortDir: nextDir };
     setFilters(next);
     void fetchResults(next, activeIndex);
   }, [filters, fetchResults, activeIndex]);
@@ -250,10 +320,10 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
     setIsRunning(false);
     setProgress(null);
     setActiveIndex(index);
-    const cleared: ScreenResultFilters = {};
+    const cleared: ScreenResultFilters = candidatesOnly ? { verdicts: ACTIONABLE } : {};
     setFilters(cleared);
     void fetchResults(cleared, index, true);
-  }, [activeIndex, fetchResults]);
+  }, [activeIndex, fetchResults, candidatesOnly]);
 
   const handleRun = useCallback(async () => {
     runAbortRef.current?.abort();
@@ -285,6 +355,15 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
       setProgress(null);
     }
   }, [filters, fetchResults, activeIndex]);
+
+  // Apply the candidate default once on mount.
+  useEffect(() => {
+    if (didInit.current) return;
+    didInit.current = true;
+    void fetchResults({ verdicts: ACTIONABLE }, activeIndex, true);
+    setFilters({ verdicts: ACTIONABLE });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const toggleVerdictFilter = useCallback((verdict: string) => {
     handleFilterChange("verdict", filters.verdict === verdict ? undefined : verdict);
@@ -378,6 +457,31 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
               style={{ width: progress.total > 0 ? `${(progress.processed / progress.total) * 100}%` : "4%" }}
             />
           </div>
+        </div>
+      )}
+
+      {/* ── Candidates summary: actionable names first ── */}
+      {allResults.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-primary/[0.05] px-4 py-3">
+          <div>
+            <p className="text-sm font-medium text-foreground">
+              {candidatesOnly
+                ? `${results.length} candidate${results.length === 1 ? "" : "s"} found`
+                : `${results.length} compan${results.length === 1 ? "y" : "ies"} shown`}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {candidatesOnly
+                ? `${verdictCounts.STRONG_BUY + verdictCounts.BUY} Buy · ${verdictCounts.WATCH} Watch — companies that passed the principal quality and valuation gates.`
+                : "Showing every screened company, including those the gates rejected."}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => applyCandidateMode(!candidatesOnly)}
+            className="shrink-0 rounded-lg border border-white/12 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-foreground/85 transition hover:border-primary/35 hover:text-primary"
+          >
+            {candidatesOnly ? "Show all companies" : "Show candidates only"}
+          </button>
         </div>
       )}
 
@@ -516,9 +620,33 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
               </div>
             )}
             {concentrated && (
-              <div className="flex items-start gap-2.5 rounded-xl border border-orange-500/25 bg-orange-500/[0.07] px-4 py-3 text-xs leading-5 text-orange-200/90">
-                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-orange-400" />
-                <span>Concentration warning: {top[1]} of {buyRated.length} Buy-rated names are {top[0]} — likely one correlated sector-cycle bet, not independent ideas.</span>
+              <div className="rounded-xl border border-orange-500/25 bg-orange-500/[0.07] px-4 py-3">
+                <div className="flex items-start gap-2.5 text-xs leading-5 text-orange-200/90">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-orange-400" aria-hidden="true" />
+                  <span>
+                    <strong className="font-semibold">Concentration:</strong> {top[1]} of {buyRated.length}{" "}
+                    Buy-rated names are {top[0]} — likely one correlated sector-cycle bet rather than
+                    independent ideas.
+                  </span>
+                </div>
+                <div className="mt-2.5 flex flex-wrap gap-2 pl-6">
+                  <button
+                    type="button"
+                    onClick={() => handleFilterChange("sector", top[0])}
+                    className="rounded-lg border border-orange-500/30 bg-orange-500/10 px-2.5 py-1 text-[11px] font-medium text-orange-100 transition hover:bg-orange-500/20"
+                  >
+                    View {top[0]} exposure
+                  </button>
+                  {filters.sector && (
+                    <button
+                      type="button"
+                      onClick={() => handleFilterChange("sector", undefined)}
+                      className="rounded-lg border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[11px] font-medium text-foreground/80 transition hover:border-white/25"
+                    >
+                      Clear sector filter
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -544,15 +672,97 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
         const sectorPeMap = buildSectorPeMap(results);
         return (
           <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-[rgba(10,16,28,0.55)] shadow-panel">
-            <div className="max-h-[68vh] overflow-auto">
+            {/* Cards on mobile — a 10-column table is unusable at 375px */}
+            <ul className="divide-y divide-white/[0.05] lg:hidden">
+              {results.map((row) => {
+                const gap = describeValuationGap(row.marginOfSafety);
+                const cfg = VERDICT_CONFIG[row.verdictLabel] ?? VERDICT_CONFIG.UNKNOWN;
+                return (
+                  <li key={`m-${row.ticker}-${row.screenerIndex}`} className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="font-mono text-sm font-semibold text-primary">{row.ticker}</span>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                            {inferExchangeFromTicker(row.ticker).shortCode}
+                          </span>
+                        </div>
+                        <p className="mt-0.5 truncate text-sm text-foreground/85">{row.companyName}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{row.sector ?? "—"}</p>
+                      </div>
+                      <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${cfg.chip} ${cfg.text}`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} aria-hidden="true" />
+                        {cfg.label}
+                      </span>
+                    </div>
+
+                    <dl className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                      <div>
+                        <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">Overall</dt>
+                        <dd className="mt-0.5 tabular-nums text-foreground">{Math.round(row.compositeScore)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                          {gap.kind === "premium" ? "Premium" : "Margin of safety"}
+                        </dt>
+                        <dd className={`mt-0.5 tabular-nums ${gap.tone === "positive" ? "text-emerald-300" : gap.tone === "negative" ? "text-red-300/90" : "text-muted-foreground"}`}>
+                          {gap.display}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">Price</dt>
+                        <dd className="mt-0.5 tabular-nums text-foreground/85">
+                          <span className="text-muted-foreground/70">{row.currency}</span>{" "}
+                          {row.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">Valuation</dt>
+                        <dd className="mt-0.5 tabular-nums text-muted-foreground">{Math.round(row.valuationScore)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">Health</dt>
+                        <dd className="mt-0.5 tabular-nums text-muted-foreground">{Math.round(row.healthScore)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">Quality</dt>
+                        <dd className="mt-0.5 tabular-nums text-muted-foreground">{Math.round(row.qualityScore)}</dd>
+                      </div>
+                    </dl>
+
+                    {row.verdictCaps && (
+                      <p className="mt-2 text-[11px] leading-4 text-amber-300/90">
+                        Capped: {row.verdictCaps.split(",").map((c) => CAP_LABELS[c] ?? c).join(" · ")}
+                      </p>
+                    )}
+
+                    <div className="mt-3 flex items-center gap-2">
+                      <Link
+                        href={`/?exchange=${inferExchangeFromTicker(row.ticker).code}&ticker=${encodeURIComponent(row.ticker)}`}
+                        className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"
+                      >
+                        View analysis
+                      </Link>
+                      <VerdictModal row={row}>
+                        <button className="rounded-lg border border-white/12 bg-white/[0.04] px-3 py-1.5 text-xs text-foreground/80">
+                          Why this verdict
+                        </button>
+                      </VerdictModal>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <div className="hidden max-h-[68vh] overflow-auto lg:block">
               <table className="w-full text-sm">
                 <thead className="sticky top-0 z-10">
                   <tr className="border-b border-white/[0.08] bg-[#0b1220] text-left text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                    <th className="px-4 py-3 font-medium">Company</th>
-                    <th className="px-4 py-3 font-medium">Sector</th>
-                    <th className="px-4 py-3 font-medium">Verdict</th>
-                    <th className="px-4 py-3 font-medium">Overall score</th>
-                    <th className="px-4 py-3 text-right font-medium" title="Margin of safety, or premium when price exceeds estimated value">Margin of safety</th>
+                    <SortableTh label="Company" field="ticker" sortBy={filters.sortBy ?? "compositeScore"} sortDir={filters.sortDir ?? "desc"} onSort={handleSort} />
+                    <th scope="col" className="px-4 py-3 font-medium">Sector</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Verdict</th>
+                    <SortableTh label="Overall score" field="compositeScore" sortBy={filters.sortBy ?? "compositeScore"} sortDir={filters.sortDir ?? "desc"} onSort={handleSort} />
+                    <SortableTh label="Margin of safety" field="marginOfSafety" align="right" title="Margin of safety, or premium when price exceeds estimated value" sortBy={filters.sortBy ?? "compositeScore"} sortDir={filters.sortDir ?? "desc"} onSort={handleSort} />
                     <th className="px-3 py-3 text-right font-medium" title="Valuation score out of 100">Valuation</th>
                     <th className="px-3 py-3 text-right font-medium" title="Financial health score out of 100">Financial health</th>
                     <th className="px-3 py-3 text-right font-medium" title="Business quality score out of 100">Business quality</th>

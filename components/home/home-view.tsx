@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BarChart2 } from "lucide-react";
@@ -15,6 +15,8 @@ import { ThesisCard } from "@/components/analysis/thesis-card";
 import { ValuationCard } from "@/components/analysis/valuation-card";
 import { AnalysisSummary } from "@/components/analysis/analysis-summary";
 import { HowValuationWorks } from "@/components/analysis/how-valuation-works";
+import { ResultSections } from "@/components/analysis/result-sections";
+import { StickySummary } from "@/components/analysis/sticky-summary";
 import { WhyThisVerdict } from "@/components/analysis/why-this-verdict";
 import { AppShell } from "@/components/shell/app-shell";
 import { TickerSearchForm } from "@/components/ticker/ticker-search-form";
@@ -68,6 +70,7 @@ export function HomeView({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [progressStage, setProgressStage] = useState<string | null>(null);
+  const summaryRef = useRef<HTMLDivElement>(null);
 
   async function refreshHistory() {
     const response = await fetch("/api/history", { cache: "no-store" });
@@ -149,15 +152,70 @@ export function HomeView({
         {analysis ? (
           /* ── An analysis exists: the company is the subject of the page ── */
           <>
-            <AnalysisSummary
+            <div ref={summaryRef}>
+              <AnalysisSummary
+                analysis={analysis}
+                onReanalyse={() => void handleAnalyze()}
+                isReanalysing={isLoading}
+              />
+            </div>
+
+            <StickySummary
               analysis={analysis}
+              watchRef={summaryRef}
               onReanalyse={() => void handleAnalyze()}
               isReanalysing={isLoading}
             />
 
-            {analysis.verdict_explanation && (
-              <WhyThisVerdict explanation={analysis.verdict_explanation} />
-            )}
+            <ResultSections
+              sections={[
+                {
+                  id: "overview",
+                  label: "Overview",
+                  content: analysis.verdict_explanation ? (
+                    <WhyThisVerdict explanation={analysis.verdict_explanation} />
+                  ) : (
+                    <ThesisCard analysis={analysis} />
+                  ),
+                },
+                {
+                  id: "valuation",
+                  label: "Valuation",
+                  content: (
+                    <>
+                      <IntrinsicValueCard analysis={analysis} />
+                      <ValuationCard analysis={analysis} />
+                    </>
+                  ),
+                },
+                {
+                  id: "health",
+                  label: "Financial health",
+                  content: <FinancialHealthCard analysis={analysis} />,
+                },
+                {
+                  id: "quality",
+                  label: "Business quality",
+                  content: <BusinessQualityCard analysis={analysis} />,
+                },
+                {
+                  id: "risks",
+                  label: "Risks and thesis",
+                  content: <ThesisCard analysis={analysis} />,
+                },
+                {
+                  id: "sources",
+                  label: "Sources and methodology",
+                  content: (
+                    <>
+                      <SourcesCard analysis={analysis} />
+                      <EdgarFilingsCard ticker={analysis.ticker} />
+                      <HowValuationWorks />
+                    </>
+                  ),
+                },
+              ]}
+            />
 
             {/* Search stays available, but no longer dominates */}
             <details className="rounded-2xl border border-white/[0.07] bg-white/[0.02]">
@@ -176,15 +234,6 @@ export function HomeView({
                 />
               </div>
             </details>
-
-            <ValuationCard analysis={analysis} />
-            <FinancialHealthCard analysis={analysis} />
-            <BusinessQualityCard analysis={analysis} />
-            <IntrinsicValueCard analysis={analysis} />
-            <ThesisCard analysis={analysis} />
-            <SourcesCard analysis={analysis} />
-            <EdgarFilingsCard ticker={analysis.ticker} />
-            <HowValuationWorks />
           </>
         ) : (
           /* ── No analysis: the search is the page ── */

@@ -10,6 +10,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     screenerIndex: searchParams.get("index") ?? "SP500",
     sector: searchParams.get("sector") ?? undefined,
     verdict: searchParams.get("verdict") ?? undefined,
+    verdicts: searchParams.get("verdicts")
+      ? searchParams.get("verdicts")!.split(",").filter(Boolean)
+      : undefined,
     minCompositeScore: searchParams.has("minScore")
       ? Number(searchParams.get("minScore"))
       : undefined,

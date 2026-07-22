@@ -33,6 +33,8 @@ export interface ScreenResultFilters {
   screenerIndex?: string;
   sector?: string;
   verdict?: string;
+  /** Several verdicts at once, e.g. the actionable set shown by default */
+  verdicts?: string[];
   minCompositeScore?: number;
   marketCapTier?: "micro" | "small" | "mid" | "large" | "mega";
   sortBy?: "compositeScore" | "marginOfSafety" | "ticker";
@@ -104,7 +106,7 @@ export async function appendScreenSnapshot(data: {
 export async function getScreenResults(
   filters: ScreenResultFilters = {},
 ): Promise<ScreenResultRecord[]> {
-  const { screenerIndex, sector, verdict, minCompositeScore, marketCapTier, sortBy = "compositeScore", sortDir = "desc", limit = 500 } = filters;
+  const { screenerIndex, sector, verdict, verdicts, minCompositeScore, marketCapTier, sortBy = "compositeScore", sortDir = "desc", limit = 500 } = filters;
 
   const marketCapRange = marketCapTier ? MARKET_CAP_RANGES[marketCapTier] : undefined;
 
@@ -112,7 +114,11 @@ export async function getScreenResults(
     where: {
       ...(screenerIndex ? { screenerIndex } : {}),
       ...(sector ? { sector } : {}),
-      ...(verdict ? { verdictLabel: verdict } : {}),
+      ...(verdicts && verdicts.length > 0
+        ? { verdictLabel: { in: verdicts } }
+        : verdict
+          ? { verdictLabel: verdict }
+          : {}),
       ...(minCompositeScore !== undefined ? { compositeScore: { gte: minCompositeScore } } : {}),
       ...(marketCapRange
         ? {
