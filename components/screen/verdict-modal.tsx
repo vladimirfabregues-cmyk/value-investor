@@ -5,6 +5,8 @@ import Link from "next/link";
 import { AlertTriangle, ArrowRight, ExternalLink, Loader2 } from "lucide-react";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { describeValuationGap } from "@/lib/finance/valuation-gap";
+import { CAP_LABELS } from "@/lib/finance/verdict-explanation";
 import type { ScreenResultRecord } from "@/lib/db/screen-queries";
 import type { NewsArticle } from "@/app/api/screen/news/route";
 
@@ -34,18 +36,6 @@ const VERDICT_CONFIG: Record<string, { label: string; dot: string; text: string;
     label: "Avoid", dot: "bg-red-400", text: "text-red-300", chip: "border-red-500/25 bg-red-500/10",
     summary: "Weak fundamentals, poor financial health, or trading at a premium to intrinsic value.",
   },
-};
-
-const CAP_LABELS: Record<string, string> = {
-  peak_earnings: "Earnings at cyclical peak",
-  declining_revenue: "Revenue in structural decline",
-  microcap_illiquidity: "Micro-cap — screen price unrealisable in size",
-  recent_ipo: "Listed under 2 years",
-  heavy_dilution: "Heavy share issuance (>8%/yr)",
-  poor_earnings_quality: "Earnings not backed by operating cash",
-  unsustainable_dividend: "Dividend exceeds earnings",
-  insufficient_data_quality: "Too many data gaps",
-  uncorroborated_valuation: "Single-model valuation, no corroboration",
 };
 
 function band(score: number): { label: string; color: string } {
@@ -105,6 +95,8 @@ export function VerdictModal({ row, children }: VerdictModalProps) {
   const cfg = VERDICT_CONFIG[row.verdictLabel] ?? VERDICT_CONFIG.AVOID;
   const compositeBand = band(row.compositeScore);
   const caps = row.verdictCaps ? row.verdictCaps.split(",") : [];
+  // Negative gaps are premiums, not negative margins of safety.
+  const gap = describeValuationGap(row.marginOfSafety);
 
   const [news, setNews] = useState<NewsArticle[] | null>(null);
   const [newsLoading, setNewsLoading] = useState(false);
@@ -191,10 +183,12 @@ export function VerdictModal({ row, children }: VerdictModalProps) {
             </div>
             <div className="mt-4 flex items-center justify-between border-t border-white/[0.06] pt-3">
               <span className="text-xs text-muted-foreground" title="Versus the sector-appropriate intrinsic value model">
-                Margin of Safety
+                {gap.label}
               </span>
-              <span className={`font-display text-lg tabular-nums ${row.marginOfSafety !== null && row.marginOfSafety >= 0 ? "text-emerald-300" : "text-red-300"}`}>
-                {fmtPct(row.marginOfSafety)}
+              <span className={`font-display text-lg tabular-nums ${
+                gap.tone === "positive" ? "text-emerald-300" : gap.tone === "negative" ? "text-red-300" : "text-foreground"
+              }`}>
+                {gap.display}
               </span>
             </div>
             <p className="mt-2 text-[10px] leading-4 text-muted-foreground/60">

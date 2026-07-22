@@ -7,6 +7,8 @@ import { AlertTriangle, Clock, Play, RefreshCw, TrendingUp, TrendingDown, X } fr
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { VerdictModal } from "@/components/screen/verdict-modal";
+import { describeValuationGap } from "@/lib/finance/valuation-gap";
+import { CAP_LABELS } from "@/lib/finance/verdict-explanation";
 import type { ScreenResultRecord, ScreenResultFilters } from "@/lib/db/screen-queries";
 import type { BatchScreenComplete, BatchScreenProgress } from "@/lib/screener/batch";
 
@@ -51,18 +53,6 @@ const VERDICT_CONFIG: Record<string, { label: string; dot: string; text: string;
   UNKNOWN:    { label: "Error",      dot: "bg-zinc-500",    text: "text-zinc-400",    chip: "border-zinc-500/30 bg-zinc-500/10" },
 };
 
-const CAP_LABELS: Record<string, string> = {
-  peak_earnings: "Earnings at cyclical peak",
-  declining_revenue: "Revenue in structural decline",
-  microcap_illiquidity: "Micro-cap — screen price unrealisable in size",
-  recent_ipo: "Listed under 2 years",
-  heavy_dilution: "Heavy share issuance (>8%/yr)",
-  poor_earnings_quality: "Earnings not backed by operating cash",
-  unsustainable_dividend: "Dividend exceeds earnings",
-  insufficient_data_quality: "Too many data gaps",
-  uncorroborated_valuation: "Single-model valuation, no corroboration",
-};
-
 function CapFlags({ caps }: { caps: string | null }) {
   if (!caps) return null;
   const list = caps.split(",");
@@ -101,12 +91,19 @@ function ScoreBar({ value }: { value: number }) {
 }
 
 function MosBadge({ value }: { value: number | null | undefined }) {
-  if (value == null) return <span className="text-xs text-muted-foreground">—</span>;
-  const positive = value >= 0;
+  // Never render a negative "margin of safety" — above estimated value is a premium.
+  const gap = describeValuationGap(value);
+  if (gap.magnitudePct === null) return <span className="text-xs text-muted-foreground">—</span>;
+  const isPremium = gap.kind === "premium";
   return (
-    <span className={`inline-flex items-center justify-end gap-1 text-xs font-semibold tabular-nums ${positive ? "text-emerald-300" : "text-red-300/90"}`}>
-      {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-      {positive ? "+" : ""}{value.toFixed(1)}%
+    <span
+      title={gap.kind === "margin" ? `${gap.display} margin of safety` : isPremium ? `${gap.display} premium to estimated value` : "Priced at estimated value"}
+      className={`inline-flex items-center justify-end gap-1 text-xs font-semibold tabular-nums ${
+        gap.tone === "positive" ? "text-emerald-300" : gap.tone === "negative" ? "text-red-300/90" : "text-muted-foreground"
+      }`}
+    >
+      {gap.tone === "positive" ? <TrendingUp className="h-3 w-3" aria-hidden="true" /> : isPremium ? <TrendingDown className="h-3 w-3" aria-hidden="true" /> : null}
+      {isPremium ? `${gap.display} premium` : gap.display}
     </span>
   );
 }
@@ -553,11 +550,11 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                     <th className="px-4 py-3 font-medium">Company</th>
                     <th className="px-4 py-3 font-medium">Sector</th>
                     <th className="px-4 py-3 font-medium">Verdict</th>
-                    <th className="px-4 py-3 font-medium">Composite</th>
-                    <th className="px-4 py-3 text-right font-medium" title="Margin of safety vs sector-appropriate intrinsic value">MoS</th>
-                    <th className="px-3 py-3 text-right font-medium" title="Valuation score">Val</th>
-                    <th className="px-3 py-3 text-right font-medium" title="Financial health score">Hlth</th>
-                    <th className="px-3 py-3 text-right font-medium" title="Business quality score">Qual</th>
+                    <th className="px-4 py-3 font-medium">Overall score</th>
+                    <th className="px-4 py-3 text-right font-medium" title="Margin of safety, or premium when price exceeds estimated value">Margin of safety</th>
+                    <th className="px-3 py-3 text-right font-medium" title="Valuation score out of 100">Valuation</th>
+                    <th className="px-3 py-3 text-right font-medium" title="Financial health score out of 100">Financial health</th>
+                    <th className="px-3 py-3 text-right font-medium" title="Business quality score out of 100">Business quality</th>
                     <th className="px-4 py-3 text-right font-medium" title="P/E · ▼ below sector median · ▲ above">P/E</th>
                     <th className="px-4 py-3 text-right font-medium">Price</th>
                   </tr>

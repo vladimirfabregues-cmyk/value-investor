@@ -3,6 +3,7 @@ import { Scale } from "lucide-react";
 import { MetricRow } from "@/components/analysis/metric-row";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatPercent } from "@/lib/utils/format";
+import { describeValuationGap } from "@/lib/finance/valuation-gap";
 import type { ValueInvestingAnalysis } from "@/types/analysis";
 
 export function IntrinsicValueCard({
@@ -48,7 +49,7 @@ export function IntrinsicValueCard({
           />
           <MetricRow
             label="Margin Of Safety"
-            value={formatPercent(analysis.intrinsic_value.margin_of_safety_pct)}
+            value={describeValuationGap(analysis.intrinsic_value.margin_of_safety_pct).display}
           />
         </div>
 

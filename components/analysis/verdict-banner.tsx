@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { verdictClasses } from "@/lib/utils/format";
 import { formatCurrency, formatPercent } from "@/lib/utils/format";
+import { describeValuationGap } from "@/lib/finance/valuation-gap";
 import type { ValueInvestingAnalysis } from "@/types/analysis";
 
 interface VerdictBannerProps {
@@ -49,18 +50,40 @@ export function VerdictBanner({ analysis }: VerdictBannerProps) {
                 )}
               </div>
             </div>
+            {(() => {
+              // A negative margin of safety is a contradiction — show it as a premium.
+              const gap = describeValuationGap(analysis.intrinsic_value.margin_of_safety_pct);
+              return (
+                <div className="rounded-2xl border border-white/8 bg-black/15 p-4">
+                  <div className="text-xs uppercase tracking-[0.18em] text-zinc-400">
+                    {gap.label}
+                  </div>
+                  <div
+                    className={`mt-3 text-2xl font-semibold tabular-nums ${
+                      gap.tone === "positive"
+                        ? "text-emerald-300"
+                        : gap.tone === "negative"
+                          ? "text-red-300"
+                          : "text-foreground"
+                    }`}
+                  >
+                    {gap.display}
+                  </div>
+                </div>
+              );
+            })()}
             <div className="rounded-2xl border border-white/8 bg-black/15 p-4">
               <div className="text-xs uppercase tracking-[0.18em] text-zinc-400">
-                Margin Of Safety
+                Data confidence
               </div>
-              <div className="mt-3 text-2xl font-semibold text-foreground">
-                {formatPercent(analysis.intrinsic_value.margin_of_safety_pct)}
-              </div>
-            </div>
-            <div className="rounded-2xl border border-white/8 bg-black/15 p-4">
-              <div className="text-xs uppercase tracking-[0.18em] text-zinc-400">Confidence</div>
-              <div className="mt-3 text-2xl font-semibold text-foreground">
+              <div
+                className="mt-3 text-2xl font-semibold tabular-nums text-foreground"
+                title="Reflects how complete and consistent the underlying data is — not a probability of investment success."
+              >
                 {formatPercent(analysis.final_verdict.confidence_pct)}
+              </div>
+              <div className="mt-1 text-[10px] leading-4 text-zinc-500">
+                Data completeness, not success odds
               </div>
             </div>
           </div>

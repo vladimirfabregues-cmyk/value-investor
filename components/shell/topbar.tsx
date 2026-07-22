@@ -14,10 +14,11 @@ interface TopbarProps {
   history: SavedAnalysisSummary[];
 }
 
+// British English labels; routes deliberately unchanged so saved links keep working.
 const NAV = [
-  { href: "/", label: "Analyze" },
-  { href: "/screen", label: "Screener" },
-  { href: "/compare", label: "Compare" },
+  { href: "/", label: "Analyse stock" },
+  { href: "/screen", label: "Market Screener" },
+  { href: "/compare", label: "Compare stocks" },
   { href: "/about", label: "About" },
 ] as const;
 
@@ -57,14 +58,18 @@ export function Topbar({ history }: TopbarProps) {
           </Link>
         </div>
 
-        {/* Own full-width row on mobile so four items never force horizontal page scroll */}
-        <nav className="order-3 flex w-full items-center gap-1 overflow-x-auto rounded-full border border-white/[0.07] bg-white/[0.03] p-1 sm:order-none sm:w-auto sm:overflow-visible">
+        {/* Own full-width row on mobile so the items never force horizontal page scroll */}
+        <nav
+          aria-label="Primary"
+          className="order-3 flex w-full items-center gap-1 overflow-x-auto rounded-full border border-white/[0.07] bg-white/[0.03] p-1 sm:order-none sm:w-auto sm:overflow-visible"
+        >
           {NAV.map(({ href, label }) => {
             const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
             return (
               <Link
                 key={href}
                 href={href}
+                aria-current={active ? "page" : undefined}
                 className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors sm:px-4 ${
                   active
                     ? "bg-primary/15 text-primary shadow-[inset_0_0_0_1px_rgba(181,148,88,0.35)]"

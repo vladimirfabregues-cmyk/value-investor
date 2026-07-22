@@ -1,6 +1,8 @@
 import { getFinanceProvider } from "@/lib/finance/mock-provider";
 import { FinanceProviderError } from "@/lib/finance/provider";
 import { calculateValueMetrics } from "@/lib/finance/scoring";
+import { buildVerdictExplanation } from "@/lib/finance/verdict-explanation";
+import { describeValuationGap } from "@/lib/finance/valuation-gap";
 import type { ValueMetricsResult } from "@/types/finance";
 import type { ValueInvestingAnalysis, VerdictLabel } from "@/types/analysis";
 
@@ -99,9 +101,15 @@ function intrinsicValueSummary(m: ValueMetricsResult): string {
     return "Intrinsic value could not be estimated due to insufficient earnings or cash flow data.";
   }
 
-  const mosStr = margin_of_safety_pct !== null
-    ? `a margin of safety of ${fmtPct(margin_of_safety_pct)}`
-    : "an indeterminate margin of safety";
+  const gap = describeValuationGap(margin_of_safety_pct);
+  const mosStr =
+    gap.kind === "margin"
+      ? `a margin of safety of ${gap.display}`
+      : gap.kind === "premium"
+        ? `a ${gap.display} premium to estimated value`
+        : gap.magnitudePct === null
+          ? "an indeterminate margin of safety"
+          : "a price at roughly estimated value";
 
   // Each sector is anchored to the valuation model that best fits its economics.
   let basis: string;
@@ -184,8 +192,14 @@ function buildKeyRisk(m: ValueMetricsResult): string {
 
 function buildOneLineVerdict(m: ValueMetricsResult): string {
   const label = m.suggested_verdict;
-  const mos = m.intrinsic_value.margin_of_safety_pct;
-  const mosStr = mos !== null ? ` (${mos >= 0 ? "+" : ""}${fmtPct(mos)} MoS)` : "";
+  const gap = describeValuationGap(m.intrinsic_value.margin_of_safety_pct);
+  // Never render a negative "margin of safety" — above estimated value is a premium.
+  const mosStr =
+    gap.kind === "margin"
+      ? ` (${gap.display} margin of safety)`
+      : gap.kind === "premium"
+        ? ` (${gap.display} premium to estimated value)`
+        : "";
   const map: Record<VerdictLabel, string> = {
     STRONG_BUY: `${m.company_name} is attractively priced with strong fundamentals${mosStr}.`,
     BUY: `${m.company_name} offers a reasonable margin of safety with solid quality${mosStr}.`,
@@ -286,6 +300,7 @@ export async function analyzeTicker(
       one_line_verdict: buildOneLineVerdict(m),
       reasoning: buildReasoning(m),
     },
+    verdict_explanation: buildVerdictExplanation(m),
     sources: [
       {
         title: "Yahoo Finance (yahoo-finance2)",

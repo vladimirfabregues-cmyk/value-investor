@@ -11,6 +11,7 @@ import { SourcesCard } from "@/components/analysis/sources-card";
 import { ThesisCard } from "@/components/analysis/thesis-card";
 import { ValuationCard } from "@/components/analysis/valuation-card";
 import { VerdictBanner } from "@/components/analysis/verdict-banner";
+import { WhyThisVerdict } from "@/components/analysis/why-this-verdict";
 import { AppShell } from "@/components/shell/app-shell";
 import { TickerSearchForm } from "@/components/ticker/ticker-search-form";
 import { Badge } from "@/components/ui/badge";
@@ -187,6 +188,9 @@ export function HomeView({
         {analysis ? (
           <div className="space-y-6">
             <VerdictBanner analysis={analysis} />
+            {analysis.verdict_explanation && (
+              <WhyThisVerdict explanation={analysis.verdict_explanation} />
+            )}
             <ValuationCard analysis={analysis} />
             <FinancialHealthCard analysis={analysis} />
             <BusinessQualityCard analysis={analysis} />

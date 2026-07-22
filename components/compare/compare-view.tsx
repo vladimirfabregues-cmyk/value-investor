@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { formatCurrency, formatNumber, formatPercent, verdictClasses } from "@/lib/utils/format";
 import type { CompareResponse } from "@/types/api";
+import { describeValuationGap, formatValuationGapShort } from "@/lib/finance/valuation-gap";
 import type { SavedAnalysisRecord, SavedAnalysisSummary } from "@/types/analysis";
 
 interface CompareViewProps {
@@ -205,7 +206,7 @@ export function CompareView({ initialHistory }: CompareViewProps) {
                           Margin Of Safety
                         </div>
                         <div className="mt-3 text-xl font-semibold text-foreground">
-                          {formatPercent(analysis.intrinsic_value.margin_of_safety_pct)}
+                          {describeValuationGap(analysis.intrinsic_value.margin_of_safety_pct).display}
                         </div>
                       </div>
                       <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
@@ -266,11 +267,11 @@ export function CompareView({ initialHistory }: CompareViewProps) {
                   left={`${formatCurrency(
                     left.fullJson.intrinsic_value.blended_intrinsic_value_per_share,
                     left.fullJson.currency,
-                  )} · MOS ${formatPercent(left.fullJson.intrinsic_value.margin_of_safety_pct)}`}
+                  )} · ${formatValuationGapShort(left.fullJson.intrinsic_value.margin_of_safety_pct)}`}
                   right={`${formatCurrency(
                     right.fullJson.intrinsic_value.blended_intrinsic_value_per_share,
                     right.fullJson.currency,
-                  )} · MOS ${formatPercent(right.fullJson.intrinsic_value.margin_of_safety_pct)}`}
+                  )} · ${formatValuationGapShort(right.fullJson.intrinsic_value.margin_of_safety_pct)}`}
                 />
                 <ComparisonCell
                   title="Bull Case"

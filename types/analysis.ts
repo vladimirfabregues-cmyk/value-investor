@@ -1,5 +1,30 @@
 export type VerdictLabel = "STRONG_BUY" | "BUY" | "WATCH" | "HOLD" | "AVOID";
 
+export type CheckStatus = "pass" | "warn" | "fail";
+
+export interface VerdictCheck {
+  name: string;
+  status: CheckStatus;
+  /** Component score out of 100 where one applies */
+  score: number | null;
+  detail: string;
+}
+
+/**
+ * The authoritative record of how a verdict was reached. Built once by
+ * `buildVerdictExplanation`; UI renders it rather than re-deriving verdicts.
+ */
+export interface VerdictExplanation {
+  final_verdict: VerdictLabel;
+  overall_score: number;
+  valuation_method: "dcf" | "nav" | "ddm" | "pbroe";
+  valuation_method_label: string;
+  checks: VerdictCheck[];
+  /** Gates that override the composite score entirely */
+  hard_gates: { name: string; detail: string }[];
+  explanation: string;
+}
+
 export interface AnalysisSource {
   title: string;
   url: string;
@@ -62,6 +87,8 @@ export interface ValueInvestingAnalysis {
     one_line_verdict: string;
     reasoning: string;
   };
+  /** Optional: absent on analyses saved before this field existed */
+  verdict_explanation?: VerdictExplanation;
   sources: AnalysisSource[];
 }
 
