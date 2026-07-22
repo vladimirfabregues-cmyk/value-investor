@@ -6,8 +6,10 @@ import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 
 import { SidebarHistory } from "@/components/shell/sidebar-history";
+import { HistorySkeleton } from "@/components/shell/shell-layout";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { historyLabel } from "@/lib/utils/history-panel";
 import type { SavedAnalysisSummary } from "@/types/analysis";
 
 interface TopbarProps {
@@ -31,14 +33,24 @@ export function Topbar({ history }: TopbarProps) {
         <div className="flex items-center gap-3">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="secondary" size="icon" className="lg:hidden">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Open history</span>
+              <Button
+                variant="secondary"
+                size="icon"
+                className="lg:hidden"
+                aria-label={`Open ${historyLabel(history.length).toLowerCase()}`}
+              >
+                <Menu className="h-5 w-5" aria-hidden="true" />
+                <span className="sr-only">Open {historyLabel(history.length).toLowerCase()}</span>
               </Button>
             </SheetTrigger>
-            <SheetContent className="p-0">
-              <div className="h-full p-6">
-                <Suspense fallback={<div className="text-sm text-muted-foreground">Loading history...</div>}>
+            <SheetContent className="p-0" closeLabel="Close history">
+              {/* Radix requires a title for the dialog's accessible name */}
+              <SheetTitle className="sr-only">{historyLabel(history.length)}</SheetTitle>
+              <SheetDescription className="sr-only">
+                Your saved analyses and verdict snapshots.
+              </SheetDescription>
+              <div className="h-full overflow-y-auto p-6">
+                <Suspense fallback={<HistorySkeleton />}>
                   <SidebarHistory history={history} />
                 </Suspense>
               </div>

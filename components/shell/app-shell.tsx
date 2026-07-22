@@ -1,7 +1,6 @@
-import { Suspense, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import { SidebarHistory } from "@/components/shell/sidebar-history";
-import { Topbar } from "@/components/shell/topbar";
+import { ShellLayout } from "@/components/shell/shell-layout";
 import type { SavedAnalysisSummary } from "@/types/analysis";
 
 interface AppShellProps {
@@ -9,18 +8,10 @@ interface AppShellProps {
   children: ReactNode;
 }
 
+/**
+ * Server wrapper. The collapsible behaviour lives in ShellLayout because it
+ * needs client state; children stay server-rendered and are passed through.
+ */
 export function AppShell({ history, children }: AppShellProps) {
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <aside className="fixed inset-y-0 left-0 hidden w-[320px] border-r border-white/6 bg-[rgba(4,9,18,0.92)] px-6 py-8 lg:block">
-        <Suspense fallback={<div className="text-sm text-muted-foreground">Loading history...</div>}>
-          <SidebarHistory history={history} />
-        </Suspense>
-      </aside>
-      <div className="min-h-screen lg:pl-[320px]">
-        <Topbar history={history} />
-        <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">{children}</main>
-      </div>
-    </div>
-  );
+  return <ShellLayout history={history}>{children}</ShellLayout>;
 }

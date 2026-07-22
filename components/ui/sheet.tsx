@@ -23,10 +23,13 @@ const SheetOverlay = React.forwardRef<
 ));
 SheetOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+const SheetTitle = DialogPrimitive.Title;
+const SheetDescription = DialogPrimitive.Description;
+
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { closeLabel?: string }
+>(({ className, children, closeLabel = "Close", ...props }, ref) => (
   <SheetPortal>
     <SheetOverlay />
     <DialogPrimitive.Content
@@ -38,13 +41,16 @@ const SheetContent = React.forwardRef<
       {...props}
     >
       {children}
-      <SheetClose className="absolute right-4 top-4 rounded-full border border-white/10 p-2 text-muted-foreground transition hover:text-foreground">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
+      <SheetClose
+        aria-label={closeLabel}
+        className="absolute right-4 top-4 rounded-full border border-white/10 p-2 text-muted-foreground transition hover:text-foreground"
+      >
+        <X className="h-4 w-4" aria-hidden="true" />
+        <span className="sr-only">{closeLabel}</span>
       </SheetClose>
     </DialogPrimitive.Content>
   </SheetPortal>
 ));
 SheetContent.displayName = DialogPrimitive.Content.displayName;
 
-export { Sheet, SheetClose, SheetContent, SheetTrigger };
+export { Sheet, SheetClose, SheetContent, SheetDescription, SheetTitle, SheetTrigger };
