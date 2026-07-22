@@ -45,12 +45,22 @@ export function SecuritySearch({
   const [touched, setTouched] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  /** Value written by an explicit pick — must not retrigger the search. */
+  const justSelectedRef = useRef<string | null>(null);
 
   const selectedExchange = exchangeByCode(exchange);
 
   // Debounced lookup, scoped to the chosen market.
   useEffect(() => {
     const query = value.trim();
+
+    // Choosing a suggestion sets the input; without this the list would
+    // immediately reopen on top of the user's completed selection.
+    if (justSelectedRef.current !== null && justSelectedRef.current === query) {
+      justSelectedRef.current = null;
+      return;
+    }
+
     if (!touched || query.length < 1) {
       setResults([]);
       setSearching(false);
@@ -92,8 +102,11 @@ export function SecuritySearch({
   }, []);
 
   function choose(result: SecuritySearchResult) {
+    justSelectedRef.current = result.ticker;
+    abortRef.current?.abort();
     onSelect(result);
     setOpen(false);
+    setSearching(false);
     setActiveIndex(-1);
   }
 
