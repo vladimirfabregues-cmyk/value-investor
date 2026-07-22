@@ -1,7 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { BarChart2 } from "lucide-react";
+import { RecentSearchItem } from "@/components/ticker/recent-search-item";
 
 import { BusinessQualityCard } from "@/components/analysis/business-quality-card";
 import { EdgarFilingsCard } from "@/components/analysis/edgar-filings-card";
@@ -10,14 +13,13 @@ import { IntrinsicValueCard } from "@/components/analysis/intrinsic-value-card";
 import { SourcesCard } from "@/components/analysis/sources-card";
 import { ThesisCard } from "@/components/analysis/thesis-card";
 import { ValuationCard } from "@/components/analysis/valuation-card";
-import { VerdictBanner } from "@/components/analysis/verdict-banner";
+import { AnalysisSummary } from "@/components/analysis/analysis-summary";
+import { HowValuationWorks } from "@/components/analysis/how-valuation-works";
 import { WhyThisVerdict } from "@/components/analysis/why-this-verdict";
 import { AppShell } from "@/components/shell/app-shell";
 import { TickerSearchForm } from "@/components/ticker/ticker-search-form";
 import { DEFAULT_EXCHANGE_CODE, toYahooTicker } from "@/lib/finance/exchanges";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import type { HistoryResponse } from "@/types/api";
 import type { SavedAnalysisRecord, SavedAnalysisSummary, ValueInvestingAnalysis } from "@/types/analysis";
 
@@ -66,14 +68,6 @@ export function HomeView({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [progressStage, setProgressStage] = useState<string | null>(null);
-
-  const heroLabel = useMemo(() => {
-    if (!analysis) {
-      return "Intrinsic value, not hype.";
-    }
-
-    return `${analysis.ticker} analyzed with structured output and deterministic finance math.`;
-  }, [analysis]);
 
   async function refreshHistory() {
     const response = await fetch("/api/history", { cache: "no-store" });
@@ -151,54 +145,38 @@ export function HomeView({
 
   return (
     <AppShell history={history}>
-      <div className="space-y-8">
-        <section className="overflow-hidden rounded-[1.8rem] border border-white/10 bg-hero-grid px-6 py-10 shadow-panel sm:px-8">
-          <div className="max-w-3xl">
-            <Badge className="mb-4">Graham / Buffett Style</Badge>
-            <h1 className="font-display text-5xl leading-none text-foreground sm:text-6xl">
-              Value Investor
-            </h1>
-            <p className="mt-4 max-w-2xl text-lg leading-8 text-zinc-300">
-              A disciplined long-term equity analysis workspace focused on intrinsic value,
-              margin of safety, balance-sheet strength, and downside protection.
-            </p>
-            <p className="mt-6 text-sm uppercase tracking-[0.18em] text-primary">
-              {heroLabel}
-            </p>
-          </div>
-
-          <Separator className="my-8" />
-
-          <TickerSearchForm
-            ticker={ticker}
-            exchange={exchange}
-            isLoading={isLoading}
-            error={error}
-            onTickerChange={setTicker}
-            onExchangeChange={setExchange}
-            onSubmit={handleAnalyze}
-          />
-
-          {isLoading && progressStage ? (
-            <div className="mt-5 flex items-center gap-3">
-              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-              <span className="text-sm text-muted-foreground">{progressStage}</span>
-            </div>
-          ) : null}
-        </section>
-
-        {error ? (
-          <Card className="border-red-500/25 bg-red-500/8">
-            <CardContent className="p-5 text-sm text-red-100">{error}</CardContent>
-          </Card>
-        ) : null}
-
+      <div className="space-y-6">
         {analysis ? (
-          <div className="space-y-6">
-            <VerdictBanner analysis={analysis} />
+          /* ── An analysis exists: the company is the subject of the page ── */
+          <>
+            <AnalysisSummary
+              analysis={analysis}
+              onReanalyse={() => void handleAnalyze()}
+              isReanalysing={isLoading}
+            />
+
             {analysis.verdict_explanation && (
               <WhyThisVerdict explanation={analysis.verdict_explanation} />
             )}
+
+            {/* Search stays available, but no longer dominates */}
+            <details className="rounded-2xl border border-white/[0.07] bg-white/[0.02]">
+              <summary className="cursor-pointer list-none px-5 py-3.5 text-sm font-medium text-foreground/90 [&::-webkit-details-marker]:hidden">
+                Analyse another company
+              </summary>
+              <div className="border-t border-white/[0.06] p-5">
+                <TickerSearchForm
+                  ticker={ticker}
+                  exchange={exchange}
+                  isLoading={isLoading}
+                  error={error}
+                  onTickerChange={setTicker}
+                  onExchangeChange={setExchange}
+                  onSubmit={handleAnalyze}
+                />
+              </div>
+            </details>
+
             <ValuationCard analysis={analysis} />
             <FinancialHealthCard analysis={analysis} />
             <BusinessQualityCard analysis={analysis} />
@@ -206,32 +184,85 @@ export function HomeView({
             <ThesisCard analysis={analysis} />
             <SourcesCard analysis={analysis} />
             <EdgarFilingsCard ticker={analysis.ticker} />
-          </div>
+            <HowValuationWorks />
+          </>
         ) : (
-          <Card>
-            <CardContent className="p-8">
-              <div className="max-w-2xl">
-                <div className="text-xs uppercase tracking-[0.18em] text-primary">
-                  Ready To Analyze
-                </div>
-                <h2 className="mt-3 font-display text-2xl text-foreground">
-                  Enter any ticker for a full conservative valuation.
-                </h2>
-                <p className="mt-4 text-sm leading-7 text-muted-foreground">
-                  Live fundamentals from Yahoo Finance with SEC EDGAR cross-checks. Every company
-                  is valued with the model that fits its economics — discounted cash flow for
-                  operating businesses, justified price-to-book for banks and insurers, NAV for
-                  property and investment trusts, dividend discount for utilities — then gated by
-                  margin-of-safety, balance-sheet, earnings-quality, and cyclicality checks.
-                </p>
-                <p className="mt-4 text-sm leading-7 text-muted-foreground">
-                  Prefer to hunt across whole markets? The{" "}
-                  <a href="/screen" className="font-medium text-primary hover:underline">Screener</a>{" "}
-                  scores ten indices across the US, UK, Europe, and Japan.
-                </p>
+          /* ── No analysis: the search is the page ── */
+          <>
+            <section className="rounded-2xl border border-white/[0.08] bg-hero-grid p-5 shadow-panel sm:p-8">
+              <h1 className="font-display text-4xl leading-tight text-foreground sm:text-5xl">
+                Analyse a stock
+              </h1>
+              <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
+                Estimate intrinsic value, test downside risk, and understand what could make the
+                investment thesis fail.
+              </p>
+
+              <div className="mt-6 max-w-2xl">
+                <TickerSearchForm
+                  ticker={ticker}
+                  exchange={exchange}
+                  isLoading={isLoading}
+                  error={error}
+                  onTickerChange={setTicker}
+                  onExchangeChange={setExchange}
+                  onSubmit={handleAnalyze}
+                />
               </div>
-            </CardContent>
-          </Card>
+
+              {isLoading && progressStage ? (
+                <div className="mt-5 flex items-center gap-3" role="status" aria-live="polite">
+                  <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
+                  <span className="text-sm text-muted-foreground">{progressStage}</span>
+                </div>
+              ) : null}
+            </section>
+
+            {error ? (
+              <Card className="border-red-500/25 bg-red-500/8">
+                <CardContent className="p-5 text-sm text-red-100" role="alert">
+                  {error}
+                </CardContent>
+              </Card>
+            ) : null}
+
+            {/* Continuation actions */}
+            {history.length > 0 && (
+              <section aria-labelledby="recent-heading">
+                <div className="mb-3 flex items-baseline justify-between gap-3">
+                  <h2 id="recent-heading" className="text-sm font-medium text-foreground">
+                    Continue where you left off
+                  </h2>
+                  <span className="text-xs text-muted-foreground">
+                    {history.length} saved {history.length === 1 ? "analysis" : "analyses"}
+                  </span>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {history.slice(0, 6).map((item) => (
+                    <RecentSearchItem key={item.id} item={item} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <Link
+              href="/screen"
+              className="flex items-center justify-between gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-5 py-4 transition hover:border-primary/30"
+            >
+              <span className="flex items-center gap-3">
+                <BarChart2 className="h-4 w-4 text-primary" aria-hidden="true" />
+                <span className="text-sm text-foreground">
+                  Browse the Market Screener
+                  <span className="ml-2 text-muted-foreground">
+                    Ten markets already scored
+                  </span>
+                </span>
+              </span>
+              <span aria-hidden="true" className="text-muted-foreground">→</span>
+            </Link>
+
+            <HowValuationWorks />
+          </>
         )}
       </div>
     </AppShell>

@@ -250,6 +250,7 @@ export async function analyzeTicker(
   return {
     ticker: m.ticker,
     exchange: security.exchange,
+    sector: dataset.sector,
     company_name: m.company_name,
     currency: m.currency,
     current_price: m.current_price,

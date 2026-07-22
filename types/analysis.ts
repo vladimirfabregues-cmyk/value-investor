@@ -36,6 +36,8 @@ export interface ValueInvestingAnalysis {
   /** Exchange code — with `ticker` this forms the security identity.
    *  Optional: absent on analyses saved before exchanges were tracked. */
   exchange?: string;
+  /** GICS sector, for the result header. Optional on older analyses. */
+  sector?: string;
   company_name: string;
   currency: string;
   current_price: number;

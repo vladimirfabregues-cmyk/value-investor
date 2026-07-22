@@ -125,6 +125,7 @@ export const valueInvestingAnalysisSchema = z
       .strict(),
     // Optional: absent on analyses saved before these fields existed
     exchange: z.string().min(1).max(12).optional(),
+    sector: z.string().min(1).max(60).optional(),
     verdict_explanation: verdictExplanationSchema.optional(),
     sources: z.array(analysisSourceSchema),
   })
