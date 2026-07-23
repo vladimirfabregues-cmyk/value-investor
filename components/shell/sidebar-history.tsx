@@ -1,11 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
-  BarChart2,
-  GitCompareArrows,
   History,
   PanelLeftClose,
   Pin,
@@ -16,7 +13,6 @@ import {
 
 import { RecentSearchItem } from "@/components/ticker/recent-search-item";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils/cn";
 import {
@@ -204,21 +200,6 @@ export function SidebarHistory({
             </button>
           )}
         </div>
-      </div>
-
-      <div className="mb-4 flex flex-col gap-2">
-        <Button asChild variant="secondary" className="w-full justify-start">
-          <Link href="/screen">
-            <BarChart2 className="h-4 w-4" aria-hidden="true" />
-            Market Screener
-          </Link>
-        </Button>
-        <Button asChild variant="secondary" className="w-full justify-start">
-          <Link href="/compare">
-            <GitCompareArrows className="h-4 w-4" aria-hidden="true" />
-            Compare stocks
-          </Link>
-        </Button>
       </div>
 
       {history.length > 0 && (

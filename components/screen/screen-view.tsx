@@ -22,6 +22,8 @@ interface ScreenMeta {
   lastRunAt: Date | string | null;
   totalScreened: number;
   totalErrors: number;
+  /** Count per verdict across the whole index, independent of the display filter */
+  verdictCounts?: Record<string, number>;
 }
 
 interface ScreenViewProps {
@@ -377,8 +379,11 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
     ? new Date(meta.lastRunAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })
     : null;
 
+  // Sourced from the index-wide totals in meta, not the (possibly
+  // candidate-filtered) rows on screen — so Hold and Avoid show their real
+  // counts rather than 0 when the view is limited to actionable candidates.
   const verdictCounts = VERDICTS.reduce<Record<string, number>>((acc, v) => {
-    acc[v] = allResults.filter((r) => r.verdictLabel === v).length;
+    acc[v] = meta.verdictCounts?.[v] ?? 0;
     return acc;
   }, {});
 
@@ -491,7 +496,9 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
       )}
 
       {/* ── Verdict summary (clickable) ── */}
-      {allResults.length > 0 && (
+      {/* Shown whenever the index has been screened, so the full verdict
+          distribution (incl. Hold/Avoid) is visible even in candidates-only view. */}
+      {meta.totalScreened > 0 && (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           {VERDICTS.map((v) => {
             const cfg = VERDICT_CONFIG[v];

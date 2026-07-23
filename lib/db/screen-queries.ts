@@ -142,17 +142,34 @@ export async function getScreenResultsCount(): Promise<number> {
   return prisma.screenResult.count({ where: { errorMessage: null } });
 }
 
-export async function getScreenMeta(screenerIndex?: string): Promise<{ lastRunAt: Date | null; totalScreened: number; totalErrors: number }> {
+export async function getScreenMeta(screenerIndex?: string): Promise<{
+  lastRunAt: Date | null;
+  totalScreened: number;
+  totalErrors: number;
+  /** Count per verdict for the whole index, independent of any display filter */
+  verdictCounts: Record<string, number>;
+}> {
   const where = screenerIndex ? { screenerIndex } : {};
-  const [latest, totalScreened, totalErrors] = await Promise.all([
+  const [latest, totalScreened, totalErrors, grouped] = await Promise.all([
     prisma.screenResult.findFirst({ where, orderBy: { screenerAt: "desc" } }),
     prisma.screenResult.count({ where: { ...where, errorMessage: null } }),
     prisma.screenResult.count({ where: { ...where, NOT: { errorMessage: null } } }),
+    // Grouped over the full screened universe — so Hold/Avoid still show real
+    // totals when the view is filtered to actionable candidates only.
+    prisma.screenResult.groupBy({
+      by: ["verdictLabel"],
+      where: { ...where, errorMessage: null },
+      _count: { _all: true },
+    }),
   ]);
+
+  const verdictCounts: Record<string, number> = {};
+  for (const row of grouped) verdictCounts[row.verdictLabel] = row._count._all;
 
   return {
     lastRunAt: latest?.screenerAt ?? null,
     totalScreened,
     totalErrors,
+    verdictCounts,
   };
 }
