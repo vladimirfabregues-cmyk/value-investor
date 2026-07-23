@@ -94,6 +94,15 @@ export function ShellLayout({ history, children }: ShellLayoutProps) {
       >
         <Topbar history={history} />
         <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">{children}</main>
+        {/* Persistent, quiet risk disclaimer — present on every page without
+            competing with the analysis itself (§13). */}
+        <footer className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
+          <p className="border-t border-white/[0.06] pt-5 text-xs leading-5 text-muted-foreground">
+            Research tooling, not investment advice. Figures are estimates derived from
+            third-party data (Yahoo Finance, SEC EDGAR) and may be delayed, incomplete, or
+            inaccurate. Verify independently before making any investment decision.
+          </p>
+        </footer>
       </div>
     </div>
   );

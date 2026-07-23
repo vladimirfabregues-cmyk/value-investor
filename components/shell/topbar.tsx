@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { Database, Menu } from "lucide-react";
 
 import { SidebarHistory } from "@/components/shell/sidebar-history";
 import { HistorySkeleton } from "@/components/shell/shell-layout";
@@ -94,9 +94,11 @@ export function Topbar({ history }: TopbarProps) {
           })}
         </nav>
 
-        <div className="hidden items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground md:flex">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400/80" />
-          Live data · Yahoo Finance + SEC EDGAR
+        {/* Honest source attribution — no "live"/real-time claim (the Yahoo
+            feed is delayed; per-analysis timing lives in the Data status panel) */}
+        <div className="hidden items-center gap-1.5 text-xs text-muted-foreground md:flex">
+          <Database className="h-3.5 w-3.5" aria-hidden="true" />
+          Yahoo Finance · SEC EDGAR
         </div>
       </div>
     </div>

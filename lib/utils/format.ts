@@ -57,6 +57,24 @@ export function formatAbbreviatedNumber(
   }).format(value);
 }
 
+/** Compact, currency-aware magnitude for chart axes, e.g. "$1.2B", "£420M". */
+export function formatCompactCurrency(
+  value: number | null | undefined,
+  currency = "USD",
+  digits = 1,
+): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return "N/A";
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    notation: "compact",
+    maximumFractionDigits: digits,
+  }).format(value);
+}
+
 export function verdictClasses(verdict: VerdictLabel): string {
   switch (verdict) {
     case "STRONG_BUY":

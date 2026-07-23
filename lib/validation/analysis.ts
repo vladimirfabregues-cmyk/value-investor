@@ -40,6 +40,45 @@ const verdictCheckSchema = z
   })
   .strict();
 
+export const dataStatusSchema = z
+  .object({
+    price_as_of: z.string().min(1),
+    price_timezone: z.string().min(1).optional(),
+    price_state: z.enum(["delayed", "closed", "prepost", "asof"]),
+    income_statement_period: z.string().min(1).optional(),
+    balance_sheet_period: z.string().min(1).optional(),
+    currency: z.string().min(1).max(10),
+    exchange: z.string().min(1).max(12),
+    model_version: z.string().min(1),
+    assumptions: z
+      .object({
+        discount_rate_pct: z.number().finite(),
+        terminal_growth_pct: z.number().finite(),
+        max_growth_cap_pct: z.number().finite(),
+        use_conservative_fcf_basis: z.boolean(),
+      })
+      .strict()
+      .optional(),
+    sources: z.array(z.string().min(1)),
+    edgar_supplemented: z.boolean(),
+    missing_fields: z.array(z.string().min(1)),
+    data_quality_notes: z.array(z.string().min(1)),
+  })
+  .strict();
+
+const nullableFiniteArray = z.array(z.number().finite().nullable());
+
+const analysisSeriesSchema = z
+  .object({
+    period_labels: z.array(z.string().min(1)),
+    revenue: nullableFiniteArray,
+    diluted_eps: nullableFiniteArray,
+    free_cash_flow: nullableFiniteArray,
+    operating_margin_pct: nullableFiniteArray,
+    roic_pct: nullableFiniteArray,
+  })
+  .strict();
+
 const verdictExplanationSchema = z
   .object({
     final_verdict: z.enum(["STRONG_BUY", "BUY", "WATCH", "HOLD", "AVOID"]),
@@ -127,6 +166,8 @@ export const valueInvestingAnalysisSchema = z
     exchange: z.string().min(1).max(12).optional(),
     sector: z.string().min(1).max(60).optional(),
     verdict_explanation: verdictExplanationSchema.optional(),
+    data_status: dataStatusSchema.optional(),
+    series: analysisSeriesSchema.optional(),
     sources: z.array(analysisSourceSchema),
   })
   .strict();
@@ -142,6 +183,7 @@ export const savedAnalysisSummarySchema = z
     confidencePct: z.number().finite().min(0).max(100),
     marginOfSafetyPct: nullableFiniteNumberSchema,
     oneLineVerdict: z.string().min(1),
+    verdictReason: z.string().min(1),
     createdAt: z.string().min(1),
   })
   .strict();

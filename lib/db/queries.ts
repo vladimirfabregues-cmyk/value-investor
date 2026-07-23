@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db/client";
 import { inferExchangeFromTicker, resolveSecurity } from "@/lib/finance/exchanges";
+import { deriveVerdictReason } from "@/lib/history/verdict-reason";
 import {
   savedAnalysisSummarySchema,
   valueInvestingAnalysisSchema,
@@ -22,6 +23,7 @@ function mapSummary(row: {
   confidencePct: number;
   marginOfSafetyPct: number | null;
   oneLineVerdict: string;
+  fullJson: Prisma.JsonValue;
   createdAt: Date;
 }): SavedAnalysisSummary {
   return {
@@ -37,6 +39,9 @@ function mapSummary(row: {
     confidencePct: row.confidencePct,
     marginOfSafetyPct: row.marginOfSafetyPct,
     oneLineVerdict: row.oneLineVerdict,
+    // Read straight from the stored JSON rather than a column: it costs no
+    // migration and, unlike a backfilled column, works for every historic row.
+    verdictReason: deriveVerdictReason(row.fullJson, row.oneLineVerdict),
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -106,6 +111,7 @@ export async function getHistorySummaries(): Promise<SavedAnalysisSummary[]> {
       confidencePct: true,
       marginOfSafetyPct: true,
       oneLineVerdict: true,
+      fullJson: true,
       createdAt: true,
     },
   });
@@ -138,6 +144,40 @@ export async function getAnalysesByIds(ids: string[]): Promise<SavedAnalysisReco
   return rows
     .map(mapRecord)
     .sort((left, right) => (order.get(left.id) ?? 0) - (order.get(right.id) ?? 0));
+}
+
+/**
+ * The most recent analysis of a security, however old.
+ *
+ * Distinct from `findRecentBySecurity`, which exists to serve the analyse
+ * cache and therefore refuses stale results. Here a stale analysis is exactly
+ * what the caller wants: the Compare page needs to know whether this company
+ * has ever been analysed before offering it as a comparison candidate.
+ */
+export async function findLatestSummaryBySecurity(
+  ticker: string,
+  exchange?: string | null,
+): Promise<SavedAnalysisSummary | null> {
+  const security = resolveSecurity(ticker, exchange);
+  const row = await prisma.analysis.findFirst({
+    where: { ticker: security.ticker, exchange: security.exchange },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      ticker: true,
+      exchange: true,
+      companyName: true,
+      analysisDate: true,
+      finalVerdictLabel: true,
+      confidencePct: true,
+      marginOfSafetyPct: true,
+      oneLineVerdict: true,
+      fullJson: true,
+      createdAt: true,
+    },
+  });
+
+  return row ? mapSummary(row) : null;
 }
 
 /**

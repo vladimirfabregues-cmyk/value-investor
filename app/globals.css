@@ -38,6 +38,26 @@
     scroll-behavior: smooth;
   }
 
+  /*
+   * Respect a reduced-motion preference globally (WCAG 2.3.3). Individual
+   * components (e.g. the sticky summary) also gate their own transitions, but
+   * this is the safety net for every animation, transition and smooth scroll
+   * in the app — including the spinners and progress bars.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
   body {
     @apply bg-background text-foreground;
     background-image:

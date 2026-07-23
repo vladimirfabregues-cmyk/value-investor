@@ -119,7 +119,7 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
             hint="Based on data completeness and model agreement"
           />
           <div className="col-span-1 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-3 sm:col-span-3">
-            <dt className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            <dt className="text-xs font-medium text-muted-foreground">
               Valuation model
             </dt>
             <dd className="mt-1 text-sm text-foreground/90">
@@ -131,7 +131,7 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
         {/* Why, and the main risk */}
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
           <div>
-            <h2 className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            <h2 className="text-xs font-semibold text-muted-foreground">
               Why
             </h2>
             <ul className="mt-2 space-y-1.5">
@@ -144,7 +144,7 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
             </ul>
           </div>
           <div>
-            <h2 className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            <h2 className="text-xs font-semibold text-muted-foreground">
               Main risk
             </h2>
             <p className="mt-2 flex gap-2 text-sm leading-6 text-foreground/85">
@@ -193,13 +193,13 @@ function Metric({
 }) {
   return (
     <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-3">
-      <dt className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+      <dt className="text-xs font-medium text-muted-foreground">
         {label}
       </dt>
       <dd className={`mt-1 font-display text-xl tabular-nums ${tone ?? "text-foreground"}`}>
         {value}
       </dd>
-      {hint && <p className="mt-0.5 text-[10px] leading-4 text-muted-foreground/70">{hint}</p>}
+      {hint && <p className="mt-0.5 text-[10px] leading-4 text-muted-foreground">{hint}</p>}
     </div>
   );
 }

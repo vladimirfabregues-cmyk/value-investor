@@ -10,11 +10,10 @@ interface EdgarFilingsCardProps {
   ticker: string;
 }
 
-const FORM_BADGE: Record<string, string> = {
-  "10-K": "bg-blue-500/15 text-blue-400 border-blue-500/25",
-  "10-Q": "bg-violet-500/15 text-violet-400 border-violet-500/25",
-  "8-K": "bg-amber-500/15 text-amber-400 border-amber-500/25",
-};
+// Form type is a category, not a status, so it carries no semantic colour —
+// the label itself distinguishes the forms (§12 palette discipline).
+const FORM_BADGE_CLASS =
+  "border-white/12 bg-white/[0.04] text-muted-foreground";
 
 const DIRECT_LINKS = [
   { label: "All 10-K", form: "10-K" },
@@ -55,7 +54,7 @@ export function EdgarFilingsCard({ ticker }: EdgarFilingsCardProps) {
           <div className="rounded-2xl border border-primary/20 bg-primary/10 p-2 text-primary">
             <FileText className="h-5 w-5" />
           </div>
-          <CardTitle>SEC EDGAR Filings</CardTitle>
+          <CardTitle level={2}>SEC EDGAR filings</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -78,7 +77,7 @@ export function EdgarFilingsCard({ ticker }: EdgarFilingsCardProps) {
           <div className="overflow-hidden rounded-xl border border-white/8">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/6 bg-white/3 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                <tr className="border-b border-white/6 bg-white/3 text-left text-xs font-medium text-muted-foreground">
                   <th className="px-4 py-3">Form</th>
                   <th className="px-4 py-3">Company</th>
                   <th className="px-4 py-3">Filed</th>
@@ -91,7 +90,7 @@ export function EdgarFilingsCard({ ticker }: EdgarFilingsCardProps) {
                   <tr key={i} className="transition-colors hover:bg-white/3">
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${FORM_BADGE[f.formType] ?? "bg-zinc-500/15 text-zinc-400 border-zinc-500/25"}`}
+                        className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${FORM_BADGE_CLASS}`}
                       >
                         {f.formType}
                       </span>

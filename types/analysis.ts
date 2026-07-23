@@ -31,6 +31,67 @@ export interface AnalysisSource {
   used_for: string;
 }
 
+/** The valuation-model inputs actually used, for auditability. */
+export interface DataStatusAssumptions {
+  discount_rate_pct: number;
+  terminal_growth_pct: number;
+  max_growth_cap_pct: number;
+  use_conservative_fcf_basis: boolean;
+}
+
+/**
+ * Auditable provenance for a saved analysis — what the numbers are based on and
+ * when. Replaces vague "live data" claims with a specific, checkable record.
+ *
+ * Optional on `ValueInvestingAnalysis`: analyses saved before this existed have
+ * none, and the mock provider supplies only what its fixtures carry, so every
+ * field the UI renders must tolerate absence.
+ */
+export interface DataStatus {
+  /** ISO timestamp of the market quote (falls back to fetch time) */
+  price_as_of: string;
+  /** IANA zone or short code of the listing exchange */
+  price_timezone?: string;
+  /**
+   * How to read the price: delayed (market open, feed is delayed), closed
+   * (last close), prepost (extended hours), or asof (state unknown).
+   */
+  price_state: "delayed" | "closed" | "prepost" | "asof";
+  /** ISO date of the latest income statement used */
+  income_statement_period?: string;
+  /** ISO date of the latest balance sheet used */
+  balance_sheet_period?: string;
+  currency: string;
+  /** Exchange code (see lib/finance/exchanges.ts) */
+  exchange: string;
+  model_version: string;
+  assumptions?: DataStatusAssumptions;
+  /** Source names, primary first */
+  sources: string[];
+  /** Whether SEC EDGAR was consulted to fill gaps Yahoo left */
+  edgar_supplemented: boolean;
+  /** Human-readable inputs that were unavailable ("None" implied when empty) */
+  missing_fields: string[];
+  /** Material data-quality notes from the valuation engine */
+  data_quality_notes: string[];
+}
+
+/**
+ * Five-year fundamental history for the trend charts (§8), oldest-first. Every
+ * array is aligned to `period_labels` and may contain nulls where a year is
+ * missing. Optional on the analysis: absent on older saves and whenever the
+ * provider returned no usable history, in which case charts show empty states.
+ */
+export interface AnalysisSeries {
+  /** Fiscal-year labels, oldest-first, e.g. ["2021","2022","2023","2024","2025"] */
+  period_labels: string[];
+  revenue: (number | null)[];
+  diluted_eps: (number | null)[];
+  free_cash_flow: (number | null)[];
+  operating_margin_pct: (number | null)[];
+  roic_pct: (number | null)[];
+}
+
 export interface ValueInvestingAnalysis {
   ticker: string;
   /** Exchange code — with `ticker` this forms the security identity.
@@ -94,6 +155,10 @@ export interface ValueInvestingAnalysis {
   };
   /** Optional: absent on analyses saved before this field existed */
   verdict_explanation?: VerdictExplanation;
+  /** Optional: absent on analyses saved before provenance was captured */
+  data_status?: DataStatus;
+  /** Optional: 5-year fundamental history for the trend charts (§8) */
+  series?: AnalysisSeries;
   sources: AnalysisSource[];
 }
 
@@ -108,6 +173,8 @@ export interface SavedAnalysisSummary {
   confidencePct: number;
   marginOfSafetyPct: number | null;
   oneLineVerdict: string;
+  /** Short reason the verdict landed where it did, for dense contexts */
+  verdictReason: string;
   createdAt: string;
 }
 

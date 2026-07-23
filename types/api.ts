@@ -17,6 +17,11 @@ export interface HistoryResponse {
   items: SavedAnalysisSummary[];
 }
 
+/** `null` when the security has never been analysed — a normal answer, not an error. */
+export interface SecurityLookupResponse {
+  analysis: SavedAnalysisSummary | null;
+}
+
 export interface CompareRequest {
   ids: string[];
 }

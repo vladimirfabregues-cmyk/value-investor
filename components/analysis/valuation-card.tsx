@@ -1,35 +1,29 @@
 import { BarChart3 } from "lucide-react";
 
-import { MetricRow } from "@/components/analysis/metric-row";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EvidenceHeader, MetricTable, ScoreHeadline } from "@/components/analysis/evidence";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { formatNumber } from "@/lib/utils/format";
 import type { ValueInvestingAnalysis } from "@/types/analysis";
 
 export function ValuationCard({ analysis }: { analysis: ValueInvestingAnalysis }) {
+  const v = analysis.valuation;
+
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="rounded-2xl border border-primary/20 bg-primary/10 p-2 text-primary">
-            <BarChart3 className="h-5 w-5" />
-          </div>
-          <div>
-            <CardTitle>Valuation</CardTitle>
-            <CardDescription>{analysis.valuation.summary}</CardDescription>
-          </div>
-        </div>
+        <EvidenceHeader icon={<BarChart3 className="h-5 w-5" />} title="Valuation" summary={v.summary} />
       </CardHeader>
-      <CardContent className="grid gap-3 md:grid-cols-2">
-        <MetricRow label="P/E" value={formatNumber(analysis.valuation.pe)} verdict={analysis.valuation.verdict} />
-        <MetricRow label="P/B" value={formatNumber(analysis.valuation.pb)} />
-        <MetricRow label="P/S" value={formatNumber(analysis.valuation.ps)} />
-        <MetricRow label="EV / EBITDA" value={formatNumber(analysis.valuation.ev_ebitda)} />
-        <MetricRow label="Price / FCF" value={formatNumber(analysis.valuation.price_fcf)} />
-        <MetricRow label="Graham Number" value={formatNumber(analysis.valuation.graham_number)} />
-        <MetricRow
-          label="Valuation Score"
-          value={formatNumber(analysis.valuation.valuation_score, 0)}
-          className="md:col-span-2"
+      <CardContent className="space-y-4">
+        <ScoreHeadline label="Valuation score" score={v.valuation_score} qualifier={v.verdict} />
+        <MetricTable
+          entries={[
+            { label: "Price / earnings", value: formatNumber(v.pe) },
+            { label: "Price / book", value: formatNumber(v.pb) },
+            { label: "Price / sales", value: formatNumber(v.ps) },
+            { label: "EV / EBITDA", value: formatNumber(v.ev_ebitda) },
+            { label: "Price / free cash flow", value: formatNumber(v.price_fcf) },
+            { label: "Graham number", value: formatNumber(v.graham_number) },
+          ]}
         />
       </CardContent>
     </Card>

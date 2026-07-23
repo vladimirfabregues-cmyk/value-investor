@@ -33,7 +33,7 @@ export function WhyThisVerdict({ explanation }: WhyThisVerdictProps) {
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              <div className="text-xs font-medium text-muted-foreground">
                 Overall score
               </div>
               <div className="font-display text-3xl tabular-nums text-foreground">
@@ -114,7 +114,7 @@ export function WhyThisVerdict({ explanation }: WhyThisVerdictProps) {
         {/* ── Plain-language summary ── */}
         <div className="mt-5 border-t border-white/[0.06] pt-4">
           <p className="text-sm leading-7 text-muted-foreground">{explanation.explanation}</p>
-          <p className="mt-3 text-xs text-muted-foreground/70">
+          <p className="mt-3 text-xs text-muted-foreground">
             Valuation model: {valuation_method_label}
           </p>
         </div>

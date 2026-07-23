@@ -7,6 +7,7 @@ import { BarChart2 } from "lucide-react";
 import { RecentSearchItem } from "@/components/ticker/recent-search-item";
 
 import { BusinessQualityCard } from "@/components/analysis/business-quality-card";
+import { DataStatusCard } from "@/components/analysis/data-status-card";
 import { EdgarFilingsCard } from "@/components/analysis/edgar-filings-card";
 import { FinancialHealthCard } from "@/components/analysis/financial-health-card";
 import { IntrinsicValueCard } from "@/components/analysis/intrinsic-value-card";
@@ -14,6 +15,8 @@ import { SourcesCard } from "@/components/analysis/sources-card";
 import { ThesisCard } from "@/components/analysis/thesis-card";
 import { ValuationCard } from "@/components/analysis/valuation-card";
 import { AnalysisSummary } from "@/components/analysis/analysis-summary";
+import { TrendsCard } from "@/components/analysis/trends-card";
+import { ValueVsPrice } from "@/components/analysis/value-vs-price";
 import { HowValuationWorks } from "@/components/analysis/how-valuation-works";
 import { ResultSections } from "@/components/analysis/result-sections";
 import { StickySummary } from "@/components/analysis/sticky-summary";
@@ -184,10 +187,22 @@ export function HomeView({
                   content: (
                     <>
                       <IntrinsicValueCard analysis={analysis} />
+                      <ValueVsPrice analysis={analysis} />
                       <ValuationCard analysis={analysis} />
                     </>
                   ),
                 },
+                // Only surface the Trends tab when there is history to chart —
+                // no empty tab on analyses saved before series were captured.
+                ...(analysis.series
+                  ? [
+                      {
+                        id: "trends",
+                        label: "Trends",
+                        content: <TrendsCard analysis={analysis} />,
+                      },
+                    ]
+                  : []),
                 {
                   id: "health",
                   label: "Financial health",
@@ -208,6 +223,7 @@ export function HomeView({
                   label: "Sources and methodology",
                   content: (
                     <>
+                      <DataStatusCard analysis={analysis} />
                       <SourcesCard analysis={analysis} />
                       <EdgarFilingsCard ticker={analysis.ticker} />
                       <HowValuationWorks />

@@ -17,6 +17,12 @@ interface YFPrice {
   longName?: string;
   shortName?: string;
   sharesOutstanding?: number;
+  /** Quote timestamp — Date (revived), ISO string, or epoch seconds/ms */
+  regularMarketTime?: Date | number | string;
+  /** REGULAR | CLOSED | PRE | POST | PREPRE | POSTPOST */
+  marketState?: string;
+  exchangeTimezoneName?: string;
+  exchangeTimezoneShortName?: string;
 }
 
 interface YFFinancialData {
@@ -133,6 +139,25 @@ function safeNum(value: number | null | undefined): number | null {
 function pct(value: number | null | undefined): number | null {
   const v = safeNum(value);
   return v === null ? null : v * 100;
+}
+
+/**
+ * Normalise Yahoo's polymorphic time fields (revived Date, ISO string, or
+ * epoch seconds/ms) to a full ISO timestamp. Returns undefined when unusable
+ * so provenance stays honest rather than showing a bogus "1970" date.
+ */
+function toIsoTimestamp(value: Date | number | string | undefined): string | undefined {
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? undefined : value.toISOString();
+  }
+  if (typeof value === "string") {
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return new Date(value < 1e12 ? value * 1000 : value).toISOString();
+  }
+  return undefined;
 }
 
 /** Pad a series to exactly 5 elements with leading nulls (oldest-first convention). */
@@ -370,6 +395,7 @@ export class YahooFinanceProvider implements FinanceProvider {
     let edgarRevHistory: Array<number | null> | null = null;
     let edgarFcfHistory: Array<number | null> | null = null;
     let edgarEpsHistory: Array<number | null> | null = null;
+    let edgarSupplemented = false;
 
     // FCF is structurally absent for banks/insurers, so a null FCF there is NOT a
     // missing-data signal — gate the FCF condition (and the FCF merge) on the
@@ -384,6 +410,7 @@ export class YahooFinanceProvider implements FinanceProvider {
     if (needsEdgarSupplement) {
       const supp = await fetchEdgarSupplement(normalizedTicker);
       if (supp) {
+        edgarSupplemented = true;
         // Merge snapshot: fill nulls in latest with EDGAR values
         for (const [key, val] of Object.entries(supp.snapshot) as Array<[keyof FinancialSnapshot, number | null]>) {
           // Never inject FCF for sectors where it isn't a meaningful metric
@@ -510,6 +537,14 @@ export class YahooFinanceProvider implements FinanceProvider {
       history_5y,
       as_of_date: new Date().toISOString(),
       source_name: "Yahoo Finance (yahoo-finance2)",
+      provenance: {
+        price_as_of: toIsoTimestamp(price.regularMarketTime),
+        price_timezone: price.exchangeTimezoneName ?? price.exchangeTimezoneShortName,
+        market_state: price.marketState,
+        income_statement_period: toIsoTimestamp(latestFin?.date)?.slice(0, 10),
+        balance_sheet_period: toIsoTimestamp(latestBs?.date)?.slice(0, 10),
+        edgar_supplemented: edgarSupplemented,
+      },
     };
   }
 }

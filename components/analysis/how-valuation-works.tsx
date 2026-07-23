@@ -65,7 +65,7 @@ export function HowValuationWorks() {
           the result.
         </p>
 
-        <p className="text-xs text-muted-foreground/70">
+        <p className="text-xs text-muted-foreground">
           This is research tooling, not investment advice. Figures are estimates from third-party
           data and may be incomplete or wrong.
         </p>

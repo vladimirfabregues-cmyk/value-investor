@@ -62,7 +62,7 @@ function StatTile({ label, value, note }: { label: string; value: string; note?:
     <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-3.5 py-3">
       <div className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
       <div className="mt-1 font-display text-lg tabular-nums text-foreground">{value}</div>
-      {note && <div className="mt-0.5 text-[10px] text-muted-foreground/70">{note}</div>}
+      {note && <div className="mt-0.5 text-[10px] text-muted-foreground">{note}</div>}
     </div>
   );
 }
@@ -137,7 +137,7 @@ export function VerdictModal({ row, children }: VerdictModalProps) {
               <div className="shrink-0 text-right">
                 <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Price</div>
                 <div className="mt-0.5 font-display text-xl tabular-nums text-foreground">
-                  <span className="text-sm text-muted-foreground/70">{row.currency}</span>{" "}
+                  <span className="text-sm text-muted-foreground">{row.currency}</span>{" "}
                   {row.price?.toFixed(2) ?? "—"}
                 </div>
               </div>
@@ -192,7 +192,7 @@ export function VerdictModal({ row, children }: VerdictModalProps) {
                 {gap.display}
               </span>
             </div>
-            <p className="mt-2 text-[10px] leading-4 text-muted-foreground/60">
+            <p className="mt-2 text-[10px] leading-4 text-muted-foreground">
               Component weights are sector-aware; financials, REITs, and utilities are valued on
               justified P/B, NAV, and dividend-discount models respectively rather than FCF.
             </p>

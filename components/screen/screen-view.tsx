@@ -63,8 +63,12 @@ function CapFlags({ caps }: { caps: string | null }) {
       title={`Verdict capped: ${readable}`}
       className="inline-flex cursor-help items-center gap-1 rounded-full border border-amber-500/25 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-300"
     >
-      <AlertTriangle className="h-2.5 w-2.5" />
-      {list.length}
+      <AlertTriangle className="h-2.5 w-2.5" aria-hidden="true" />
+      <span aria-hidden="true">{list.length}</span>
+      {/* The bare count is meaningless to a screen reader; spell it out. */}
+      <span className="sr-only">
+        {list.length} verdict {list.length === 1 ? "cap" : "caps"}: {readable}
+      </span>
     </span>
   );
 }
@@ -427,7 +431,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                       }`}
                     >
                       {label}
-                      <span className={`text-[10px] tabular-nums ${active ? "text-primary/70" : "text-muted-foreground/60"}`}>
+                      <span className={`text-[10px] tabular-nums ${active ? "text-primary" : "text-muted-foreground"}`}>
                         {count}
                       </span>
                     </button>
@@ -463,7 +467,8 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
       {/* ── Candidates summary: actionable names first ── */}
       {allResults.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-primary/[0.05] px-4 py-3">
-          <div>
+          {/* Announce count changes when filters or the market change */}
+          <div role="status" aria-live="polite">
             <p className="text-sm font-medium text-foreground">
               {candidatesOnly
                 ? `${results.length} candidate${results.length === 1 ? "" : "s"} found`
@@ -712,7 +717,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                       <div>
                         <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">Price</dt>
                         <dd className="mt-0.5 tabular-nums text-foreground/85">
-                          <span className="text-muted-foreground/70">{row.currency}</span>{" "}
+                          <span className="text-muted-foreground">{row.currency}</span>{" "}
                           {row.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </dd>
                       </div>
@@ -817,7 +822,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                           <PeVsSectorBadge pe={row.pe} sectorMedian={sectorMedianPe} />
                         </td>
                         <td className="whitespace-nowrap px-4 py-2.5 text-right tabular-nums text-xs text-foreground/85">
-                          <span className="text-muted-foreground/70">{row.currency}</span>{" "}
+                          <span className="text-muted-foreground">{row.currency}</span>{" "}
                           {row.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                       </tr>

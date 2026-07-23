@@ -2,6 +2,8 @@ import { getFinanceProvider } from "@/lib/finance/mock-provider";
 import { FinanceProviderError } from "@/lib/finance/provider";
 import { calculateValueMetrics } from "@/lib/finance/scoring";
 import { buildVerdictExplanation } from "@/lib/finance/verdict-explanation";
+import { buildDataStatus } from "@/lib/finance/data-status";
+import { deriveSeries } from "@/lib/finance/series";
 import { describeValuationGap } from "@/lib/finance/valuation-gap";
 import { resolveSecurity } from "@/lib/finance/exchanges";
 import type { ValueMetricsResult } from "@/types/finance";
@@ -306,6 +308,12 @@ export async function analyzeTicker(
       reasoning: buildReasoning(m),
     },
     verdict_explanation: buildVerdictExplanation(m),
+    data_status: buildDataStatus(dataset, m, security.exchange),
+    series: deriveSeries(
+      dataset.history_5y,
+      dataset.provenance?.income_statement_period,
+      new Date().toISOString(),
+    ),
     sources: [
       {
         title: "Yahoo Finance (yahoo-finance2)",

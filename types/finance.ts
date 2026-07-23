@@ -62,6 +62,25 @@ export interface NormalizedFinancialDataset {
   history_5y: FinancialHistory5Y;
   as_of_date: string;
   source_name: string;
+  /**
+   * Provenance the provider can supply. All optional: older fixtures and the
+   * mock provider omit them, and the data-status builder degrades gracefully to
+   * "not recorded" rather than inventing values.
+   */
+  provenance?: {
+    /** ISO timestamp of the quote itself (Yahoo regularMarketTime), not fetch time */
+    price_as_of?: string;
+    /** IANA zone of the listing exchange, e.g. "America/New_York" */
+    price_timezone?: string;
+    /** Raw Yahoo market state: REGULAR | CLOSED | PRE | POST | PREPRE | POSTPOST */
+    market_state?: string;
+    /** ISO date of the latest annual income statement used */
+    income_statement_period?: string;
+    /** ISO date of the latest balance sheet used */
+    balance_sheet_period?: string;
+    /** True when SEC EDGAR was consulted to fill gaps Yahoo left */
+    edgar_supplemented?: boolean;
+  };
 }
 
 export interface ValueCalculationAssumptions {
