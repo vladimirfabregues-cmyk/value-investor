@@ -125,9 +125,14 @@ describe("calculateValueMetrics", () => {
     expect(result.suggested_verdict).toBe("STRONG_BUY");
   });
 
-  it("includes assumptions in diagnostics", () => {
+  it("includes assumptions in diagnostics, with the size premium applied to the cost of equity", () => {
     const result = calculateValueMetrics(baseDataset);
-    expect(result.diagnostics.assumptions).toEqual(DEFAULT_VALUE_ASSUMPTIONS);
+    // The reported rate is the one actually used: $1B market cap → small-cap
+    // tier → +1.5pp equity-risk premium on the 10% base.
+    expect(result.diagnostics.assumptions).toEqual({
+      ...DEFAULT_VALUE_ASSUMPTIONS,
+      discount_rate_pct: 11.5,
+    });
   });
 
   it("respects custom assumptions", () => {

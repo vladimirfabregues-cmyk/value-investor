@@ -13,7 +13,7 @@ import {
   roundTo,
   scoreBand,
 } from "@/lib/finance/ratios";
-import { classifySecurityType, getSectorProfile } from "@/lib/finance/sector-profile";
+import { classifySecurityType, costOfEquitySizePremiumPct, getSectorProfile } from "@/lib/finance/sector-profile";
 
 export const DEFAULT_VALUE_ASSUMPTIONS: ValueCalculationAssumptions = {
   discount_rate_pct: 10,
@@ -146,11 +146,23 @@ export function calculateValueMetrics(
 
   // Build effective DCF assumptions from sector profile, preserving any
   // explicit caller overrides (i.e. values that differ from defaults).
+  const baseDiscountRatePct =
+    assumptions.discount_rate_pct !== DEFAULT_VALUE_ASSUMPTIONS.discount_rate_pct
+      ? assumptions.discount_rate_pct
+      : profile.discountRatePct;
+  // Size-aware cost of equity: add the small-cap equity-risk premium so a single
+  // sector rate can't flatter ordinary small caps into top-tier valuations
+  // (the justified-P/B model for financials is most sensitive to this). Capped
+  // at a sane ceiling. Rendered in the auditable assumptions, so the shown rate
+  // is the one actually used.
+  const effectiveDiscountRatePct = Math.min(
+    16,
+    (roundTo(baseDiscountRatePct + costOfEquitySizePremiumPct(dataset.market_cap)) ??
+      baseDiscountRatePct),
+  );
+
   const effectiveAssumptions: ValueCalculationAssumptions = {
-    discount_rate_pct:
-      assumptions.discount_rate_pct !== DEFAULT_VALUE_ASSUMPTIONS.discount_rate_pct
-        ? assumptions.discount_rate_pct
-        : profile.discountRatePct,
+    discount_rate_pct: effectiveDiscountRatePct,
     terminal_growth_pct:
       assumptions.terminal_growth_pct !== DEFAULT_VALUE_ASSUMPTIONS.terminal_growth_pct
         ? assumptions.terminal_growth_pct

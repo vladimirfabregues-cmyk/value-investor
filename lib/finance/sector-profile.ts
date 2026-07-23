@@ -170,6 +170,26 @@ const SECTOR_OVERRIDES: Partial<Record<GicsSector, Partial<SectorProfile>>> = {
   },
 };
 
+/**
+ * Equity-risk size premium (percentage points) added to the sector cost of
+ * equity. Smaller companies carry materially higher equity risk, so a single
+ * sector rate flatters small-cap valuations — most acutely for financials,
+ * whose intrinsic value is a justified P/B computed directly on this rate:
+ * a 2pp cut to the rate can lift the fair multiple ~25%.
+ *
+ * Thresholds mirror the screener's market-cap tiers. An unknown size is treated
+ * as small-cap risk rather than assumed large — the conservative default.
+ */
+export function costOfEquitySizePremiumPct(marketCap: number | null | undefined): number {
+  if (marketCap === null || marketCap === undefined || !Number.isFinite(marketCap) || marketCap <= 0) {
+    return 1.5;
+  }
+  if (marketCap < 300_000_000) return 2.0; // micro
+  if (marketCap < 2_000_000_000) return 1.5; // small
+  if (marketCap < 10_000_000_000) return 0.5; // mid
+  return 0; // large / mega
+}
+
 export function getSectorProfile(sector: string | null | undefined): SectorProfile {
   if (!sector) return { ...DEFAULTS };
   const overrides = SECTOR_OVERRIDES[sector as GicsSector];
