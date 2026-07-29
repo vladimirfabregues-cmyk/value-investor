@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { VerdictModal } from "@/components/screen/verdict-modal";
 import { describeValuationGap } from "@/lib/finance/valuation-gap";
 import { inferExchangeFromTicker } from "@/lib/finance/exchanges";
-import { CAP_LABELS } from "@/lib/finance/verdict-explanation";
+import { capLabel } from "@/lib/finance/verdict-explanation-prose";
+import { translateSector } from "@/lib/finance/prose";
 import { useTranslation } from "@/lib/i18n/locale-context";
 import type { ScreenResultRecord, ScreenResultFilters } from "@/lib/db/screen-queries";
 import type { BatchScreenComplete, BatchScreenProgress } from "@/lib/screener/batch";
@@ -67,7 +68,7 @@ function CapFlags({ caps }: { caps: string | null }) {
   const { t } = useTranslation();
   if (!caps) return null;
   const list = caps.split(",");
-  const readable = list.map((c) => CAP_LABELS[c] ?? c).join(" · ");
+  const readable = list.map((c) => capLabel(c, t)).join(" · ");
   return (
     <span
       title={t("screen.cappedTitle", { list: readable })}
@@ -723,7 +724,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                           </span>
                         </div>
                         <p className="mt-0.5 truncate text-sm text-foreground/85">{row.companyName}</p>
-                        <p className="mt-0.5 text-xs text-muted-foreground">{row.sector ?? "—"}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{translateSector(row.sector, t)}</p>
                       </div>
                       <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${cfg.chip} ${cfg.text}`}>
                         <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} aria-hidden="true" />
@@ -767,7 +768,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
 
                     {row.verdictCaps && (
                       <p className="mt-2 text-[11px] leading-4 text-amber-300/90">
-                        {t("screen.capped", { list: row.verdictCaps.split(",").map((c) => CAP_LABELS[c] ?? c).join(" · ") })}
+                        {t("screen.capped", { list: row.verdictCaps.split(",").map((c) => capLabel(c, t)).join(" · ") })}
                       </p>
                     )}
 
@@ -821,7 +822,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                           </Link>
                         </td>
                         <td className="whitespace-nowrap px-4 py-2.5 text-xs text-muted-foreground">
-                          {row.sector ?? "—"}
+                          {translateSector(row.sector, t)}
                         </td>
                         <td className="whitespace-nowrap px-4 py-2.5">
                           <span className="inline-flex items-center gap-1.5">

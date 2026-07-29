@@ -5,20 +5,17 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import {
   DEFAULT_LOCALE,
   LOCALES,
-  translations,
-  type Dict,
   type Locale,
 } from "@/lib/i18n/translations";
+import { makeTranslator, type Translator } from "@/lib/i18n/translate";
 
 const STORAGE_KEY = "vi:locale";
-
-type Vars = Record<string, string | number>;
 
 interface LocaleContextValue {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   /** Translate a dot-path key, e.g. t("nav.analyse"); interpolates {name} vars. */
-  t: (key: string, vars?: Vars) => string;
+  t: Translator;
 }
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
@@ -44,34 +41,6 @@ function writeStoredLocale(locale: Locale): void {
   } catch {
     /* storage full or blocked — the choice just won't persist */
   }
-}
-
-/** Walk a dot path through a nested dictionary; returns undefined on any miss. */
-function lookup(dict: Dict, path: string): string | undefined {
-  let node: string | Dict | undefined = dict;
-  for (const part of path.split(".")) {
-    if (typeof node !== "object" || node === null) return undefined;
-    node = node[part];
-  }
-  return typeof node === "string" ? node : undefined;
-}
-
-function interpolate(template: string, vars?: Vars): string {
-  if (!vars) return template;
-  return template.replace(/\{(\w+)\}/g, (match, name: string) =>
-    name in vars ? String(vars[name]) : match,
-  );
-}
-
-/**
- * Build the translator for a locale. A missing key falls back to English, then
- * to the raw key — so a partial translation never renders `nav.analyse`.
- */
-function makeTranslator(locale: Locale) {
-  return (key: string, vars?: Vars): string => {
-    const value = lookup(translations[locale], key) ?? lookup(translations.en, key) ?? key;
-    return interpolate(value, vars);
-  };
 }
 
 /**

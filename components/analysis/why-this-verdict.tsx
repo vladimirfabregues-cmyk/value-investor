@@ -3,7 +3,8 @@ import { AlertTriangle, Check, Minus, ShieldAlert, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { verdictClasses } from "@/lib/utils/format";
 import { useTranslation } from "@/lib/i18n/locale-context";
-import type { CheckStatus, VerdictExplanation } from "@/types/analysis";
+import { localizeVerdictExplanation } from "@/lib/finance/verdict-explanation-prose";
+import type { CheckStatus, ValueInvestingAnalysis } from "@/types/analysis";
 
 /** Maps a check status to its localisation key (word shown beside the score). */
 const STATUS_WORD_KEY: Record<CheckStatus, string> = {
@@ -13,7 +14,7 @@ const STATUS_WORD_KEY: Record<CheckStatus, string> = {
 };
 
 interface WhyThisVerdictProps {
-  explanation: VerdictExplanation;
+  analysis: ValueInvestingAnalysis;
 }
 
 /** Status is conveyed by icon + word + colour — never colour alone (WCAG 1.4.1). */
@@ -26,8 +27,10 @@ const STATUS_META: Record<
   fail: { icon: X, word: "Failed", text: "text-red-300", ring: "border-red-500/30 bg-red-500/10" },
 };
 
-export function WhyThisVerdict({ explanation }: WhyThisVerdictProps) {
+export function WhyThisVerdict({ analysis }: WhyThisVerdictProps) {
   const { t } = useTranslation();
+  const explanation = localizeVerdictExplanation(analysis, t);
+  if (!explanation) return null;
   const { final_verdict, overall_score, checks, hard_gates, valuation_method_label } = explanation;
 
   return (

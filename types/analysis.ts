@@ -140,12 +140,26 @@ export interface ValueInvestingAnalysis {
     blended_intrinsic_value_per_share: number | null;
     margin_of_safety_pct: number | null;
     summary: string;
+    /** Per-model estimates and the model chosen; optional on older saves.
+     *  Kept so the result prose can be regenerated in the viewer's language. */
+    nav_value_per_share?: number | null;
+    ddm_value_per_share?: number | null;
+    pbroe_value_per_share?: number | null;
+    normalized_roe_pct?: number | null;
+    intrinsic_method?: "dcf" | "nav" | "ddm" | "pbroe";
   };
   thesis: {
     bull_case: string[];
     bear_case: string[];
     red_flags: string[];
     key_risk: string;
+  };
+  /** Risk flags that drive some thesis/risk lines; optional on older saves.
+   *  Present so those lines regenerate faithfully in the viewer's language. */
+  diagnostics?: {
+    severe_balance_sheet_weakness: boolean;
+    weak_business_profile: boolean;
+    value_trap_risk: boolean;
   };
   final_verdict: {
     label: VerdictLabel;

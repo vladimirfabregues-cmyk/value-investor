@@ -178,7 +178,7 @@ export function HomeView({
                   id: "overview",
                   label: t("analysis.tabs.overview"),
                   content: analysis.verdict_explanation ? (
-                    <WhyThisVerdict explanation={analysis.verdict_explanation} />
+                    <WhyThisVerdict analysis={analysis} />
                   ) : (
                     <ThesisCard analysis={analysis} />
                   ),

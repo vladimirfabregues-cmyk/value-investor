@@ -3,6 +3,7 @@ import { AlertTriangle, ShieldAlert, TrendingUp } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/lib/i18n/locale-context";
+import { useAnalysisProse } from "@/components/analysis/use-analysis-prose";
 import type { ValueInvestingAnalysis } from "@/types/analysis";
 
 function BulletList({
@@ -39,6 +40,7 @@ function BulletList({
 
 export function ThesisCard({ analysis }: { analysis: ValueInvestingAnalysis }) {
   const { t } = useTranslation();
+  const prose = useAnalysisProse(analysis);
   return (
     <Card>
       <CardHeader>
@@ -48,23 +50,23 @@ export function ThesisCard({ analysis }: { analysis: ValueInvestingAnalysis }) {
         <div className="grid gap-4 xl:grid-cols-3">
           <BulletList
             title={t("analysis.thesis.bull")}
-            items={analysis.thesis.bull_case}
+            items={prose.bullCase}
             icon={<TrendingUp className="h-4 w-4 text-emerald-300" aria-hidden="true" />}
           />
           <BulletList
             title={t("analysis.thesis.bear")}
-            items={analysis.thesis.bear_case}
+            items={prose.bearCase}
             icon={<AlertTriangle className="h-4 w-4 text-amber-300" aria-hidden="true" />}
           />
           <BulletList
             title={t("analysis.thesis.redFlags")}
-            items={analysis.thesis.red_flags}
+            items={prose.redFlags}
             icon={<ShieldAlert className="h-4 w-4 text-red-300" aria-hidden="true" />}
           />
         </div>
         <div className="rounded-2xl border border-primary/18 bg-primary/10 p-5">
           <h3 className="text-sm font-semibold text-primary">{t("analysis.thesis.keyRisk")}</h3>
-          <p className="mt-2 max-w-prose text-sm leading-7 text-zinc-300">{analysis.thesis.key_risk}</p>
+          <p className="mt-2 max-w-prose text-sm leading-7 text-zinc-300">{prose.keyRisk}</p>
         </div>
       </CardContent>
     </Card>

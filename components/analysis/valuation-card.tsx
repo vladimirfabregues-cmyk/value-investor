@@ -4,19 +4,22 @@ import { EvidenceHeader, MetricTable, ScoreHeadline } from "@/components/analysi
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { formatNumber } from "@/lib/utils/format";
 import { useTranslation } from "@/lib/i18n/locale-context";
+import { useAnalysisProse } from "@/components/analysis/use-analysis-prose";
+import { translateBand } from "@/lib/finance/prose";
 import type { ValueInvestingAnalysis } from "@/types/analysis";
 
 export function ValuationCard({ analysis }: { analysis: ValueInvestingAnalysis }) {
   const { t } = useTranslation();
+  const prose = useAnalysisProse(analysis);
   const v = analysis.valuation;
 
   return (
     <Card>
       <CardHeader>
-        <EvidenceHeader icon={<BarChart3 className="h-5 w-5" />} title={t("analysis.evidence.valuationTitle")} summary={v.summary} />
+        <EvidenceHeader icon={<BarChart3 className="h-5 w-5" />} title={t("analysis.evidence.valuationTitle")} summary={prose.valuationSummary} />
       </CardHeader>
       <CardContent className="space-y-4">
-        <ScoreHeadline label={t("analysis.evidence.valuationScore")} score={v.valuation_score} qualifier={v.verdict} />
+        <ScoreHeadline label={t("analysis.evidence.valuationScore")} score={v.valuation_score} qualifier={translateBand(v.verdict, t)} />
         <MetricTable
           entries={[
             { label: t("analysis.evidence.metrics.pe"), value: formatNumber(v.pe) },

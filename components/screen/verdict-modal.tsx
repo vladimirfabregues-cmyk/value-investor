@@ -7,7 +7,8 @@ import { AlertTriangle, ArrowRight, ExternalLink, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { describeValuationGap } from "@/lib/finance/valuation-gap";
 import { inferExchangeFromTicker } from "@/lib/finance/exchanges";
-import { CAP_LABELS } from "@/lib/finance/verdict-explanation";
+import { capLabel } from "@/lib/finance/verdict-explanation-prose";
+import { translateSector } from "@/lib/finance/prose";
 import { useTranslation } from "@/lib/i18n/locale-context";
 import type { ScreenResultRecord } from "@/lib/db/screen-queries";
 import type { NewsArticle } from "@/app/api/screen/news/route";
@@ -128,7 +129,7 @@ export function VerdictModal({ row, children }: VerdictModalProps) {
                 </div>
                 <p className="mt-1 truncate text-sm text-foreground/85">{row.companyName}</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {row.sector ?? "—"} · {row.screenerIndex}
+                  {translateSector(row.sector, t)} · {row.screenerIndex}
                 </p>
               </div>
               <div className="shrink-0 text-right">
@@ -153,7 +154,7 @@ export function VerdictModal({ row, children }: VerdictModalProps) {
                   className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/25 bg-amber-500/[0.08] px-2.5 py-1 text-[11px] font-medium text-amber-200/90"
                 >
                   <AlertTriangle className="h-3 w-3 text-amber-400" />
-                  {CAP_LABELS[c] ?? c}
+                  {capLabel(c, t)}
                 </span>
               ))}
             </div>

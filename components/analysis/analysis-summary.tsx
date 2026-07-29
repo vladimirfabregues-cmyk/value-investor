@@ -9,6 +9,8 @@ import { buildValuationRange } from "@/lib/finance/valuation-range";
 import { formatCurrency } from "@/lib/utils/format";
 import { formatIsoDate } from "@/lib/utils/dates";
 import { useTranslation } from "@/lib/i18n/locale-context";
+import { useAnalysisProse } from "@/components/analysis/use-analysis-prose";
+import { translateSector } from "@/lib/finance/prose";
 import type { ValueInvestingAnalysis } from "@/types/analysis";
 
 interface AnalysisSummaryProps {
@@ -35,6 +37,7 @@ function confidenceBand(pct: number): { key: string; tone: string } {
 
 export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: AnalysisSummaryProps) {
   const { t } = useTranslation();
+  const prose = useAnalysisProse(analysis);
   const verdict = VERDICT_STYLE[analysis.final_verdict.label] ?? VERDICT_STYLE.HOLD;
   const exchange = exchangeByCode(analysis.exchange);
   const gap = describeValuationGap(analysis.intrinsic_value.margin_of_safety_pct);
@@ -50,8 +53,8 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
   const confidence = confidenceBand(analysis.final_verdict.confidence_pct);
   const currency = analysis.currency;
 
-  // Drivers come from the computed thesis, not re-derived here.
-  const drivers = analysis.thesis.bull_case.slice(0, 3);
+  // Drivers come from the computed thesis, regenerated in the viewer's language.
+  const drivers = prose.bullCase.slice(0, 3);
 
   return (
     <section
@@ -71,7 +74,7 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
           {analysis.sector && (
             <>
               <span aria-hidden="true">·</span>
-              <span>{analysis.sector}</span>
+              <span>{translateSector(analysis.sector, t)}</span>
             </>
           )}
           <span aria-hidden="true">·</span>
@@ -133,7 +136,9 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
               {t("analysis.decision.valuationModel")}
             </dt>
             <dd className="mt-1 text-sm text-foreground/90">
-              {analysis.verdict_explanation?.valuation_method_label ?? "Discounted cash flow"}
+              {analysis.verdict_explanation
+                ? t(`methods.${analysis.verdict_explanation.valuation_method}`)
+                : t("methods.dcf")}
             </dd>
           </div>
         </dl>
@@ -159,7 +164,7 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
             </h2>
             <p className="mt-2 flex gap-2 text-sm leading-6 text-foreground/85">
               <AlertTriangle className="mt-1 h-3.5 w-3.5 shrink-0 text-amber-400" aria-hidden="true" />
-              {analysis.thesis.key_risk}
+              {prose.keyRisk}
             </p>
           </div>
         </div>

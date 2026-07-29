@@ -144,6 +144,12 @@ export const valueInvestingAnalysisSchema = z
         blended_intrinsic_value_per_share: nullableFiniteNumberSchema,
         margin_of_safety_pct: nullableFiniteNumberSchema,
         summary: z.string().min(1),
+        // Optional per-model detail, kept so result prose can be regenerated.
+        nav_value_per_share: nullableFiniteNumberSchema.optional(),
+        ddm_value_per_share: nullableFiniteNumberSchema.optional(),
+        pbroe_value_per_share: nullableFiniteNumberSchema.optional(),
+        normalized_roe_pct: nullableFiniteNumberSchema.optional(),
+        intrinsic_method: z.enum(["dcf", "nav", "ddm", "pbroe"]).optional(),
       })
       .strict(),
     thesis: z
@@ -154,6 +160,14 @@ export const valueInvestingAnalysisSchema = z
         key_risk: z.string().min(1),
       })
       .strict(),
+    diagnostics: z
+      .object({
+        severe_balance_sheet_weakness: z.boolean(),
+        weak_business_profile: z.boolean(),
+        value_trap_risk: z.boolean(),
+      })
+      .strict()
+      .optional(),
     final_verdict: z
       .object({
         label: z.enum(["STRONG_BUY", "BUY", "WATCH", "HOLD", "AVOID"]),

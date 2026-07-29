@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils/cn";
 import { formatCurrency } from "@/lib/utils/format";
 import { describeValuationGap } from "@/lib/finance/valuation-gap";
 import { useTranslation } from "@/lib/i18n/locale-context";
+import { useAnalysisProse } from "@/components/analysis/use-analysis-prose";
 import type { ValueInvestingAnalysis } from "@/types/analysis";
 
 export function IntrinsicValueCard({
@@ -14,6 +15,7 @@ export function IntrinsicValueCard({
   analysis: ValueInvestingAnalysis;
 }) {
   const { t } = useTranslation();
+  const prose = useAnalysisProse(analysis);
   const iv = analysis.intrinsic_value;
   const currency = analysis.currency;
   const gap = describeValuationGap(iv.margin_of_safety_pct);
@@ -27,7 +29,7 @@ export function IntrinsicValueCard({
   return (
     <Card>
       <CardHeader>
-        <EvidenceHeader icon={<Scale className="h-5 w-5" />} title={t("analysis.evidence.intrinsicTitle")} summary={iv.summary} />
+        <EvidenceHeader icon={<Scale className="h-5 w-5" />} title={t("analysis.evidence.intrinsicTitle")} summary={prose.intrinsicSummary} />
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Estimated value is the primary output; the gap qualifies it in words + colour */}
