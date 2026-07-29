@@ -8,6 +8,7 @@ import { describeValuationGap } from "@/lib/finance/valuation-gap";
 import { buildValuationRange } from "@/lib/finance/valuation-range";
 import { formatCurrency } from "@/lib/utils/format";
 import { formatIsoDate } from "@/lib/utils/dates";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import type { ValueInvestingAnalysis } from "@/types/analysis";
 
 interface AnalysisSummaryProps {
@@ -25,19 +26,28 @@ const VERDICT_STYLE: Record<string, { label: string; chip: string; dot: string }
   AVOID:      { label: "Avoid",      chip: "border-red-500/35 bg-red-500/12 text-red-200",           dot: "bg-red-400" },
 };
 
-/** Data confidence, described in words rather than a bare percentage. */
-function confidenceLabel(pct: number): { word: string; tone: string } {
-  if (pct >= 70) return { word: "High", tone: "text-emerald-300" };
-  if (pct >= 55) return { word: "Medium", tone: "text-amber-300" };
-  return { word: "Low", tone: "text-red-300" };
+/** Data confidence band — the word is localised at render via its key. */
+function confidenceBand(pct: number): { key: string; tone: string } {
+  if (pct >= 70) return { key: "high", tone: "text-emerald-300" };
+  if (pct >= 55) return { key: "medium", tone: "text-amber-300" };
+  return { key: "low", tone: "text-red-300" };
 }
 
 export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: AnalysisSummaryProps) {
+  const { t } = useTranslation();
   const verdict = VERDICT_STYLE[analysis.final_verdict.label] ?? VERDICT_STYLE.HOLD;
   const exchange = exchangeByCode(analysis.exchange);
   const gap = describeValuationGap(analysis.intrinsic_value.margin_of_safety_pct);
+  const gapLabel =
+    gap.kind === "margin"
+      ? t("analysis.decision.marginOfSafetyLabel")
+      : gap.kind === "premium"
+        ? t("analysis.decision.premiumLabel")
+        : gap.magnitudePct === null
+          ? t("analysis.decision.marginOfSafetyLabel")
+          : t("analysis.decision.pricedLabel");
   const range = buildValuationRange(analysis.intrinsic_value);
-  const confidence = confidenceLabel(analysis.final_verdict.confidence_pct);
+  const confidence = confidenceBand(analysis.final_verdict.confidence_pct);
   const currency = analysis.currency;
 
   // Drivers come from the computed thesis, not re-derived here.
@@ -74,7 +84,7 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
             {analysis.company_name}
           </h1>
           <p className="shrink-0 text-xs text-muted-foreground">
-            As of {formatIsoDate(analysis.analysis_date)}
+            {t("common.asOf", { date: formatIsoDate(analysis.analysis_date) })}
           </p>
         </div>
 
@@ -84,28 +94,28 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
             className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${verdict.chip}`}
           >
             <span className={`h-2 w-2 rounded-full ${verdict.dot}`} aria-hidden="true" />
-            {verdict.label}
+            {t(`verdict.${analysis.final_verdict.label}`)}
           </span>
         </div>
 
         {/* The four decision numbers */}
         <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Metric label="Current price" value={formatCurrency(analysis.current_price, currency)} />
+          <Metric label={t("analysis.decision.currentPrice")} value={formatCurrency(analysis.current_price, currency)} />
           <Metric
-            label="Base value"
+            label={t("analysis.decision.baseValue")}
             value={formatCurrency(analysis.intrinsic_value.blended_intrinsic_value_per_share, currency)}
           />
           <Metric
-            label="Value range"
+            label={t("analysis.decision.valueRange")}
             value={
               range.low !== null && range.high !== null
                 ? `${formatCurrency(range.low, currency)}–${formatCurrency(range.high, currency)}`
                 : "—"
             }
-            hint={range.agreement ? `${range.agreement} model agreement` : undefined}
+            hint={range.agreement ? t("analysis.decision.modelAgreement", { level: t(`confidence.${range.agreement.toLowerCase()}`) }) : undefined}
           />
           <Metric
-            label={gap.label}
+            label={gapLabel}
             value={gap.display}
             tone={gap.tone === "positive" ? "text-emerald-300" : gap.tone === "negative" ? "text-red-300" : undefined}
           />
@@ -113,14 +123,14 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
 
         <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Metric
-            label="Data confidence"
-            value={confidence.word}
+            label={t("analysis.decision.dataConfidence")}
+            value={t(`confidence.${confidence.key}`)}
             tone={confidence.tone}
-            hint="Based on data completeness and model agreement"
+            hint={t("analysis.decision.dataConfidenceHint")}
           />
           <div className="col-span-1 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-3 sm:col-span-3">
             <dt className="text-xs font-medium text-muted-foreground">
-              Valuation model
+              {t("analysis.decision.valuationModel")}
             </dt>
             <dd className="mt-1 text-sm text-foreground/90">
               {analysis.verdict_explanation?.valuation_method_label ?? "Discounted cash flow"}
@@ -132,7 +142,7 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
           <div>
             <h2 className="text-xs font-semibold text-muted-foreground">
-              Why
+              {t("analysis.decision.why")}
             </h2>
             <ul className="mt-2 space-y-1.5">
               {drivers.map((driver, i) => (
@@ -145,7 +155,7 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
           </div>
           <div>
             <h2 className="text-xs font-semibold text-muted-foreground">
-              Main risk
+              {t("analysis.decision.mainRisk")}
             </h2>
             <p className="mt-2 flex gap-2 text-sm leading-6 text-foreground/85">
               <AlertTriangle className="mt-1 h-3.5 w-3.5 shrink-0 text-amber-400" aria-hidden="true" />
@@ -165,7 +175,7 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
             className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-foreground/85 transition hover:border-primary/30 hover:text-primary disabled:opacity-50"
           >
             <RefreshCw className={`h-3 w-3 ${isReanalysing ? "animate-spin" : ""}`} aria-hidden="true" />
-            {isReanalysing ? "Analysing…" : "Analyse again"}
+            {isReanalysing ? t("common.analysing") : t("common.analyseAgain")}
           </button>
         )}
         <Link
@@ -173,7 +183,7 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
           className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-foreground/85 transition hover:border-primary/30 hover:text-primary"
         >
           <GitCompareArrows className="h-3 w-3" aria-hidden="true" />
-          Compare
+          {t("common.compare")}
         </Link>
       </div>
     </section>

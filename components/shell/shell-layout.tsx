@@ -5,11 +5,8 @@ import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 import { SidebarHistory } from "@/components/shell/sidebar-history";
 import { Topbar } from "@/components/shell/topbar";
-import {
-  historyLabel,
-  readHistoryCollapsed,
-  writeHistoryCollapsed,
-} from "@/lib/utils/history-panel";
+import { readHistoryCollapsed, writeHistoryCollapsed } from "@/lib/utils/history-panel";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import type { SavedAnalysisSummary } from "@/types/analysis";
 
 interface ShellLayoutProps {
@@ -38,14 +35,16 @@ export function ShellLayout({ history, children }: ShellLayoutProps) {
     writeHistoryCollapsed(next);
   }
 
-  const label = historyLabel(history.length);
+  const { t } = useTranslation();
+  const historyTitle = t("history.title");
+  const label = history.length > 0 ? `${historyTitle} (${history.length})` : historyTitle;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* ── Desktop: full panel ── */}
       <aside
         id="history-panel"
-        aria-label="Analysis history"
+        aria-label={historyTitle}
         hidden={collapsed}
         className={`fixed inset-y-0 left-0 z-30 w-[320px] border-r border-white/6 bg-[rgba(4,9,18,0.92)] px-6 py-8 ${
           collapsed ? "lg:hidden" : "hidden lg:block"
@@ -55,7 +54,7 @@ export function ShellLayout({ history, children }: ShellLayoutProps) {
           <SidebarHistory
             history={history}
             onCollapse={() => toggle(true)}
-            collapseLabel="Collapse history"
+            collapseLabel={t("history.collapse")}
           />
         </Suspense>
       </aside>
@@ -68,11 +67,11 @@ export function ShellLayout({ history, children }: ShellLayoutProps) {
             onClick={() => toggle(false)}
             aria-expanded={false}
             aria-controls="history-panel"
-            title={`Open ${label.toLowerCase()}`}
+            title={t("history.open", { label: historyTitle })}
             className="rounded-xl border border-white/10 bg-white/[0.03] p-2.5 text-muted-foreground transition hover:border-primary/30 hover:text-primary"
           >
             <PanelLeftOpen className="h-4 w-4" aria-hidden="true" />
-            <span className="sr-only">Open {label.toLowerCase()}</span>
+            <span className="sr-only">{t("history.open", { label: historyTitle })}</span>
           </button>
           <span
             aria-hidden="true"
@@ -98,9 +97,7 @@ export function ShellLayout({ history, children }: ShellLayoutProps) {
             competing with the analysis itself (§13). */}
         <footer className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
           <p className="border-t border-white/[0.06] pt-5 text-xs leading-5 text-muted-foreground">
-            Research tooling, not investment advice. Figures are estimates derived from
-            third-party data (Yahoo Finance, SEC EDGAR) and may be delayed, incomplete, or
-            inaccurate. Verify independently before making any investment decision.
+            {t("footer.disclaimer")}
           </p>
         </footer>
       </div>
@@ -110,9 +107,10 @@ export function ShellLayout({ history, children }: ShellLayoutProps) {
 
 /** Stable skeleton — avoids shifting text like "Loading history…". */
 function HistorySkeleton() {
+  const { t } = useTranslation();
   return (
     <div role="status" aria-live="polite" className="space-y-3">
-      <span className="sr-only">Loading history</span>
+      <span className="sr-only">{t("common.loading")}</span>
       <div className="h-4 w-24 rounded bg-white/[0.06]" />
       <div className="h-20 rounded-2xl bg-white/[0.04]" />
       <div className="h-20 rounded-2xl bg-white/[0.04]" />

@@ -1,9 +1,11 @@
 import { ExternalLink, Link2 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import type { ValueInvestingAnalysis } from "@/types/analysis";
 
 export function SourcesCard({ analysis }: { analysis: ValueInvestingAnalysis }) {
+  const { t } = useTranslation();
   return (
     <Card>
       <CardHeader>
@@ -11,13 +13,13 @@ export function SourcesCard({ analysis }: { analysis: ValueInvestingAnalysis }) 
           <div className="rounded-2xl border border-primary/20 bg-primary/10 p-2 text-primary">
             <Link2 className="h-5 w-5" />
           </div>
-          <CardTitle level={2}>Sources</CardTitle>
+          <CardTitle level={2}>{t("analysis.sources.title")}</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {analysis.sources.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-4 text-sm text-muted-foreground">
-            No external sources were captured in this run.
+            {t("analysis.sources.empty")}
           </div>
         ) : (
           analysis.sources.map((source) => (

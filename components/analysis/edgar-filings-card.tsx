@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ExternalLink, FileText } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import type { FilingRecord } from "@/app/api/edgar/filings/route";
 
 interface EdgarFilingsCardProps {
@@ -27,6 +28,7 @@ function edgarCompanyUrl(ticker: string, form: string): string {
 }
 
 export function EdgarFilingsCard({ ticker }: EdgarFilingsCardProps) {
+  const { t } = useTranslation();
   const [filings, setFilings] = useState<FilingRecord[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,13 +56,13 @@ export function EdgarFilingsCard({ ticker }: EdgarFilingsCardProps) {
           <div className="rounded-2xl border border-primary/20 bg-primary/10 p-2 text-primary">
             <FileText className="h-5 w-5" />
           </div>
-          <CardTitle level={2}>SEC EDGAR filings</CardTitle>
+          <CardTitle level={2}>{t("analysis.edgar.title")}</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {error ? (
           <div className="rounded-2xl border border-amber-500/25 bg-amber-500/8 p-4 text-sm text-amber-300">
-            Could not reach SEC EDGAR: {error}
+            {t("analysis.edgar.error", { error })}
           </div>
         ) : filings === null ? (
           <div className="space-y-2">
@@ -70,19 +72,18 @@ export function EdgarFilingsCard({ ticker }: EdgarFilingsCardProps) {
           </div>
         ) : filings.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-5 text-sm text-muted-foreground">
-            No recent filings found for <span className="font-mono text-foreground">{ticker}</span> on SEC EDGAR.
-            Non-US companies (e.g. CAC 40, FTSE 100) are not required to file with the SEC.
+            {t("analysis.edgar.none", { ticker })}
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-white/8">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/6 bg-white/3 text-left text-xs font-medium text-muted-foreground">
-                  <th className="px-4 py-3">Form</th>
-                  <th className="px-4 py-3">Company</th>
-                  <th className="px-4 py-3">Filed</th>
-                  <th className="px-4 py-3">Period</th>
-                  <th className="px-4 py-3 text-right">Filing</th>
+                  <th className="px-4 py-3">{t("analysis.edgar.form")}</th>
+                  <th className="px-4 py-3">{t("analysis.edgar.company")}</th>
+                  <th className="px-4 py-3">{t("analysis.edgar.filed")}</th>
+                  <th className="px-4 py-3">{t("analysis.edgar.period")}</th>
+                  <th className="px-4 py-3 text-right">{t("analysis.edgar.filing")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/4">
@@ -109,7 +110,7 @@ export function EdgarFilingsCard({ ticker }: EdgarFilingsCardProps) {
                         rel="noreferrer"
                         className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                       >
-                        View <ExternalLink className="h-3 w-3" />
+                        {t("analysis.edgar.view")} <ExternalLink className="h-3 w-3" />
                       </a>
                     </td>
                   </tr>

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
 import { formatIsoDate } from "@/lib/utils/dates";
 import { verdictClasses } from "@/lib/utils/format";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import { DEFAULT_EXCHANGE_CODE, exchangeByCode } from "@/lib/finance/exchanges";
 import { formatValuationGapShort } from "@/lib/finance/valuation-gap";
 import type { SecuritySearchResult } from "@/lib/finance/security-search";
@@ -44,6 +45,7 @@ export function CompareSlot({
   onSelect,
   onClear,
 }: CompareSlotProps) {
+  const { t } = useTranslation();
   const id = useId();
   const [picking, setPicking] = useState(false);
   const [exchange, setExchange] = useState(DEFAULT_EXCHANGE_CODE);
@@ -85,7 +87,7 @@ export function CompareSlot({
         });
       }
     } catch {
-      setError("Could not check for a saved analysis of this company. Try again.");
+      setError(t("compare.slot.lookupError"));
     } finally {
       setLooking(false);
     }
@@ -114,32 +116,32 @@ export function CompareSlot({
             </div>
           </div>
           <Badge className={cn("shrink-0", verdictClasses(selected.finalVerdictLabel))}>
-            {selected.finalVerdictLabel.replace("_", " ")}
+            {t(`verdict.${selected.finalVerdictLabel}`)}
           </Badge>
         </div>
 
         <dl className="space-y-1 text-xs text-muted-foreground">
           <div>
-            <dt className="sr-only">Main reason</dt>
+            <dt className="sr-only">{t("compare.slot.mainReason")}</dt>
             <dd className="text-zinc-300">{selected.verdictReason}</dd>
           </div>
           <div>
-            <dt className="sr-only">Valuation gap</dt>
+            <dt className="sr-only">{t("compare.slot.valuationGap")}</dt>
             <dd>{formatValuationGapShort(selected.marginOfSafetyPct)}</dd>
           </div>
           <div>
-            <dt className="sr-only">Analysis date</dt>
-            <dd>Analysed {formatIsoDate(selected.analysisDate)}</dd>
+            <dt className="sr-only">{t("compare.slot.analysisDate")}</dt>
+            <dd>{t("common.analysedOn", { date: formatIsoDate(selected.analysisDate) })}</dd>
           </div>
         </dl>
 
         <div className="mt-4 flex items-center gap-2">
           <Button variant="secondary" size="sm" onClick={() => setPicking(true)}>
-            Change
+            {t("common.change")}
           </Button>
           <Button variant="ghost" size="sm" onClick={onClear}>
             <X className="h-3.5 w-3.5" aria-hidden="true" />
-            Remove
+            {t("common.remove")}
           </Button>
         </div>
       </div>
@@ -153,7 +155,7 @@ export function CompareSlot({
         <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</div>
         {selected && (
           <Button variant="ghost" size="sm" onClick={() => setPicking(false)}>
-            Cancel
+            {t("common.cancel")}
           </Button>
         )}
       </div>
@@ -161,7 +163,7 @@ export function CompareSlot({
       {available.length > 0 && (
         <div className="mb-4">
           <label htmlFor={`${id}-saved`} className="mb-1.5 block text-sm font-medium text-foreground">
-            Saved analyses
+            {t("compare.slot.savedAnalyses")}
           </label>
           <select
             id={`${id}-saved`}
@@ -173,10 +175,10 @@ export function CompareSlot({
             }}
             className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm text-foreground outline-none transition focus-visible:border-primary/50"
           >
-            <option value="">Choose a saved analysis…</option>
+            <option value="">{t("compare.slot.chooseSaved")}</option>
             {available.map((item) => (
               <option key={item.id} value={item.id}>
-                {item.ticker} · {item.companyName} · {item.finalVerdictLabel.replace("_", " ")}
+                {item.ticker} · {item.companyName} · {t(`verdict.${item.finalVerdictLabel}`)}
               </option>
             ))}
           </select>
@@ -184,7 +186,7 @@ export function CompareSlot({
       )}
 
       <div className="space-y-3 border-t border-white/[0.06] pt-4">
-        <p className="text-sm font-medium text-foreground">Or search every supported company</p>
+        <p className="text-sm font-medium text-foreground">{t("compare.slot.orSearch")}</p>
         <MarketSelector value={exchange} onChange={setExchange} />
         <SecuritySearch
           value={query}
@@ -198,21 +200,20 @@ export function CompareSlot({
         {looking && (
           <p className="flex items-center gap-2 text-xs text-muted-foreground" role="status">
             <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-            Checking for a saved analysis…
+            {t("compare.slot.checking")}
           </p>
         )}
 
         {unanalysed && (
           <div className="rounded-xl border border-orange-500/25 bg-orange-500/[0.08] p-3.5">
             <p className="text-xs leading-5 text-orange-100">
-              <span className="font-medium">{unanalysed.name}</span> has not been analysed yet.
-              A comparison needs a saved analysis for both companies.
+              {t("compare.slot.notAnalysed", { name: unanalysed.name })}
             </p>
             <Link
               href={`/?exchange=${encodeURIComponent(unanalysed.exchange)}&ticker=${encodeURIComponent(unanalysed.ticker)}`}
               className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
             >
-              Analyse {unanalysed.ticker} first
+              {t("compare.slot.analyseFirst", { ticker: unanalysed.ticker })}
               <ArrowRight className="h-3 w-3" aria-hidden="true" />
             </Link>
           </div>

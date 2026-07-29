@@ -6,6 +6,7 @@ import { MarketSelector } from "@/components/ticker/market-selector";
 import { SecuritySearch } from "@/components/ticker/security-search";
 import { Button } from "@/components/ui/button";
 import { exchangeByCode, toYahooTicker } from "@/lib/finance/exchanges";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import type { SecuritySearchResult } from "@/lib/finance/security-search";
 
 interface TickerSearchFormProps {
@@ -35,6 +36,7 @@ export function TickerSearchForm({
   onExchangeChange,
   onSubmit,
 }: TickerSearchFormProps) {
+  const { t } = useTranslation();
   const selected = exchangeByCode(exchange);
   const resolved = ticker.trim() ? toYahooTicker(exchange, ticker) : "";
 
@@ -66,8 +68,7 @@ export function TickerSearchForm({
 
         {resolved && resolved !== ticker.trim().toUpperCase() && (
           <p className="-mt-2 text-xs text-muted-foreground">
-            Will be analysed as <span className="font-mono text-primary">{resolved}</span> on{" "}
-            {selected?.name}.
+            {t("form.willAnalyseAs", { ticker: resolved, market: selected?.name ?? "" })}
           </p>
         )}
 
@@ -78,12 +79,12 @@ export function TickerSearchForm({
           disabled={isLoading || !ticker.trim()}
         >
           <TrendingUp className="h-4 w-4" aria-hidden="true" />
-          {isLoading ? "Analysing…" : "Analyse stock"}
+          {isLoading ? t("common.analysing") : t("form.submit")}
         </Button>
       </form>
 
       <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-        <span className="uppercase tracking-[0.16em] text-zinc-400">Examples</span>
+        <span className="uppercase tracking-[0.16em] text-zinc-400">{t("form.examples")}</span>
         {EXAMPLES.map((example) => (
           <button
             key={`${example.exchange}:${example.ticker}`}

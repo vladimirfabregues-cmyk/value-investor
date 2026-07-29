@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { EvidenceHeader } from "@/components/analysis/evidence";
 import { TrendChart, TrendGrid } from "@/components/analysis/trend-chart";
 import { formatCompactCurrency, formatCurrency, formatPercent } from "@/lib/utils/format";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import type { ValueInvestingAnalysis } from "@/types/analysis";
 
 /**
@@ -14,6 +15,7 @@ import type { ValueInvestingAnalysis } from "@/types/analysis";
  * provider had no history for) rather than showing empty axes.
  */
 export function TrendsCard({ analysis }: { analysis: ValueInvestingAnalysis }) {
+  const { t } = useTranslation();
   const series = analysis.series;
   if (!series) return null;
 
@@ -22,32 +24,32 @@ export function TrendsCard({ analysis }: { analysis: ValueInvestingAnalysis }) {
 
   const charts = [
     {
-      title: "Revenue",
-      question: "Is the top line growing?",
+      title: t("analysis.trends.revenue"),
+      question: t("analysis.trends.revenueQ"),
       values: series.revenue,
       format: (v: number) => formatCompactCurrency(v, currency),
     },
     {
-      title: "Diluted EPS",
-      question: "Are per-share earnings rising?",
+      title: t("analysis.trends.eps"),
+      question: t("analysis.trends.epsQ"),
       values: series.diluted_eps,
       format: (v: number) => formatCurrency(v, currency),
     },
     {
-      title: "Free cash flow",
-      question: "Is the business generating cash?",
+      title: t("analysis.trends.fcf"),
+      question: t("analysis.trends.fcfQ"),
       values: series.free_cash_flow,
       format: (v: number) => formatCompactCurrency(v, currency),
     },
     {
-      title: "Operating margin",
-      question: "Are margins holding up?",
+      title: t("analysis.trends.opMargin"),
+      question: t("analysis.trends.opMarginQ"),
       values: series.operating_margin_pct,
       format: (v: number) => formatPercent(v),
     },
     {
-      title: "Return on invested capital",
-      question: "Is capital earning strong returns?",
+      title: t("analysis.trends.roic"),
+      question: t("analysis.trends.roicQ"),
       values: series.roic_pct,
       format: (v: number) => formatPercent(v),
     },

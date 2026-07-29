@@ -10,6 +10,7 @@ import { VerdictModal } from "@/components/screen/verdict-modal";
 import { describeValuationGap } from "@/lib/finance/valuation-gap";
 import { inferExchangeFromTicker } from "@/lib/finance/exchanges";
 import { CAP_LABELS } from "@/lib/finance/verdict-explanation";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import type { ScreenResultRecord, ScreenResultFilters } from "@/lib/db/screen-queries";
 import type { BatchScreenComplete, BatchScreenProgress } from "@/lib/screener/batch";
 
@@ -56,31 +57,42 @@ const VERDICT_CONFIG: Record<string, { label: string; dot: string; text: string;
   UNKNOWN:    { label: "Error",      dot: "bg-zinc-500",    text: "text-zinc-400",    chip: "border-zinc-500/30 bg-zinc-500/10" },
 };
 
+/** Verdict label: the five standard verdicts share the app-wide keys; UNKNOWN → "Error". */
+function useVerdictLabel() {
+  const { t } = useTranslation();
+  return (verdict: string) => (verdict === "UNKNOWN" ? t("screen.error") : t(`verdict.${verdict}`));
+}
+
 function CapFlags({ caps }: { caps: string | null }) {
+  const { t } = useTranslation();
   if (!caps) return null;
   const list = caps.split(",");
   const readable = list.map((c) => CAP_LABELS[c] ?? c).join(" · ");
   return (
     <span
-      title={`Verdict capped: ${readable}`}
+      title={t("screen.cappedTitle", { list: readable })}
       className="inline-flex cursor-help items-center gap-1 rounded-full border border-amber-500/25 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-300"
     >
       <AlertTriangle className="h-2.5 w-2.5" aria-hidden="true" />
       <span aria-hidden="true">{list.length}</span>
       {/* The bare count is meaningless to a screen reader; spell it out. */}
       <span className="sr-only">
-        {list.length} verdict {list.length === 1 ? "cap" : "caps"}: {readable}
+        {t(list.length === 1 ? "screen.cappedCountOne" : "screen.cappedCountOther", {
+          n: list.length,
+          list: readable,
+        })}
       </span>
     </span>
   );
 }
 
 function VerdictBadge({ verdict }: { verdict: string }) {
+  const verdictLabel = useVerdictLabel();
   const cfg = VERDICT_CONFIG[verdict] ?? VERDICT_CONFIG.UNKNOWN;
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${cfg.chip} ${cfg.text}`}>
       <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-      {cfg.label}
+      {verdictLabel(verdict)}
     </span>
   );
 }
@@ -98,19 +110,26 @@ function ScoreBar({ value }: { value: number }) {
 }
 
 function MosBadge({ value }: { value: number | null | undefined }) {
+  const { t } = useTranslation();
   // Never render a negative "margin of safety" — above estimated value is a premium.
   const gap = describeValuationGap(value);
   if (gap.magnitudePct === null) return <span className="text-xs text-muted-foreground">—</span>;
   const isPremium = gap.kind === "premium";
+  const title =
+    gap.kind === "margin"
+      ? t("analysis.evidence.marginOfSafety", { value: gap.display })
+      : isPremium
+        ? t("analysis.evidence.premium", { value: gap.display })
+        : t("analysis.decision.pricedLabel");
   return (
     <span
-      title={gap.kind === "margin" ? `${gap.display} margin of safety` : isPremium ? `${gap.display} premium to estimated value` : "Priced at estimated value"}
+      title={title}
       className={`inline-flex items-center justify-end gap-1 text-xs font-semibold tabular-nums ${
         gap.tone === "positive" ? "text-emerald-300" : gap.tone === "negative" ? "text-red-300/90" : "text-muted-foreground"
       }`}
     >
       {gap.tone === "positive" ? <TrendingUp className="h-3 w-3" aria-hidden="true" /> : isPremium ? <TrendingDown className="h-3 w-3" aria-hidden="true" /> : null}
-      {isPremium ? `${gap.display} premium` : gap.display}
+      {isPremium ? t("analysis.evidence.premium", { value: gap.display }) : gap.display}
     </span>
   );
 }
@@ -255,6 +274,8 @@ function SortableTh({
 }
 
 export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
+  const { t } = useTranslation();
+  const verdictLabel = useVerdictLabel();
   const [activeIndex, setActiveIndex] = useState<ActiveIndex>("RUSSELL2000");
   const [results, setResults] = useState<ScreenResultRecord[]>(initialResults);
   const [allResults, setAllResults] = useState<ScreenResultRecord[]>(initialResults);
@@ -394,10 +415,10 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
       {/* ── Page header ── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="text-[11px] uppercase tracking-[0.24em] text-primary/90">Quantitative Value Screen</div>
-          <h1 className="mt-1.5 font-display text-4xl text-foreground">Stock Screener</h1>
+          <div className="text-[11px] uppercase tracking-[0.24em] text-primary/90">{t("screen.eyebrow")}</div>
+          <h1 className="mt-1.5 font-display text-4xl text-foreground">{t("screen.title")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Graham-style gates: normalized earnings, sector-aware intrinsic value, corroborated margins of safety.
+            {t("screen.subtitle")}
           </p>
         </div>
         <Button
@@ -407,9 +428,9 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
           className="shrink-0 gap-2 px-6 shadow-[0_10px_30px_rgba(181,148,88,0.22)]"
         >
           {isRunning ? (
-            <><RefreshCw className="h-4 w-4 animate-spin" /> Screening {activeMarket?.label}…</>
+            <><RefreshCw className="h-4 w-4 animate-spin" /> {t("screen.running", { market: activeMarket?.label ?? "" })}</>
           ) : (
-            <><Play className="h-4 w-4" /> Run {activeMarket?.label} Screen</>
+            <><Play className="h-4 w-4" /> {t("screen.run", { market: activeMarket?.label ?? "" })}</>
           )}
         </Button>
       </div>
@@ -420,7 +441,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
           {MARKET_GROUPS.map(({ region, markets }) => (
             <div key={region}>
               <div className="mb-2 text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
-                {region}
+                {t(`screen.regions.${region}`)}
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {markets.map(({ key, label, count }) => {
@@ -454,7 +475,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
           <div className="mb-2.5 flex items-center justify-between text-sm">
             <span className="flex items-center gap-2 text-foreground/90">
               <RefreshCw className="h-3.5 w-3.5 animate-spin text-primary" />
-              Screening <span className="font-mono text-primary">{progress.lastTicker || "…"}</span>
+              {t("screen.screeningTicker")} <span className="font-mono text-primary">{progress.lastTicker || "…"}</span>
             </span>
             <span className="tabular-nums text-muted-foreground">
               {progress.processed} / {progress.total || "…"}
@@ -476,13 +497,16 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
           <div role="status" aria-live="polite">
             <p className="text-sm font-medium text-foreground">
               {candidatesOnly
-                ? `${results.length} candidate${results.length === 1 ? "" : "s"} found`
-                : `${results.length} compan${results.length === 1 ? "y" : "ies"} shown`}
+                ? t(results.length === 1 ? "screen.candidatesFoundOne" : "screen.candidatesFoundOther", { n: results.length })
+                : t(results.length === 1 ? "screen.companiesShownOne" : "screen.companiesShownOther", { n: results.length })}
             </p>
             <p className="mt-0.5 text-xs text-muted-foreground">
               {candidatesOnly
-                ? `${verdictCounts.STRONG_BUY + verdictCounts.BUY} Buy · ${verdictCounts.WATCH} Watch — companies that passed the principal quality and valuation gates.`
-                : "Showing every screened company, including those the gates rejected."}
+                ? t("screen.candidatesHint", {
+                    buy: verdictCounts.STRONG_BUY + verdictCounts.BUY,
+                    watch: verdictCounts.WATCH,
+                  })
+                : t("screen.allHint")}
             </p>
           </div>
           <button
@@ -490,7 +514,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
             onClick={() => applyCandidateMode(!candidatesOnly)}
             className="shrink-0 rounded-lg border border-white/12 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-foreground/85 transition hover:border-primary/35 hover:text-primary"
           >
-            {candidatesOnly ? "Show all companies" : "Show candidates only"}
+            {candidatesOnly ? t("screen.showAll") : t("screen.showCandidates")}
           </button>
         </div>
       )}
@@ -512,12 +536,12 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                     ? `${cfg.chip} shadow-[0_6px_20px_rgba(0,0,0,0.25)]`
                     : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.14]"
                 }`}
-                title={active ? "Click to clear this filter" : `Show only ${cfg.label} names`}
+                title={active ? t("screen.clearFilterTitle") : t("screen.showOnly", { label: verdictLabel(v) })}
               >
                 <div className="flex items-center gap-1.5">
                   <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
                   <span className={`text-[11px] font-medium uppercase tracking-wider ${active ? cfg.text : "text-muted-foreground"}`}>
-                    {cfg.label}
+                    {verdictLabel(v)}
                   </span>
                 </div>
                 <div className={`mt-1.5 font-display text-2xl tabular-nums ${active ? cfg.text : "text-foreground"}`}>
@@ -536,10 +560,10 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
           onValueChange={(v) => handleFilterChange("sector", v === "all" ? undefined : v)}
         >
           <SelectTrigger className="w-52">
-            <SelectValue placeholder="Sector" />
+            <SelectValue placeholder={t("screen.sector")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All sectors</SelectItem>
+            <SelectItem value="all">{t("screen.allSectors")}</SelectItem>
             {SECTORS.map((s) => (
               <SelectItem key={s} value={s}>{s}</SelectItem>
             ))}
@@ -551,15 +575,15 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
           onValueChange={(v) => handleFilterChange("marketCapTier", v === "all" ? undefined : v)}
         >
           <SelectTrigger className="w-44">
-            <SelectValue placeholder="Market cap" />
+            <SelectValue placeholder={t("screen.marketCap")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All sizes</SelectItem>
-            <SelectItem value="micro">Micro (&lt;$300M)</SelectItem>
-            <SelectItem value="small">Small ($300M–$2B)</SelectItem>
-            <SelectItem value="mid">Mid ($2B–$10B)</SelectItem>
-            <SelectItem value="large">Large ($10B–$200B)</SelectItem>
-            <SelectItem value="mega">Mega (&gt;$200B)</SelectItem>
+            <SelectItem value="all">{t("screen.allSizes")}</SelectItem>
+            <SelectItem value="micro">{t("screen.sizes.micro")}</SelectItem>
+            <SelectItem value="small">{t("screen.sizes.small")}</SelectItem>
+            <SelectItem value="mid">{t("screen.sizes.mid")}</SelectItem>
+            <SelectItem value="large">{t("screen.sizes.large")}</SelectItem>
+            <SelectItem value="mega">{t("screen.sizes.mega")}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -568,12 +592,12 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
           onValueChange={(v) => handleFilterChange("sortBy", v)}
         >
           <SelectTrigger className="w-44">
-            <SelectValue placeholder="Sort by" />
+            <SelectValue placeholder={t("screen.sortBy")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="compositeScore">Composite Score</SelectItem>
-            <SelectItem value="marginOfSafety">Margin of Safety</SelectItem>
-            <SelectItem value="ticker">Ticker (A–Z)</SelectItem>
+            <SelectItem value="compositeScore">{t("screen.sortComposite")}</SelectItem>
+            <SelectItem value="marginOfSafety">{t("screen.sortMos")}</SelectItem>
+            <SelectItem value="ticker">{t("screen.sortTicker")}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -588,15 +612,15 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
               void fetchResults(cleared, activeIndex, true);
             }}
           >
-            <X className="h-3 w-3" /> Clear filters
+            <X className="h-3 w-3" /> {t("screen.clearFilters")}
           </Button>
         )}
 
         <div className="ml-auto flex items-center gap-3 text-xs text-muted-foreground">
-          {isFiltering && <span className="animate-pulse">Filtering…</span>}
+          {isFiltering && <span className="animate-pulse">{t("screen.filtering")}</span>}
           {lastRunLabel && (
             <span className="flex items-center gap-1.5">
-              <Clock className="h-3 w-3" /> Last run {lastRunLabel}
+              <Clock className="h-3 w-3" /> {t("screen.lastRun", { date: lastRunLabel })}
             </span>
           )}
         </div>
@@ -622,13 +646,13 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
             {spanDays > 7 && (
               <div className="flex items-start gap-2.5 rounded-xl border border-amber-500/25 bg-amber-500/[0.07] px-4 py-3 text-xs leading-5 text-amber-200/90">
                 <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-400" />
-                <span>Results mix screening runs up to {Math.round(spanDays)} days apart — older rows may predate methodology changes. Re-run this market for consistent verdicts.</span>
+                <span>{t("screen.warnings.stale", { days: Math.round(spanDays) })}</span>
               </div>
             )}
             {ageDays > 30 && (
               <div className="flex items-start gap-2.5 rounded-xl border border-amber-500/25 bg-amber-500/[0.07] px-4 py-3 text-xs leading-5 text-amber-200/90">
                 <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-400" />
-                <span>Latest results are {Math.round(ageDays)} days old — prices and fundamentals have moved since.</span>
+                <span>{t("screen.warnings.age", { days: Math.round(ageDays) })}</span>
               </div>
             )}
             {concentrated && (
@@ -636,9 +660,8 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                 <div className="flex items-start gap-2.5 text-xs leading-5 text-orange-200/90">
                   <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-orange-400" aria-hidden="true" />
                   <span>
-                    <strong className="font-semibold">Concentration:</strong> {top[1]} of {buyRated.length}{" "}
-                    Buy-rated names are {top[0]} — likely one correlated sector-cycle bet rather than
-                    independent ideas.
+                    <strong className="font-semibold">{t("screen.warnings.concentrationLabel")}</strong>{" "}
+                    {t("screen.warnings.concentration", { n: top[1], total: buyRated.length, sector: top[0] })}
                   </span>
                 </div>
                 <div className="mt-2.5 flex flex-wrap gap-2 pl-6">
@@ -647,7 +670,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                     onClick={() => handleFilterChange("sector", top[0])}
                     className="rounded-lg border border-orange-500/30 bg-orange-500/10 px-2.5 py-1 text-[11px] font-medium text-orange-100 transition hover:bg-orange-500/20"
                   >
-                    View {top[0]} exposure
+                    {t("screen.warnings.viewExposure", { sector: top[0] })}
                   </button>
                   {filters.sector && (
                     <button
@@ -655,7 +678,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                       onClick={() => handleFilterChange("sector", undefined)}
                       className="rounded-lg border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[11px] font-medium text-foreground/80 transition hover:border-white/25"
                     >
-                      Clear sector filter
+                      {t("screen.warnings.clearSector")}
                     </button>
                   )}
                 </div>
@@ -672,12 +695,12 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
             <Play className="h-5 w-5 text-primary" />
           </div>
           <p className="mt-4 font-display text-xl text-foreground">
-            {meta.totalScreened === 0 ? `No data yet for ${activeMarket?.label}` : "No companies match the current filters"}
+            {meta.totalScreened === 0
+              ? t("screen.empty.noData", { market: activeMarket?.label ?? "" })
+              : t("screen.empty.noMatch")}
           </p>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-            {meta.totalScreened === 0
-              ? "Run the screen to fetch fundamentals and score every constituent through the valuation pipeline."
-              : "Relax or clear the filters above to see more of the screened universe."}
+            {meta.totalScreened === 0 ? t("screen.empty.noDataHint") : t("screen.empty.noMatchHint")}
           </p>
         </div>
       ) : (() => {
@@ -704,47 +727,47 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                       </div>
                       <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${cfg.chip} ${cfg.text}`}>
                         <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} aria-hidden="true" />
-                        {cfg.label}
+                        {verdictLabel(row.verdictLabel)}
                       </span>
                     </div>
 
                     <dl className="mt-3 grid grid-cols-3 gap-2 text-xs">
                       <div>
-                        <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">Overall</dt>
+                        <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("screen.mobile.overall")}</dt>
                         <dd className="mt-0.5 tabular-nums text-foreground">{Math.round(row.compositeScore)}</dd>
                       </div>
                       <div>
                         <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                          {gap.kind === "premium" ? "Premium" : "Margin of safety"}
+                          {gap.kind === "premium" ? t("screen.mobile.premium") : t("screen.mobile.marginOfSafety")}
                         </dt>
                         <dd className={`mt-0.5 tabular-nums ${gap.tone === "positive" ? "text-emerald-300" : gap.tone === "negative" ? "text-red-300/90" : "text-muted-foreground"}`}>
                           {gap.display}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">Price</dt>
+                        <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("screen.mobile.price")}</dt>
                         <dd className="mt-0.5 tabular-nums text-foreground/85">
                           <span className="text-muted-foreground">{row.currency}</span>{" "}
                           {row.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">Valuation</dt>
+                        <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("screen.mobile.valuation")}</dt>
                         <dd className="mt-0.5 tabular-nums text-muted-foreground">{Math.round(row.valuationScore)}</dd>
                       </div>
                       <div>
-                        <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">Health</dt>
+                        <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("screen.mobile.health")}</dt>
                         <dd className="mt-0.5 tabular-nums text-muted-foreground">{Math.round(row.healthScore)}</dd>
                       </div>
                       <div>
-                        <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">Quality</dt>
+                        <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("screen.mobile.quality")}</dt>
                         <dd className="mt-0.5 tabular-nums text-muted-foreground">{Math.round(row.qualityScore)}</dd>
                       </div>
                     </dl>
 
                     {row.verdictCaps && (
                       <p className="mt-2 text-[11px] leading-4 text-amber-300/90">
-                        Capped: {row.verdictCaps.split(",").map((c) => CAP_LABELS[c] ?? c).join(" · ")}
+                        {t("screen.capped", { list: row.verdictCaps.split(",").map((c) => CAP_LABELS[c] ?? c).join(" · ") })}
                       </p>
                     )}
 
@@ -753,11 +776,11 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                         href={`/?exchange=${inferExchangeFromTicker(row.ticker).code}&ticker=${encodeURIComponent(row.ticker)}`}
                         className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"
                       >
-                        View analysis
+                        {t("screen.viewAnalysis")}
                       </Link>
                       <VerdictModal row={row}>
                         <button className="rounded-lg border border-white/12 bg-white/[0.04] px-3 py-1.5 text-xs text-foreground/80">
-                          Why this verdict
+                          {t("screen.whyVerdict")}
                         </button>
                       </VerdictModal>
                     </div>
@@ -770,16 +793,16 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
               <table className="w-full text-sm">
                 <thead className="sticky top-0 z-10">
                   <tr className="border-b border-white/[0.08] bg-[#0b1220] text-left text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                    <SortableTh label="Company" field="ticker" sortBy={filters.sortBy ?? "compositeScore"} sortDir={filters.sortDir ?? "desc"} onSort={handleSort} />
-                    <th scope="col" className="px-4 py-3 font-medium">Sector</th>
-                    <th scope="col" className="px-4 py-3 font-medium">Verdict</th>
-                    <SortableTh label="Overall score" field="compositeScore" sortBy={filters.sortBy ?? "compositeScore"} sortDir={filters.sortDir ?? "desc"} onSort={handleSort} />
-                    <SortableTh label="Margin of safety" field="marginOfSafety" align="right" title="Margin of safety, or premium when price exceeds estimated value" sortBy={filters.sortBy ?? "compositeScore"} sortDir={filters.sortDir ?? "desc"} onSort={handleSort} />
-                    <th className="px-3 py-3 text-right font-medium" title="Valuation score out of 100">Valuation</th>
-                    <th className="px-3 py-3 text-right font-medium" title="Financial health score out of 100">Financial health</th>
-                    <th className="px-3 py-3 text-right font-medium" title="Business quality score out of 100">Business quality</th>
-                    <th className="px-4 py-3 text-right font-medium" title="P/E · ▼ below sector median · ▲ above">P/E</th>
-                    <th className="px-4 py-3 text-right font-medium">Price</th>
+                    <SortableTh label={t("screen.cols.company")} field="ticker" sortBy={filters.sortBy ?? "compositeScore"} sortDir={filters.sortDir ?? "desc"} onSort={handleSort} />
+                    <th scope="col" className="px-4 py-3 font-medium">{t("screen.cols.sector")}</th>
+                    <th scope="col" className="px-4 py-3 font-medium">{t("screen.cols.verdict")}</th>
+                    <SortableTh label={t("screen.cols.overallScore")} field="compositeScore" sortBy={filters.sortBy ?? "compositeScore"} sortDir={filters.sortDir ?? "desc"} onSort={handleSort} />
+                    <SortableTh label={t("screen.cols.marginOfSafety")} field="marginOfSafety" align="right" title={t("screen.cols.marginOfSafetyTitle")} sortBy={filters.sortBy ?? "compositeScore"} sortDir={filters.sortDir ?? "desc"} onSort={handleSort} />
+                    <th className="px-3 py-3 text-right font-medium" title={t("screen.cols.valuationTitle")}>{t("screen.cols.valuation")}</th>
+                    <th className="px-3 py-3 text-right font-medium" title={t("screen.cols.healthTitle")}>{t("screen.cols.health")}</th>
+                    <th className="px-3 py-3 text-right font-medium" title={t("screen.cols.qualityTitle")}>{t("screen.cols.quality")}</th>
+                    <th className="px-4 py-3 text-right font-medium" title={t("screen.cols.peTitle")}>{t("screen.cols.pe")}</th>
+                    <th className="px-4 py-3 text-right font-medium">{t("screen.cols.price")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.04]">
@@ -840,11 +863,14 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
             </div>
             <div className="flex items-center justify-between border-t border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-xs text-muted-foreground">
               <span>
-                {results.length} result{results.length !== 1 ? "s" : ""}
-                {meta.totalErrors > 0 && ` · ${meta.totalErrors} ticker${meta.totalErrors !== 1 ? "s" : ""} failed`}
+                {t(results.length === 1 ? "screen.resultsOne" : "screen.resultsOther", { n: results.length })}
+                {meta.totalErrors > 0 &&
+                  t(meta.totalErrors === 1 ? "screen.failedSuffixOne" : "screen.failedSuffixOther", {
+                    n: meta.totalErrors,
+                  })}
               </span>
               <span className="hidden sm:block">
-                Click a verdict for the full breakdown · ⚠ marks capped verdicts
+                {t("screen.tableHint")}
               </span>
             </div>
           </div>

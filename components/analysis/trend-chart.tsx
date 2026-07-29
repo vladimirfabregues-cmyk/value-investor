@@ -1,6 +1,7 @@
 import { useId } from "react";
 
 import { cn } from "@/lib/utils/cn";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import {
   buildTrendGeometry,
   polylinePoints,
@@ -31,6 +32,7 @@ const VIEW_H = 40;
  * shown as an arrow **and** text, never colour alone.
  */
 export function TrendChart({ title, question, values, labels, format }: TrendChartProps) {
+  const { t } = useTranslation();
   const tableId = useId();
   const geometry = buildTrendGeometry(values, { width: VIEW_W, height: VIEW_H });
 
@@ -43,7 +45,7 @@ export function TrendChart({ title, question, values, labels, format }: TrendCha
     return (
       <figure className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5">
         <figcaption className="text-sm font-medium text-foreground">{title}</figcaption>
-        <p className="mt-3 text-xs text-muted-foreground">No history available.</p>
+        <p className="mt-3 text-xs text-muted-foreground">{t("analysis.trends.noHistory")}</p>
       </figure>
     );
   }
@@ -114,7 +116,7 @@ export function TrendChart({ title, question, values, labels, format }: TrendCha
         <span>{rangeLabel}</span>
         {change !== null && (
           <span className="tabular-nums" aria-hidden="true">
-            {change >= 0 ? "↑" : "↓"} {Math.abs(Math.round(change))}% over period
+            {change >= 0 ? "↑" : "↓"} {t("analysis.trends.overPeriod", { change: Math.abs(Math.round(change)) })}
           </span>
         )}
       </div>
@@ -124,7 +126,7 @@ export function TrendChart({ title, question, values, labels, format }: TrendCha
         <caption>{summary}</caption>
         <thead>
           <tr>
-            <th scope="col">Period</th>
+            <th scope="col">{t("analysis.trends.period")}</th>
             <th scope="col">{title}</th>
           </tr>
         </thead>
@@ -132,7 +134,7 @@ export function TrendChart({ title, question, values, labels, format }: TrendCha
           {values.map((v, i) => (
             <tr key={labels[i] ?? i}>
               <th scope="row">{labels[i]}</th>
-              <td>{v === null || !Number.isFinite(v) ? "Not available" : format(v)}</td>
+              <td>{v === null || !Number.isFinite(v) ? t("common.notRecorded") : format(v)}</td>
             </tr>
           ))}
         </tbody>

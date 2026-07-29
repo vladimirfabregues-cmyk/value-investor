@@ -24,6 +24,7 @@ import { WhyThisVerdict } from "@/components/analysis/why-this-verdict";
 import { AppShell } from "@/components/shell/app-shell";
 import { TickerSearchForm } from "@/components/ticker/ticker-search-form";
 import { DEFAULT_EXCHANGE_CODE, toYahooTicker } from "@/lib/finance/exchanges";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import { Card, CardContent } from "@/components/ui/card";
 import type { HistoryResponse } from "@/types/api";
 import type { SavedAnalysisRecord, SavedAnalysisSummary, ValueInvestingAnalysis } from "@/types/analysis";
@@ -66,6 +67,7 @@ export function HomeView({
   initialAnalysis = null,
 }: HomeViewProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [history, setHistory] = useState(initialHistory);
   const [ticker, setTicker] = useState(initialTicker);
   const [exchange, setExchange] = useState(initialExchange);
@@ -174,7 +176,7 @@ export function HomeView({
               sections={[
                 {
                   id: "overview",
-                  label: "Overview",
+                  label: t("analysis.tabs.overview"),
                   content: analysis.verdict_explanation ? (
                     <WhyThisVerdict explanation={analysis.verdict_explanation} />
                   ) : (
@@ -183,7 +185,7 @@ export function HomeView({
                 },
                 {
                   id: "valuation",
-                  label: "Valuation",
+                  label: t("analysis.tabs.valuation"),
                   content: (
                     <>
                       <IntrinsicValueCard analysis={analysis} />
@@ -198,29 +200,29 @@ export function HomeView({
                   ? [
                       {
                         id: "trends",
-                        label: "Trends",
+                        label: t("analysis.tabs.trends"),
                         content: <TrendsCard analysis={analysis} />,
                       },
                     ]
                   : []),
                 {
                   id: "health",
-                  label: "Financial health",
+                  label: t("analysis.tabs.health"),
                   content: <FinancialHealthCard analysis={analysis} />,
                 },
                 {
                   id: "quality",
-                  label: "Business quality",
+                  label: t("analysis.tabs.quality"),
                   content: <BusinessQualityCard analysis={analysis} />,
                 },
                 {
                   id: "risks",
-                  label: "Risks and thesis",
+                  label: t("analysis.tabs.risks"),
                   content: <ThesisCard analysis={analysis} />,
                 },
                 {
                   id: "sources",
-                  label: "Sources and methodology",
+                  label: t("analysis.tabs.sources"),
                   content: (
                     <>
                       <DataStatusCard analysis={analysis} />
@@ -236,7 +238,7 @@ export function HomeView({
             {/* Search stays available, but no longer dominates */}
             <details className="rounded-2xl border border-white/[0.07] bg-white/[0.02]">
               <summary className="cursor-pointer list-none px-5 py-3.5 text-sm font-medium text-foreground/90 [&::-webkit-details-marker]:hidden">
-                Analyse another company
+                {t("home.analyseAnother")}
               </summary>
               <div className="border-t border-white/[0.06] p-5">
                 <TickerSearchForm
@@ -256,11 +258,10 @@ export function HomeView({
           <>
             <section className="rounded-2xl border border-white/[0.08] bg-hero-grid p-5 shadow-panel sm:p-8">
               <h1 className="font-display text-4xl leading-tight text-foreground sm:text-5xl">
-                Analyse a stock
+                {t("home.heroTitle")}
               </h1>
               <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
-                Estimate intrinsic value, test downside risk, and understand what could make the
-                investment thesis fail.
+                {t("home.heroSubtitle")}
               </p>
 
               <div className="mt-6 max-w-2xl">
@@ -296,10 +297,12 @@ export function HomeView({
               <section aria-labelledby="recent-heading">
                 <div className="mb-3 flex items-baseline justify-between gap-3">
                   <h2 id="recent-heading" className="text-sm font-medium text-foreground">
-                    Continue where you left off
+                    {t("home.continueHeading")}
                   </h2>
                   <span className="text-xs text-muted-foreground">
-                    {history.length} saved {history.length === 1 ? "analysis" : "analyses"}
+                    {t(history.length === 1 ? "home.savedCountOne" : "home.savedCountOther", {
+                      n: history.length,
+                    })}
                   </span>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -317,9 +320,9 @@ export function HomeView({
               <span className="flex items-center gap-3">
                 <BarChart2 className="h-4 w-4 text-primary" aria-hidden="true" />
                 <span className="text-sm text-foreground">
-                  Browse the Market Screener
+                  {t("home.browseScreener")}
                   <span className="ml-2 text-muted-foreground">
-                    Ten markets already scored
+                    {t("home.browseScreenerHint")}
                   </span>
                 </span>
               </span>

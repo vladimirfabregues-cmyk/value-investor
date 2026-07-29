@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Image from "next/image";
 
 import { AppShell } from "@/components/shell/app-shell";
+import { AboutEyebrow } from "@/components/about/about-eyebrow";
 import { getHistorySummaries } from "@/lib/db/queries";
 
 export default async function AboutPage() {
@@ -23,7 +24,7 @@ export default async function AboutPage() {
           />
 
           <div className="order-2 min-w-0 flex-1 sm:order-1">
-            <div className="text-[11px] uppercase tracking-[0.24em] text-primary/90">About</div>
+            <AboutEyebrow />
             <h1 className="mt-2 font-display text-4xl leading-[1.05] text-foreground sm:text-5xl">
               Vladimir Fabregues
             </h1>

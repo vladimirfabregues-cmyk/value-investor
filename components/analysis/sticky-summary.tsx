@@ -5,6 +5,7 @@ import { RefreshCw } from "lucide-react";
 
 import { exchangeByCode } from "@/lib/finance/exchanges";
 import { formatCurrency } from "@/lib/utils/format";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import type { ValueInvestingAnalysis } from "@/types/analysis";
 
 interface StickySummaryProps {
@@ -34,6 +35,7 @@ export function StickySummary({
   onReanalyse,
   isReanalysing,
 }: StickySummaryProps) {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const reducedMotion = useRef(false);
 
@@ -83,7 +85,7 @@ export function StickySummary({
             className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${verdict.chip}`}
           >
             <span className={`h-1.5 w-1.5 rounded-full ${verdict.dot}`} aria-hidden="true" />
-            {verdict.label}
+            {t(`verdict.${analysis.final_verdict.label}`)}
           </span>
           {onReanalyse && (
             <button
@@ -97,7 +99,7 @@ export function StickySummary({
                 className={`h-3 w-3 ${isReanalysing ? "animate-spin" : ""}`}
                 aria-hidden="true"
               />
-              {isReanalysing ? "Analysing…" : "Analyse again"}
+              {isReanalysing ? t("common.analysing") : t("common.analyseAgain")}
             </button>
           )}
         </div>

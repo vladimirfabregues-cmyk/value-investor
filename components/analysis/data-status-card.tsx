@@ -5,13 +5,14 @@ import { EvidenceHeader } from "@/components/analysis/evidence";
 import { exchangeByCode } from "@/lib/finance/exchanges";
 import { formatCurrency } from "@/lib/utils/format";
 import { formatIsoDate } from "@/lib/utils/dates";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import type { DataStatus, ValueInvestingAnalysis } from "@/types/analysis";
 
-const PRICE_STATE_LABEL: Record<DataStatus["price_state"], string> = {
-  delayed: "Delayed quote",
-  closed: "At last close",
-  prepost: "Extended-hours quote",
-  asof: "As reported",
+const PRICE_STATE_KEY: Record<DataStatus["price_state"], string> = {
+  delayed: "analysis.dataStatus.priceState.delayed",
+  closed: "analysis.dataStatus.priceState.closed",
+  prepost: "analysis.dataStatus.priceState.prepost",
+  asof: "analysis.dataStatus.priceState.asof",
 };
 
 /**
@@ -60,6 +61,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 export function DataStatusCard({ analysis }: { analysis: ValueInvestingAnalysis }) {
+  const { t } = useTranslation();
   const status = analysis.data_status;
   if (!status) return null;
 
@@ -71,13 +73,13 @@ export function DataStatusCard({ analysis }: { analysis: ValueInvestingAnalysis 
       <CardHeader>
         <EvidenceHeader
           icon={<DatabaseZap className="h-5 w-5" />}
-          title="Data status"
-          summary="Exactly what this analysis is based on, and when — so every figure can be traced to its source."
+          title={t("analysis.dataStatus.title")}
+          summary={t("analysis.dataStatus.subtitle")}
         />
       </CardHeader>
       <CardContent>
         <dl className="divide-y divide-white/[0.05] overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.02]">
-          <Row label="Market price">
+          <Row label={t("analysis.dataStatus.marketPrice")}>
             <span className="tabular-nums">
               {formatCurrency(analysis.current_price, status.currency)}
             </span>
@@ -86,55 +88,54 @@ export function DataStatusCard({ analysis }: { analysis: ValueInvestingAnalysis 
               {formatQuoteTime(status.price_as_of, status.price_timezone)}
             </span>
             <span className="ml-1.5 rounded border border-white/10 px-1.5 py-0.5 text-[11px] text-muted-foreground">
-              {PRICE_STATE_LABEL[status.price_state]}
+              {t(PRICE_STATE_KEY[status.price_state])}
             </span>
           </Row>
 
-          <Row label="Income statement">
+          <Row label={t("analysis.dataStatus.incomeStatement")}>
             {status.income_statement_period ? (
               <span className="tabular-nums">
-                Year to {formatIsoDate(status.income_statement_period)}
+                {t("analysis.dataStatus.yearTo", { date: formatIsoDate(status.income_statement_period) })}
               </span>
             ) : (
-              <span className="text-muted-foreground">Not recorded</span>
+              <span className="text-muted-foreground">{t("common.notRecorded")}</span>
             )}
           </Row>
 
-          <Row label="Balance sheet">
+          <Row label={t("analysis.dataStatus.balanceSheet")}>
             {status.balance_sheet_period ? (
               <span className="tabular-nums">
-                As at {formatIsoDate(status.balance_sheet_period)}
+                {t("analysis.dataStatus.asAt", { date: formatIsoDate(status.balance_sheet_period) })}
               </span>
             ) : (
-              <span className="text-muted-foreground">Not recorded</span>
+              <span className="text-muted-foreground">{t("common.notRecorded")}</span>
             )}
           </Row>
 
-          <Row label="Reporting currency">{status.currency}</Row>
+          <Row label={t("analysis.dataStatus.reportingCurrency")}>{status.currency}</Row>
 
-          <Row label="Exchange">{exchange ? `${exchange.name} (${exchange.shortCode})` : status.exchange}</Row>
+          <Row label={t("analysis.dataStatus.exchange")}>{exchange ? `${exchange.name} (${exchange.shortCode})` : status.exchange}</Row>
 
-          <Row label="Sources">
+          <Row label={t("analysis.dataStatus.sources")}>
             {/* Whether a second source was needed is itself provenance */}
             <span>{status.sources.join(" · ")}</span>
             {status.edgar_supplemented && (
               <span className="mt-0.5 block text-xs text-muted-foreground">
-                SEC EDGAR filled gaps Yahoo Finance left; figures were merged, not reconciled for
-                disagreement.
+                {t("analysis.dataStatus.edgarNote")}
               </span>
             )}
           </Row>
 
-          <Row label="Missing fields">
+          <Row label={t("analysis.dataStatus.missingFields")}>
             {status.missing_fields.length === 0 ? (
-              <span className="text-emerald-300">None</span>
+              <span className="text-emerald-300">{t("common.none")}</span>
             ) : (
               <span className="text-amber-300">{status.missing_fields.join(", ")}</span>
             )}
           </Row>
 
           {status.data_quality_notes.length > 0 && (
-            <Row label="Data-quality notes">
+            <Row label={t("analysis.dataStatus.dataQualityNotes")}>
               <ul className="space-y-1 sm:text-right">
                 {status.data_quality_notes.map((note) => (
                   <li key={note} className="text-amber-200/90">
@@ -146,16 +147,19 @@ export function DataStatusCard({ analysis }: { analysis: ValueInvestingAnalysis 
           )}
 
           {a && (
-            <Row label="Model assumptions">
+            <Row label={t("analysis.dataStatus.modelAssumptions")}>
               <span className="tabular-nums text-muted-foreground">
-                {a.discount_rate_pct}% discount · {a.terminal_growth_pct}% terminal growth ·{" "}
-                {a.max_growth_cap_pct}% growth cap
-                {a.use_conservative_fcf_basis ? " · conservative FCF basis" : ""}
+                {t("analysis.dataStatus.assumptionsLine", {
+                  discount: a.discount_rate_pct,
+                  terminal: a.terminal_growth_pct,
+                  cap: a.max_growth_cap_pct,
+                })}
+                {a.use_conservative_fcf_basis ? t("analysis.dataStatus.conservativeFcf") : ""}
               </span>
             </Row>
           )}
 
-          <Row label="Model version">
+          <Row label={t("analysis.dataStatus.modelVersion")}>
             <span className="tabular-nums">{status.model_version}</span>
           </Row>
         </dl>

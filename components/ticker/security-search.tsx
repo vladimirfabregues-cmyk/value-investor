@@ -6,6 +6,7 @@ import { Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { describeResultMarket, type SecuritySearchResult } from "@/lib/finance/security-search";
 import { exchangeByCode } from "@/lib/finance/exchanges";
+import { useTranslation } from "@/lib/i18n/locale-context";
 
 interface SecuritySearchProps {
   value: string;
@@ -33,6 +34,7 @@ export function SecuritySearch({
   onValueChange,
   onSelect,
 }: SecuritySearchProps) {
+  const { t } = useTranslation();
   const id = useId();
   const listboxId = `${id}-listbox`;
   const errorId = `${id}-error`;
@@ -144,7 +146,7 @@ export function SecuritySearch({
   return (
     <div ref={containerRef}>
       <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-foreground">
-        Ticker or company
+        {t("form.tickerLabel")}
       </label>
 
       <div className="relative">
@@ -165,7 +167,9 @@ export function SecuritySearch({
           autoComplete="off"
           spellCheck={false}
           placeholder={
-            selectedExchange ? `Search ${selectedExchange.shortCode} by ticker or name` : "Search"
+            selectedExchange
+              ? t("form.tickerPlaceholderMarket", { market: selectedExchange.shortCode })
+              : t("form.tickerPlaceholder")
           }
           className="h-12 pl-11 pr-10"
           onChange={(event) => {
@@ -221,11 +225,11 @@ export function SecuritySearch({
       {/* Status is announced politely rather than as an error */}
       <p id={statusId} role="status" aria-live="polite" className="mt-1.5 text-xs text-muted-foreground">
         {searching
-          ? "Searching…"
+          ? t("form.searching")
           : showEmpty
-            ? `No companies found on ${selectedExchange?.name ?? "this market"}. Check the market, or try the company's full name.`
+            ? t("form.noResults", { market: selectedExchange?.name ?? "" })
             : selectedExchange
-              ? `Searching ${selectedExchange.name} only.`
+              ? t("form.searchingMarket", { market: selectedExchange.name })
               : ""}
       </p>
 

@@ -3,6 +3,7 @@
 import { useId } from "react";
 
 import { EXCHANGES } from "@/lib/finance/exchanges";
+import { useTranslation } from "@/lib/i18n/locale-context";
 
 interface MarketSelectorProps {
   value: string;
@@ -19,6 +20,7 @@ interface MarketSelectorProps {
 export function MarketSelector({ value, onChange, disabled = false }: MarketSelectorProps) {
   const id = useId();
   const hintId = `${id}-hint`;
+  const { t } = useTranslation();
 
   if (EXCHANGES.length === 0) {
     return (
@@ -39,7 +41,7 @@ export function MarketSelector({ value, onChange, disabled = false }: MarketSele
   return (
     <div>
       <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-foreground">
-        Market or exchange
+        {t("form.marketLabel")}
       </label>
       <select
         id={id}
@@ -60,7 +62,7 @@ export function MarketSelector({ value, onChange, disabled = false }: MarketSele
         ))}
       </select>
       <p id={hintId} className="mt-1.5 text-xs text-muted-foreground">
-        Choose the market first — the same ticker can exist on several exchanges.
+        {t("form.marketHint")}
       </p>
     </div>
   );

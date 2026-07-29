@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { describeValuationGap } from "@/lib/finance/valuation-gap";
 import { inferExchangeFromTicker } from "@/lib/finance/exchanges";
 import { CAP_LABELS } from "@/lib/finance/verdict-explanation";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import type { ScreenResultRecord } from "@/lib/db/screen-queries";
 import type { NewsArticle } from "@/app/api/screen/news/route";
 
@@ -16,35 +17,21 @@ interface VerdictModalProps {
   children: React.ReactNode;
 }
 
-const VERDICT_CONFIG: Record<string, { label: string; dot: string; text: string; chip: string; summary: string }> = {
-  STRONG_BUY: {
-    label: "Strong Buy", dot: "bg-emerald-400", text: "text-emerald-300", chip: "border-emerald-500/30 bg-emerald-500/10",
-    summary: "Scores well across all dimensions and trades at a meaningful, corroborated discount to estimated intrinsic value.",
-  },
-  BUY: {
-    label: "Buy", dot: "bg-green-400", text: "text-green-300", chip: "border-green-500/25 bg-green-500/10",
-    summary: "Solid fundamentals with a reasonable margin of safety. Minor concerns in one area don't outweigh the overall opportunity.",
-  },
-  WATCH: {
-    label: "Watch", dot: "bg-amber-400", text: "text-amber-300", chip: "border-amber-500/25 bg-amber-500/10",
-    summary: "Interesting on some metrics but not compelling enough yet. Worth monitoring for a better entry point.",
-  },
-  HOLD: {
-    label: "Hold", dot: "bg-slate-400", text: "text-slate-300", chip: "border-slate-500/30 bg-slate-500/10",
-    summary: "Fairly valued with mixed characteristics. Neither an attractive purchase nor a clear exit.",
-  },
-  AVOID: {
-    label: "Avoid", dot: "bg-red-400", text: "text-red-300", chip: "border-red-500/25 bg-red-500/10",
-    summary: "Weak fundamentals, poor financial health, or trading at a premium to intrinsic value.",
-  },
+// Verdict styling only; label + summary come from i18n keyed by verdict.
+const VERDICT_STYLE: Record<string, { dot: string; text: string; chip: string }> = {
+  STRONG_BUY: { dot: "bg-emerald-400", text: "text-emerald-300", chip: "border-emerald-500/30 bg-emerald-500/10" },
+  BUY: { dot: "bg-green-400", text: "text-green-300", chip: "border-green-500/25 bg-green-500/10" },
+  WATCH: { dot: "bg-amber-400", text: "text-amber-300", chip: "border-amber-500/25 bg-amber-500/10" },
+  HOLD: { dot: "bg-slate-400", text: "text-slate-300", chip: "border-slate-500/30 bg-slate-500/10" },
+  AVOID: { dot: "bg-red-400", text: "text-red-300", chip: "border-red-500/25 bg-red-500/10" },
 };
 
-function band(score: number): { label: string; color: string } {
-  if (score >= 85) return { label: "Elite", color: "text-emerald-300" };
-  if (score >= 70) return { label: "Strong", color: "text-green-300" };
-  if (score >= 55) return { label: "Mixed", color: "text-amber-300" };
-  if (score >= 40) return { label: "Weak", color: "text-orange-300" };
-  return { label: "Poor", color: "text-red-300" };
+function band(score: number): { labelKey: string; color: string } {
+  if (score >= 85) return { labelKey: "screen.modal.bands.elite", color: "text-emerald-300" };
+  if (score >= 70) return { labelKey: "screen.modal.bands.strong", color: "text-green-300" };
+  if (score >= 55) return { labelKey: "screen.modal.bands.mixed", color: "text-amber-300" };
+  if (score >= 40) return { labelKey: "screen.modal.bands.weak", color: "text-orange-300" };
+  return { labelKey: "screen.modal.bands.poor", color: "text-red-300" };
 }
 
 function fmtX(n: number | null | undefined, decimals = 1): string {
@@ -83,21 +70,31 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
   );
 }
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string, t: (key: string, vars?: Record<string, string | number>) => string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const h = Math.floor(diff / 3_600_000);
-  if (h < 1) return "just now";
-  if (h < 24) return `${h}h ago`;
+  if (h < 1) return t("screen.modal.justNow");
+  if (h < 24) return t("screen.modal.hoursAgo", { h });
   const d = Math.floor(h / 24);
-  return `${d}d ago`;
+  return t("screen.modal.daysAgo", { d });
 }
 
 export function VerdictModal({ row, children }: VerdictModalProps) {
-  const cfg = VERDICT_CONFIG[row.verdictLabel] ?? VERDICT_CONFIG.AVOID;
+  const { t } = useTranslation();
+  const style = VERDICT_STYLE[row.verdictLabel] ?? VERDICT_STYLE.AVOID;
+  const verdictKey = VERDICT_STYLE[row.verdictLabel] ? row.verdictLabel : "AVOID";
   const compositeBand = band(row.compositeScore);
   const caps = row.verdictCaps ? row.verdictCaps.split(",") : [];
   // Negative gaps are premiums, not negative margins of safety.
   const gap = describeValuationGap(row.marginOfSafety);
+  const gapLabelKey =
+    gap.kind === "margin"
+      ? "analysis.decision.marginOfSafetyLabel"
+      : gap.kind === "premium"
+        ? "analysis.decision.premiumLabel"
+        : gap.display === "—"
+          ? "analysis.decision.marginOfSafetyLabel"
+          : "analysis.decision.pricedLabel";
 
   const [news, setNews] = useState<NewsArticle[] | null>(null);
   const [newsLoading, setNewsLoading] = useState(false);
@@ -124,9 +121,9 @@ export function VerdictModal({ row, children }: VerdictModalProps) {
               <div className="min-w-0">
                 <div className="flex items-center gap-2.5">
                   <DialogTitle className="font-mono text-2xl tracking-tight text-primary">{row.ticker}</DialogTitle>
-                  <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${cfg.chip} ${cfg.text}`}>
-                    <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-                    {cfg.label}
+                  <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${style.chip} ${style.text}`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
+                    {t(`verdict.${verdictKey}`)}
                   </span>
                 </div>
                 <p className="mt-1 truncate text-sm text-foreground/85">{row.companyName}</p>
@@ -135,7 +132,7 @@ export function VerdictModal({ row, children }: VerdictModalProps) {
                 </p>
               </div>
               <div className="shrink-0 text-right">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Price</div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t("screen.modal.price")}</div>
                 <div className="mt-0.5 font-display text-xl tabular-nums text-foreground">
                   <span className="text-sm text-muted-foreground">{row.currency}</span>{" "}
                   {row.price?.toFixed(2) ?? "—"}
@@ -143,7 +140,7 @@ export function VerdictModal({ row, children }: VerdictModalProps) {
               </div>
             </div>
             <DialogDescription className="mt-3 text-sm leading-6 text-muted-foreground">
-              {cfg.summary}
+              {t(`screen.modal.summaries.${verdictKey}`)}
             </DialogDescription>
           </DialogHeader>
 
@@ -168,23 +165,23 @@ export function VerdictModal({ row, children }: VerdictModalProps) {
           <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4">
             <div className="mb-4 flex items-baseline justify-between">
               <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                Composite Score
+                {t("screen.modal.compositeScore")}
               </span>
               <div className="flex items-baseline gap-2">
-                <span className={`text-xs font-medium ${compositeBand.color}`}>{compositeBand.label}</span>
+                <span className={`text-xs font-medium ${compositeBand.color}`}>{t(compositeBand.labelKey)}</span>
                 <span className="font-display text-3xl tabular-nums text-foreground">{Math.round(row.compositeScore)}</span>
                 <span className="text-sm text-muted-foreground">/ 100</span>
               </div>
             </div>
             <div className="space-y-2.5">
-              <ScoreBar label="Valuation" score={row.valuationScore} />
-              <ScoreBar label="Health" score={row.healthScore} />
-              <ScoreBar label="Quality" score={row.qualityScore} />
-              <ScoreBar label="Moat" score={row.moatScore} />
+              <ScoreBar label={t("screen.modal.scoreBars.valuation")} score={row.valuationScore} />
+              <ScoreBar label={t("screen.modal.scoreBars.health")} score={row.healthScore} />
+              <ScoreBar label={t("screen.modal.scoreBars.quality")} score={row.qualityScore} />
+              <ScoreBar label={t("screen.modal.scoreBars.moat")} score={row.moatScore} />
             </div>
             <div className="mt-4 flex items-center justify-between border-t border-white/[0.06] pt-3">
-              <span className="text-xs text-muted-foreground" title="Versus the sector-appropriate intrinsic value model">
-                {gap.label}
+              <span className="text-xs text-muted-foreground" title={t("screen.modal.gapTitle")}>
+                {t(gapLabelKey)}
               </span>
               <span className={`font-display text-lg tabular-nums ${
                 gap.tone === "positive" ? "text-emerald-300" : gap.tone === "negative" ? "text-red-300" : "text-foreground"
@@ -193,27 +190,26 @@ export function VerdictModal({ row, children }: VerdictModalProps) {
               </span>
             </div>
             <p className="mt-2 text-[10px] leading-4 text-muted-foreground">
-              Component weights are sector-aware; financials, REITs, and utilities are valued on
-              justified P/B, NAV, and dividend-discount models respectively rather than FCF.
+              {t("screen.modal.weightsNote")}
             </p>
           </div>
 
           {/* ── Valuation ratios ── */}
           <div>
             <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-              Valuation Ratios
+              {t("screen.modal.valuationRatios")}
             </p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              <StatTile label="P / E" value={fmtX(row.pe)} />
-              <StatTile label="P / B" value={fmtX(row.pb, 2)} />
-              <StatTile label="P / S" value={fmtX(row.ps)} />
-              <StatTile label="EV / EBITDA" value={fmtX(row.evEbitda)} />
-              <StatTile label="Price / FCF" value={fmtX(row.priceFcf)} />
+              <StatTile label={t("screen.modal.ratios.pe")} value={fmtX(row.pe)} />
+              <StatTile label={t("screen.modal.ratios.pb")} value={fmtX(row.pb, 2)} />
+              <StatTile label={t("screen.modal.ratios.ps")} value={fmtX(row.ps)} />
+              <StatTile label={t("screen.modal.ratios.evEbitda")} value={fmtX(row.evEbitda)} />
+              <StatTile label={t("screen.modal.ratios.priceFcf")} value={fmtX(row.priceFcf)} />
               <StatTile
-                label="Graham №"
+                label={t("screen.modal.ratios.graham")}
                 value={row.grahamNumber != null ? `${row.currency ?? ""} ${row.grahamNumber.toFixed(2)}` : "—"}
                 note={row.grahamNumber !== null && row.price > 0
-                  ? row.price <= row.grahamNumber ? "Price below Graham threshold" : "Price above Graham threshold"
+                  ? row.price <= row.grahamNumber ? t("screen.modal.grahamBelow") : t("screen.modal.grahamAbove")
                   : undefined}
               />
             </div>
@@ -222,16 +218,16 @@ export function VerdictModal({ row, children }: VerdictModalProps) {
           {/* ── News ── */}
           <div>
             <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-              Recent News
+              {t("screen.modal.recentNews")}
             </p>
             {newsLoading && (
               <div className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-4 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin text-primary" /> Loading news…
+                <Loader2 className="h-4 w-4 animate-spin text-primary" /> {t("screen.modal.loadingNews")}
               </div>
             )}
             {!newsLoading && news !== null && news.length === 0 && (
               <p className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-sm text-muted-foreground">
-                No recent news found.
+                {t("screen.modal.noNews")}
               </p>
             )}
             {!newsLoading && news !== null && news.length > 0 && (
@@ -247,7 +243,7 @@ export function VerdictModal({ row, children }: VerdictModalProps) {
                     <div className="min-w-0">
                       <p className="truncate text-sm text-foreground/90 group-hover:text-foreground">{article.title}</p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        {article.publisher} · {timeAgo(article.publishedAt)}
+                        {article.publisher} · {timeAgo(article.publishedAt, t)}
                       </p>
                     </div>
                     <ExternalLink className="mt-1 h-3.5 w-3.5 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary" />
@@ -260,13 +256,13 @@ export function VerdictModal({ row, children }: VerdictModalProps) {
           {/* ── Footer ── */}
           <div className="flex items-center justify-between border-t border-white/[0.06] pt-4">
             <p className="text-[11px] text-muted-foreground">
-              Yahoo Finance + SEC EDGAR · Deterministic scoring
+              {t("screen.modal.footer")}
             </p>
             <Link
               href={`/?exchange=${inferExchangeFromTicker(row.ticker).code}&ticker=${encodeURIComponent(row.ticker)}`}
               className="inline-flex items-center gap-1.5 rounded-lg border border-primary/35 bg-primary/10 px-3.5 py-1.5 text-xs font-medium text-primary transition-all hover:bg-primary/20 hover:shadow-[0_4px_16px_rgba(181,148,88,0.2)]"
             >
-              Run full analysis <ArrowRight className="h-3 w-3" />
+              {t("screen.modal.runFullAnalysis")} <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
         </div>

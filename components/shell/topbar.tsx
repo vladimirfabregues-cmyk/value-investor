@@ -9,23 +9,25 @@ import { SidebarHistory } from "@/components/shell/sidebar-history";
 import { HistorySkeleton } from "@/components/shell/shell-layout";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { historyLabel } from "@/lib/utils/history-panel";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import type { SavedAnalysisSummary } from "@/types/analysis";
 
 interface TopbarProps {
   history: SavedAnalysisSummary[];
 }
 
-// British English labels; routes deliberately unchanged so saved links keep working.
+// Routes deliberately unchanged so saved links keep working; labels are keyed.
 const NAV = [
-  { href: "/", label: "Analyse stock" },
-  { href: "/screen", label: "Market Screener" },
-  { href: "/compare", label: "Compare stocks" },
-  { href: "/about", label: "About" },
+  { href: "/", key: "nav.analyse" },
+  { href: "/screen", key: "nav.screener" },
+  { href: "/compare", key: "nav.compare" },
+  { href: "/about", key: "nav.about" },
 ] as const;
 
 export function Topbar({ history }: TopbarProps) {
   const pathname = usePathname();
+  const { t } = useTranslation();
+  const historyTitle = t("history.title");
 
   return (
     <div className="sticky top-0 z-40 border-b border-white/[0.06] bg-[rgba(4,9,17,0.82)] backdrop-blur-xl">
@@ -37,18 +39,16 @@ export function Topbar({ history }: TopbarProps) {
                 variant="secondary"
                 size="icon"
                 className="lg:hidden"
-                aria-label={`Open ${historyLabel(history.length).toLowerCase()}`}
+                aria-label={t("history.open", { label: historyTitle })}
               >
                 <Menu className="h-5 w-5" aria-hidden="true" />
-                <span className="sr-only">Open {historyLabel(history.length).toLowerCase()}</span>
+                <span className="sr-only">{t("history.open", { label: historyTitle })}</span>
               </Button>
             </SheetTrigger>
-            <SheetContent className="p-0" closeLabel="Close history">
+            <SheetContent className="p-0" closeLabel={t("common.cancel")}>
               {/* Radix requires a title for the dialog's accessible name */}
-              <SheetTitle className="sr-only">{historyLabel(history.length)}</SheetTitle>
-              <SheetDescription className="sr-only">
-                Your saved analyses and verdict snapshots.
-              </SheetDescription>
+              <SheetTitle className="sr-only">{`${historyTitle} (${history.length})`}</SheetTitle>
+              <SheetDescription className="sr-only">{t("history.subtitle")}</SheetDescription>
               <div className="h-full overflow-y-auto p-6">
                 <Suspense fallback={<HistorySkeleton />}>
                   <SidebarHistory history={history} />
@@ -64,7 +64,7 @@ export function Topbar({ history }: TopbarProps) {
             <div className="hidden sm:block">
               <div className="font-display text-xl leading-none text-foreground">Value Investor</div>
               <div className="mt-0.5 text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
-                Conservative Equity Analysis
+                {t("nav.tagline")}
               </div>
             </div>
           </Link>
@@ -72,10 +72,10 @@ export function Topbar({ history }: TopbarProps) {
 
         {/* Own full-width row on mobile so the items never force horizontal page scroll */}
         <nav
-          aria-label="Primary"
+          aria-label={t("nav.primaryLabel")}
           className="order-3 flex w-full items-center gap-1 overflow-x-auto rounded-full border border-white/[0.07] bg-white/[0.03] p-1 sm:order-none sm:w-auto sm:overflow-visible"
         >
-          {NAV.map(({ href, label }) => {
+          {NAV.map(({ href, key }) => {
             const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
             return (
               <Link
@@ -88,7 +88,7 @@ export function Topbar({ history }: TopbarProps) {
                     : "text-muted-foreground hover:bg-white/[0.04] hover:text-foreground"
                 }`}
               >
-                {label}
+                {t(key)}
               </Link>
             );
           })}
@@ -98,7 +98,7 @@ export function Topbar({ history }: TopbarProps) {
             feed is delayed; per-analysis timing lives in the Data status panel) */}
         <div className="hidden items-center gap-1.5 text-xs text-muted-foreground md:flex">
           <Database className="h-3.5 w-3.5" aria-hidden="true" />
-          Yahoo Finance · SEC EDGAR
+          {t("nav.dataSources")}
         </div>
       </div>
     </div>

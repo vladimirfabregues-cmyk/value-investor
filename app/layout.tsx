@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
 import "@/app/globals.css";
+import { LanguageToggle } from "@/components/i18n/language-toggle";
+import { LocaleProvider } from "@/lib/i18n/locale-context";
 
 export const metadata: Metadata = {
   title: "Value Investor — Conservative Equity Analysis",
@@ -37,7 +39,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <LocaleProvider>
+          {children}
+          <LanguageToggle />
+        </LocaleProvider>
+      </body>
     </html>
   );
 }

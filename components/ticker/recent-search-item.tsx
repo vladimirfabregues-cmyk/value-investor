@@ -17,7 +17,8 @@ import { cn } from "@/lib/utils/cn";
 import { formatIsoDate } from "@/lib/utils/dates";
 import { verdictClasses } from "@/lib/utils/format";
 import { exchangeByCode } from "@/lib/finance/exchanges";
-import { formatValuationGapShort } from "@/lib/finance/valuation-gap";
+import { describeValuationGap } from "@/lib/finance/valuation-gap";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import { MAX_NOTE_LENGTH } from "@/lib/history/history-prefs";
 import type { ChangeDescription } from "@/lib/history/history-changes";
 import type { SavedAnalysisSummary } from "@/types/analysis";
@@ -60,7 +61,17 @@ export function RecentSearchItem({
   onToggleArchive,
   onNoteChange,
 }: RecentSearchItemProps) {
+  const { t } = useTranslation();
   const exchange = exchangeByCode(item.exchange);
+  const gap = describeValuationGap(item.marginOfSafetyPct);
+  const gapText =
+    gap.magnitudePct === null
+      ? "—"
+      : gap.kind === "margin"
+        ? t("analysis.evidence.marginOfSafety", { value: gap.display })
+        : gap.kind === "premium"
+          ? t("analysis.evidence.premium", { value: gap.display })
+          : t("analysis.evidence.pricedAtValue");
   const [editingNote, setEditingNote] = useState(false);
   const [draftNote, setDraftNote] = useState(note);
   const noteRef = useRef<HTMLTextAreaElement>(null);
@@ -93,7 +104,7 @@ export function RecentSearchItem({
         <div className="min-w-0">
           <div className="flex items-baseline gap-1.5">
             {pinned && (
-              <Pin className="h-3 w-3 shrink-0 self-center text-primary" aria-label="Pinned" />
+              <Pin className="h-3 w-3 shrink-0 self-center text-primary" aria-label={t("history.pinned")} />
             )}
             <span className="text-sm font-semibold tracking-[0.18em] text-foreground">
               {item.ticker}
@@ -114,17 +125,15 @@ export function RecentSearchItem({
           </Link>
         </div>
         <Badge className={cn("shrink-0", verdictClasses(item.finalVerdictLabel))}>
-          {item.finalVerdictLabel.replace("_", " ")}
+          {t(`verdict.${item.finalVerdictLabel}`)}
         </Badge>
       </div>
 
       {/* Why the verdict landed there, then the gap, then when */}
       <p className="text-xs leading-5 text-zinc-300">{item.verdictReason}</p>
+      <p className="text-xs leading-5 text-muted-foreground">{gapText}</p>
       <p className="text-xs leading-5 text-muted-foreground">
-        {formatValuationGapShort(item.marginOfSafetyPct)}
-      </p>
-      <p className="text-xs leading-5 text-muted-foreground">
-        Analysed {formatIsoDate(item.analysisDate)}
+        {t("common.analysedOn", { date: formatIsoDate(item.analysisDate) })}
       </p>
 
       {/* What changed since the previous run of this same security */}
@@ -148,7 +157,7 @@ export function RecentSearchItem({
       {editingNote && (
         <div className="relative z-10 mt-2">
           <label htmlFor={`note-${item.id}`} className="sr-only">
-            Note on {item.companyName}
+            {t("history.item.notePlaceholder")}
           </label>
           <textarea
             id={`note-${item.id}`}
@@ -156,7 +165,7 @@ export function RecentSearchItem({
             value={draftNote}
             maxLength={MAX_NOTE_LENGTH}
             rows={3}
-            placeholder="Your note on this company"
+            placeholder={t("history.item.notePlaceholder")}
             onChange={(event) => setDraftNote(event.target.value)}
             onBlur={commitNote}
             onKeyDown={(event) => {
@@ -182,19 +191,19 @@ export function RecentSearchItem({
           <Link
             href={`/?exchange=${encodeURIComponent(item.exchange)}&ticker=${encodeURIComponent(item.ticker)}`}
             className={ACTION_CLASS}
-            title="Analyse again"
+            title={t("common.analyseAgain")}
           >
             <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="sr-only">Analyse {item.ticker} again</span>
+            <span className="sr-only">{t("history.item.analyseAgain", { ticker: item.ticker })}</span>
           </Link>
 
           <Link
             href={`/compare?left=${encodeURIComponent(item.id)}`}
             className={ACTION_CLASS}
-            title="Compare"
+            title={t("common.compare")}
           >
             <GitCompareArrows className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="sr-only">Compare {item.ticker} with another company</span>
+            <span className="sr-only">{t("history.item.compareWith", { ticker: item.ticker })}</span>
           </Link>
 
           {onNoteChange && (
@@ -202,12 +211,14 @@ export function RecentSearchItem({
               type="button"
               onClick={() => setEditingNote((open) => !open)}
               className={ACTION_CLASS}
-              title={note ? "Edit note" : "Add note"}
+              title={note ? t("history.item.editNote") : t("history.item.addNote")}
               aria-expanded={editingNote}
             >
               <StickyNote className="h-3.5 w-3.5" aria-hidden="true" />
               <span className="sr-only">
-                {note ? "Edit the note on" : "Add a note to"} {item.ticker}
+                {note
+                  ? t("history.item.editNoteOn", { ticker: item.ticker })
+                  : t("history.item.addNoteTo", { ticker: item.ticker })}
               </span>
             </button>
           )}
@@ -217,7 +228,7 @@ export function RecentSearchItem({
               type="button"
               onClick={onTogglePin}
               className={ACTION_CLASS}
-              title={pinned ? "Unpin" : "Pin to the top"}
+              title={pinned ? t("history.item.unpin") : t("history.item.pin")}
               aria-pressed={pinned}
             >
               {pinned ? (
@@ -226,7 +237,9 @@ export function RecentSearchItem({
                 <Pin className="h-3.5 w-3.5" aria-hidden="true" />
               )}
               <span className="sr-only">
-                {pinned ? "Unpin" : "Pin"} {item.ticker}
+                {pinned
+                  ? t("history.item.unpinTicker", { ticker: item.ticker })
+                  : t("history.item.pinTicker", { ticker: item.ticker })}
               </span>
             </button>
           )}
@@ -236,7 +249,7 @@ export function RecentSearchItem({
               type="button"
               onClick={onToggleArchive}
               className={ACTION_CLASS}
-              title={archived ? "Restore" : "Archive"}
+              title={archived ? t("history.item.restore") : t("history.item.archive")}
               aria-pressed={archived}
             >
               {archived ? (
@@ -245,7 +258,9 @@ export function RecentSearchItem({
                 <Archive className="h-3.5 w-3.5" aria-hidden="true" />
               )}
               <span className="sr-only">
-                {archived ? "Restore this analysis of" : "Archive this analysis of"} {item.ticker}
+                {archived
+                  ? t("history.item.restoreTicker", { ticker: item.ticker })
+                  : t("history.item.archiveTicker", { ticker: item.ticker })}
               </span>
             </button>
           )}

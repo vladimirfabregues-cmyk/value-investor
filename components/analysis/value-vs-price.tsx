@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils/cn";
 import { formatCurrency } from "@/lib/utils/format";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import type { ValueInvestingAnalysis } from "@/types/analysis";
 
 /**
@@ -12,14 +13,15 @@ import type { ValueInvestingAnalysis } from "@/types/analysis";
  * tone only reinforces meaning that text already carries.
  */
 export function ValueVsPrice({ analysis }: { analysis: ValueInvestingAnalysis }) {
+  const { t } = useTranslation();
   const currency = analysis.currency;
   const price = analysis.current_price;
   const iv = analysis.intrinsic_value;
 
   const estimates = [
-    { label: "DCF value", value: iv.dcf_value_per_share },
-    { label: "Graham value", value: iv.graham_value_per_share },
-    { label: "Estimated value", value: iv.blended_intrinsic_value_per_share, emphasis: true },
+    { label: t("analysis.valueVsPrice.dcfValue"), value: iv.dcf_value_per_share },
+    { label: t("analysis.valueVsPrice.grahamValue"), value: iv.graham_value_per_share },
+    { label: t("analysis.valueVsPrice.estimatedValue"), value: iv.blended_intrinsic_value_per_share, emphasis: true },
   ].filter((e): e is { label: string; value: number; emphasis?: boolean } =>
     e.value !== null && Number.isFinite(e.value),
   );
@@ -27,17 +29,15 @@ export function ValueVsPrice({ analysis }: { analysis: ValueInvestingAnalysis })
   if (!Number.isFinite(price) || estimates.length === 0) {
     return (
       <figure className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-        <figcaption className="text-sm font-medium text-foreground">Price vs estimated value</figcaption>
-        <p className="mt-3 text-xs text-muted-foreground">
-          Estimated value could not be computed for this company.
-        </p>
+        <figcaption className="text-sm font-medium text-foreground">{t("analysis.valueVsPrice.title")}</figcaption>
+        <p className="mt-3 text-xs text-muted-foreground">{t("analysis.valueVsPrice.unavailable")}</p>
       </figure>
     );
   }
 
   const max = Math.max(price, ...estimates.map((e) => e.value)) * 1.08;
   const rows = [
-    { label: "Current price", value: price, kind: "price" as const, emphasis: false },
+    { label: t("analysis.valueVsPrice.currentPrice"), value: price, kind: "price" as const, emphasis: false },
     ...estimates.map((e) => ({
       label: e.label,
       value: e.value,
@@ -49,10 +49,10 @@ export function ValueVsPrice({ analysis }: { analysis: ValueInvestingAnalysis })
   return (
     <figure className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
       <figcaption className="flex items-baseline justify-between gap-2">
-        <span className="text-sm font-medium text-foreground">Price vs estimated value</span>
+        <span className="text-sm font-medium text-foreground">{t("analysis.valueVsPrice.title")}</span>
       </figcaption>
       <p className="mt-0.5 text-xs leading-4 text-muted-foreground">
-        Where the market price sits against each valuation model, per share.
+        {t("analysis.valueVsPrice.subtitle")}
       </p>
 
       <div className="relative mt-4">
@@ -92,7 +92,7 @@ export function ValueVsPrice({ analysis }: { analysis: ValueInvestingAnalysis })
                     {deltaPct !== null && (
                       <span className="ml-1 text-muted-foreground">
                         ({above ? "+" : ""}
-                        {Math.round(deltaPct)}% vs price)
+                        {Math.round(deltaPct)}% {t("analysis.valueVsPrice.vsPrice")})
                       </span>
                     )}
                   </span>
@@ -104,9 +104,7 @@ export function ValueVsPrice({ analysis }: { analysis: ValueInvestingAnalysis })
       </div>
 
       <p className="mt-3 text-[11px] leading-4 text-muted-foreground">
-        A bar that stops short of the dashed price line means the estimate is below the market price
-        — a premium. A bar that extends past it means the estimate exceeds the price — a discount, i.e.
-        a margin of safety.
+        {t("analysis.valueVsPrice.explainer")}
       </p>
     </figure>
   );

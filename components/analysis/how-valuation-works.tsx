@@ -2,6 +2,8 @@
 
 import { ChevronDown } from "lucide-react";
 
+import { useTranslation } from "@/lib/i18n/locale-context";
+
 /**
  * Methodology detail, deliberately collapsed.
  *
@@ -10,10 +12,11 @@ import { ChevronDown } from "lucide-react";
  * browser without JavaScript, and is announced correctly by screen readers.
  */
 export function HowValuationWorks() {
+  const { t } = useTranslation();
   return (
     <details className="group rounded-2xl border border-white/[0.07] bg-white/[0.02]">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 text-sm font-medium text-foreground/90 [&::-webkit-details-marker]:hidden">
-        How the valuation works
+        {t("analysis.methodology.title")}
         <ChevronDown
           className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
           aria-hidden="true"
@@ -66,8 +69,7 @@ export function HowValuationWorks() {
         </p>
 
         <p className="text-xs text-muted-foreground">
-          This is research tooling, not investment advice. Figures are estimates from third-party
-          data and may be incomplete or wrong.
+          {t("analysis.methodology.disclaimer")}
         </p>
       </div>
     </details>

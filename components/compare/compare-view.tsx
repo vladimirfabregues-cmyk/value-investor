@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils/cn";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import {
   buildComparison,
   countUnavailableRows,
@@ -43,6 +44,7 @@ function ValueCell({
   favoured: boolean;
   companyName: string;
 }) {
+  const { t } = useTranslation();
   return (
     <td
       className={cn(
@@ -51,7 +53,7 @@ function ValueCell({
       )}
     >
       {value}
-      {favoured && <span className="sr-only"> — stronger on this metric: {companyName}</span>}
+      {favoured && <span className="sr-only">{t("compare.strongerOn", { name: companyName })}</span>}
     </td>
   );
 }
@@ -71,6 +73,7 @@ function MetricTable({
   leftTicker: string;
   rightTicker: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[36rem] border-collapse text-left">
@@ -80,7 +83,7 @@ function MetricTable({
         <thead>
           <tr className="border-b border-white/10">
             <th scope="col" className="px-3 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Metric
+              {t("compare.metric")}
             </th>
             <th scope="col" className="px-3 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
               {leftTicker}
@@ -89,7 +92,7 @@ function MetricTable({
               {rightTicker}
             </th>
             <th scope="col" className="px-3 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Difference
+              {t("compare.difference")}
             </th>
           </tr>
         </thead>
@@ -187,6 +190,7 @@ export function CompareView({
   initialLeftId = null,
   initialRightId = null,
 }: CompareViewProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const [history] = useState(initialHistory);
 
@@ -240,14 +244,14 @@ export function CompareView({
 
         if (!response.ok || !("items" in payload)) {
           throw new Error(
-            ("error" in payload && payload.error) || "Unable to compare these analyses.",
+            ("error" in payload && payload.error) || t("compare.error"),
           );
         }
         if (!cancelled) setItems(payload.items);
       } catch (caughtError) {
         if (!cancelled) {
           setError(
-            caughtError instanceof Error ? caughtError.message : "Unable to compare these analyses.",
+            caughtError instanceof Error ? caughtError.message : t("compare.error"),
           );
           setItems([]);
         }
@@ -344,16 +348,15 @@ export function CompareView({
       <div className="space-y-6">
         <section className="rounded-2xl border border-white/[0.08] bg-hero-grid p-5 shadow-panel sm:p-8">
           <h1 className="font-display text-4xl leading-tight text-foreground sm:text-5xl">
-            Compare stocks
+            {t("compare.title")}
           </h1>
           <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
-            Put two analysed companies side by side — verdict and valuation first, then the
-            fundamentals, the risks, and the model differences that qualify both.
+            {t("compare.subtitle")}
           </p>
 
           <div className="mt-6 grid gap-4 lg:grid-cols-[1fr,auto,1fr] lg:items-start">
             <CompareSlot
-              label="First company"
+              label={t("compare.firstCompany")}
               selected={leftId ? summaryById.get(leftId) ?? null : null}
               history={history}
               excludeId={rightId}
@@ -367,15 +370,15 @@ export function CompareView({
                 size="icon"
                 onClick={swap}
                 disabled={!leftId || !rightId}
-                title="Swap the two companies"
+                title={t("compare.swap")}
               >
                 <ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
-                <span className="sr-only">Swap the two companies</span>
+                <span className="sr-only">{t("compare.swap")}</span>
               </Button>
             </div>
 
             <CompareSlot
-              label="Second company"
+              label={t("compare.secondCompany")}
               selected={rightId ? summaryById.get(rightId) ?? null : null}
               history={history}
               excludeId={leftId}
@@ -386,7 +389,7 @@ export function CompareView({
 
           {fromSeed && (
             <p className="mt-4 text-xs text-muted-foreground">
-              Started from your two most recent analyses. Change or remove either one.
+              {t("compare.fromSeed")}
             </p>
           )}
         </section>
@@ -394,7 +397,7 @@ export function CompareView({
         {saved.length > 0 && (
           <section aria-labelledby="saved-comparisons">
             <h2 id="saved-comparisons" className="mb-2 text-sm font-medium text-foreground">
-              Saved comparisons
+              {t("compare.savedComparisons")}
             </h2>
             <div className="flex flex-wrap gap-2">
               {saved.map((entry) => (
@@ -421,10 +424,10 @@ export function CompareView({
                       writeSavedComparisons(next);
                     }}
                     className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition hover:text-red-300"
-                    title={`Remove ${entry.label}`}
+                    title={t("compare.removeSaved", { label: entry.label })}
                   >
                     <Trash2 className="h-3 w-3" aria-hidden="true" />
-                    <span className="sr-only">Remove {entry.label}</span>
+                    <span className="sr-only">{t("compare.removeSaved", { label: entry.label })}</span>
                   </button>
                 </div>
               ))}
@@ -435,7 +438,7 @@ export function CompareView({
         {history.length < 2 && (
           <Card>
             <CardContent className="p-5 text-sm text-muted-foreground">
-              A comparison needs two saved analyses. Analyse a second company to unlock it.
+              {t("compare.needTwo")}
             </CardContent>
           </Card>
         )}
@@ -443,7 +446,7 @@ export function CompareView({
         {leftId && rightId && leftId === rightId && (
           <Card className="border-orange-500/25 bg-orange-500/[0.08]">
             <CardContent className="p-5 text-sm text-orange-100">
-              Both slots hold the same analysis. Pick a different company for one of them.
+              {t("compare.sameAnalysis")}
             </CardContent>
           </Card>
         )}
@@ -451,7 +454,7 @@ export function CompareView({
         {loading && (
           <Card>
             <CardContent className="p-5 text-sm text-muted-foreground" role="status" aria-live="polite">
-              Loading the two analyses…
+              {t("compare.loading")}
             </CardContent>
           </Card>
         )}
@@ -472,16 +475,16 @@ export function CompareView({
                 <CardHeader>
                   <CardTitle level={2} className="flex items-center gap-2 text-base">
                     <Info className="h-4 w-4 text-orange-300" aria-hidden="true" />
-                    Before you compare these two
+                    {t("compare.beforeYouCompare")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {comparison.warnings.map((warning) => (
                     <div key={warning.id}>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-foreground">{warning.title}</span>
+                        <span className="text-sm font-medium text-foreground">{t(`compare.warningTitles.${warning.id}`)}</span>
                         <Badge variant="secondary" className="text-[10px]">
-                          {warning.level === "blocking" ? "Not comparable" : "Read with care"}
+                          {warning.level === "blocking" ? t("compare.notComparable") : t("compare.readWithCare")}
                         </Badge>
                       </div>
                       <p className="mt-1 max-w-3xl text-sm leading-6 text-zinc-300">
@@ -501,11 +504,11 @@ export function CompareView({
                   ) : (
                     <Bookmark className="h-3.5 w-3.5" aria-hidden="true" />
                   )}
-                  {isSaved ? "Saved" : "Save comparison"}
+                  {isSaved ? t("compare.saved") : t("compare.saveComparison")}
                 </Button>
                 <Button variant="secondary" size="sm" onClick={exportCsv}>
                   <Download className="h-3.5 w-3.5" aria-hidden="true" />
-                  Export CSV
+                  {t("compare.exportCsv")}
                 </Button>
               </div>
 
@@ -517,7 +520,9 @@ export function CompareView({
                     onChange={(event) => setHideUnavailable(event.target.checked)}
                     className="h-3.5 w-3.5 rounded border-white/20 bg-white/[0.04] accent-primary"
                   />
-                  Hide {hiddenCount} metric{hiddenCount === 1 ? "" : "s"} neither company reports
+                  {hiddenCount === 1
+                    ? t("compare.hideUnavailableOne", { n: hiddenCount })
+                    : t("compare.hideUnavailableOther", { n: hiddenCount })}
                 </label>
               )}
             </div>
@@ -528,7 +533,7 @@ export function CompareView({
               return (
                 <Card key={section.id}>
                   <CardHeader>
-                    <CardTitle level={2}>{section.title}</CardTitle>
+                    <CardTitle level={2}>{t(`compare.sections.${section.id}`)}</CardTitle>
                     <p className="mt-1.5 text-sm text-muted-foreground">{section.description}</p>
                   </CardHeader>
                   <CardContent className="space-y-5">
@@ -558,9 +563,7 @@ export function CompareView({
             })}
 
             <p className="px-1 pb-2 text-xs leading-5 text-muted-foreground">
-              Individual metrics are marked where one company is stronger. No overall winner is
-              declared: businesses in different sectors, valued by different models, are not
-              reducible to a single score.
+              {t("compare.noWinner")}
             </p>
           </>
         )}

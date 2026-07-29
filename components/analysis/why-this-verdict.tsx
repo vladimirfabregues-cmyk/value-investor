@@ -2,7 +2,15 @@ import { AlertTriangle, Check, Minus, ShieldAlert, X } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { verdictClasses } from "@/lib/utils/format";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import type { CheckStatus, VerdictExplanation } from "@/types/analysis";
+
+/** Maps a check status to its localisation key (word shown beside the score). */
+const STATUS_WORD_KEY: Record<CheckStatus, string> = {
+  pass: "analysis.whyVerdict.passed",
+  warn: "analysis.whyVerdict.borderline",
+  fail: "analysis.whyVerdict.failed",
+};
 
 interface WhyThisVerdictProps {
   explanation: VerdictExplanation;
@@ -19,6 +27,7 @@ const STATUS_META: Record<
 };
 
 export function WhyThisVerdict({ explanation }: WhyThisVerdictProps) {
+  const { t } = useTranslation();
   const { final_verdict, overall_score, checks, hard_gates, valuation_method_label } = explanation;
 
   return (
@@ -26,15 +35,15 @@ export function WhyThisVerdict({ explanation }: WhyThisVerdictProps) {
       <CardContent className="p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 className="font-display text-2xl text-foreground">Why this verdict</h2>
+            <h2 className="font-display text-2xl text-foreground">{t("analysis.whyVerdict.title")}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              How the checks and gates combined to produce the final result.
+              {t("analysis.whyVerdict.subtitle")}
             </p>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
               <div className="text-xs font-medium text-muted-foreground">
-                Overall score
+                {t("analysis.whyVerdict.overallScore")}
               </div>
               <div className="font-display text-3xl tabular-nums text-foreground">
                 {overall_score}
@@ -44,7 +53,7 @@ export function WhyThisVerdict({ explanation }: WhyThisVerdictProps) {
             <span
               className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold ${verdictClasses(final_verdict)}`}
             >
-              {final_verdict.replace("_", " ")}
+              {t(`verdict.${final_verdict}`)}
             </span>
           </div>
         </div>
@@ -68,7 +77,7 @@ export function WhyThisVerdict({ explanation }: WhyThisVerdictProps) {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-baseline gap-x-2">
                     <span className="text-sm font-medium text-foreground">{check.name}</span>
-                    <span className={`text-xs font-semibold ${meta.text}`}>{meta.word}</span>
+                    <span className={`text-xs font-semibold ${meta.text}`}>{t(STATUS_WORD_KEY[check.status])}</span>
                     {check.score !== null && (
                       <span className="text-xs tabular-nums text-muted-foreground">
                         {check.score}/100
@@ -88,11 +97,13 @@ export function WhyThisVerdict({ explanation }: WhyThisVerdictProps) {
             <div className="flex items-center gap-2">
               <ShieldAlert className="h-4 w-4 text-amber-400" aria-hidden="true" />
               <h3 className="text-sm font-semibold text-amber-200">
-                {hard_gates.length === 1 ? "Hard gate applied" : `${hard_gates.length} hard gates applied`}
+                {hard_gates.length === 1
+                  ? t("analysis.whyVerdict.hardGateOne")
+                  : t("analysis.whyVerdict.hardGateOther", { n: hard_gates.length })}
               </h3>
             </div>
             <p className="mt-1 text-xs text-amber-200/70">
-              These override the composite score — a high score cannot outrank them.
+              {t("analysis.whyVerdict.hardGateNote")}
             </p>
             <ul className="mt-3 space-y-2.5">
               {hard_gates.map((gate) => (
@@ -115,7 +126,7 @@ export function WhyThisVerdict({ explanation }: WhyThisVerdictProps) {
         <div className="mt-5 border-t border-white/[0.06] pt-4">
           <p className="text-sm leading-7 text-muted-foreground">{explanation.explanation}</p>
           <p className="mt-3 text-xs text-muted-foreground">
-            Valuation model: {valuation_method_label}
+            {t("analysis.whyVerdict.valuationModelLine", { model: valuation_method_label })}
           </p>
         </div>
       </CardContent>

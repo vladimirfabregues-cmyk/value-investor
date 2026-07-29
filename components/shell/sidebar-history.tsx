@@ -30,6 +30,7 @@ import {
   describeMarginShift,
   describeVerdictChange,
 } from "@/lib/history/history-changes";
+import { useTranslation } from "@/lib/i18n/locale-context";
 import {
   EMPTY_PREFS,
   isArchived,
@@ -89,6 +90,7 @@ export function SidebarHistory({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const activeAnalysisId = searchParams.get("analysis");
+  const { t } = useTranslation();
 
   const [filters, setFilters] = useState<HistoryFilters>(EMPTY_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -178,10 +180,10 @@ export function SidebarHistory({
         <div className="min-w-0">
           <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-zinc-200">
             <History className="h-4 w-4 text-primary" aria-hidden="true" />
-            History
+            {t("history.title")}
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Saved analyses and verdict snapshots.
+            {t("history.subtitle")}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
@@ -206,7 +208,7 @@ export function SidebarHistory({
         <div className="mb-4 space-y-2">
           <div>
             <label htmlFor="history-search" className="mb-1.5 block text-xs font-medium text-foreground">
-              Search history
+              {t("history.searchLabel")}
             </label>
             <div className="relative">
               <Search
@@ -217,7 +219,7 @@ export function SidebarHistory({
                 id="history-search"
                 type="search"
                 value={filters.query}
-                placeholder="Ticker, company or market"
+                placeholder={t("history.searchPlaceholder")}
                 autoComplete="off"
                 onChange={(event) =>
                   setFilters((current) => ({ ...current, query: event.target.value }))
@@ -236,7 +238,7 @@ export function SidebarHistory({
               className="flex items-center gap-1.5 text-xs text-muted-foreground transition hover:text-foreground"
             >
               <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
-              Filters
+              {t("history.filters")}
               {(filters.verdicts.length > 0 || filters.exchanges.length > 0) && (
                 <span className="rounded-full bg-primary/20 px-1.5 text-[10px] text-foreground">
                   {filters.verdicts.length + filters.exchanges.length}
@@ -250,7 +252,7 @@ export function SidebarHistory({
                 className="flex items-center gap-1 text-xs text-muted-foreground transition hover:text-foreground"
               >
                 <X className="h-3 w-3" aria-hidden="true" />
-                Clear
+                {t("history.clear")}
               </button>
             )}
           </div>
@@ -259,13 +261,13 @@ export function SidebarHistory({
             <div id="history-facets" className="space-y-2.5 rounded-xl border border-white/8 bg-white/[0.02] p-3">
               <fieldset>
                 <legend className="mb-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
-                  Verdict
+                  {t("history.verdict")}
                 </legend>
                 <div className="flex flex-wrap gap-1.5">
                   {verdicts.map((facet) => (
                     <FacetChip
                       key={facet.value}
-                      label={facet.label}
+                      label={t(`verdict.${facet.value}`)}
                       count={facet.count}
                       pressed={filters.verdicts.includes(facet.value)}
                       onToggle={() => toggleVerdict(facet.value)}
@@ -276,7 +278,7 @@ export function SidebarHistory({
 
               <fieldset>
                 <legend className="mb-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
-                  Market
+                  {t("history.market")}
                 </legend>
                 <div className="flex flex-wrap gap-1.5">
                   {markets.map((facet) => (
@@ -298,13 +300,11 @@ export function SidebarHistory({
       <div className="flex-1 space-y-4 overflow-y-auto pr-1">
         {history.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-4 text-sm text-muted-foreground">
-            No analyses saved yet. Choose a market and analyse a company to build your history.
+            {t("history.emptyNone")}
           </div>
         ) : visible.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-4 text-sm text-muted-foreground">
-            {filtering
-              ? "No saved analysis matches these filters."
-              : "Every saved analysis is archived. Show archived to see them."}
+            {filtering ? t("history.emptyFiltered") : t("history.emptyAllArchived")}
           </div>
         ) : (
           <>
@@ -315,7 +315,7 @@ export function SidebarHistory({
                   className="mb-2 flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground"
                 >
                   <Pin className="h-3 w-3" aria-hidden="true" />
-                  Pinned
+                  {t("history.pinned")}
                 </h3>
                 <div className="space-y-3">{pinnedItems.map(renderItem)}</div>
               </section>
@@ -327,7 +327,7 @@ export function SidebarHistory({
                   id={`history-group-${group.id}`}
                   className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground"
                 >
-                  {group.label}
+                  {t(`history.groups.${group.id}`)}
                 </h3>
                 <div className="space-y-3">{group.items.map(renderItem)}</div>
               </section>
@@ -343,7 +343,7 @@ export function SidebarHistory({
           aria-pressed={showArchived}
           className="mt-3 shrink-0 rounded-lg border border-white/8 px-3 py-2 text-xs text-muted-foreground transition hover:border-white/16 hover:text-foreground"
         >
-          {showArchived ? "Hide" : "Show"} archived ({archivedCount})
+          {t(showArchived ? "history.hideArchived" : "history.showArchived", { n: archivedCount })}
         </button>
       )}
     </div>
