@@ -13,12 +13,18 @@ import { capLabel } from "@/lib/finance/verdict-explanation-prose";
 import { translateSector } from "@/lib/finance/prose";
 import { useTranslation } from "@/lib/i18n/locale-context";
 import type { ScreenResultRecord, ScreenResultFilters } from "@/lib/db/screen-queries";
-import type { BatchScreenComplete, BatchScreenProgress } from "@/lib/screener/batch";
 
-type BatchEvent =
-  | BatchScreenProgress
-  | BatchScreenComplete
-  | { type: "error"; message: string };
+/** One chunk's response from POST /api/screen/run. */
+interface ChunkResponse {
+  ok: boolean;
+  total: number;
+  processed: number;
+  errors: number;
+  lastTicker: string;
+  nextOffset: number;
+  done: boolean;
+  error?: string;
+}
 
 interface ScreenMeta {
   lastRunAt: Date | string | null;
@@ -135,23 +141,6 @@ function MosBadge({ value }: { value: number | null | undefined }) {
   );
 }
 
-async function* readSseStream(response: Response): AsyncGenerator<BatchEvent> {
-  const reader = response.body!.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-    for (const line of lines) {
-      if (line.startsWith("data: ")) {
-        try { yield JSON.parse(line.slice(6)) as BatchEvent; } catch { /* skip */ }
-      }
-    }
-  }
-}
 
 type ActiveIndex =
   | "SP500" | "SP400" | "RUSSELL2000" | "RUSSELLMID"
@@ -360,27 +349,41 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
     setIsRunning(true);
     setProgress({ processed: 0, total: 0, lastTicker: "" });
 
-    try {
-      const res = await fetch(`/api/screen/run?index=${activeIndex}`, { method: "POST", signal: abort.signal });
-      if (!res.ok || !res.body) throw new Error("Failed to start screen run");
+    // One run timestamp shared by every chunk, so all rows read as a single run.
+    const at = new Date().toISOString();
+    let offset = 0;
+    let chunk = 0;
 
-      for await (const event of readSseStream(res)) {
-        if (event.type === "progress") {
-          setProgress({ processed: event.processed, total: event.total, lastTicker: event.ticker });
-        } else if (event.type === "complete") {
-          setProgress(null);
-          setIsRunning(false);
-          await fetchResults(filters, activeIndex, true);
-          return;
-        } else if (event.type === "error") {
-          setProgress(null);
-          setIsRunning(false);
-          return;
-        }
+    try {
+      // The universe is walked in short chunks until the server reports done,
+      // so no single request risks the serverless time limit.
+      for (;;) {
+        const res = await fetch(
+          `/api/screen/run?index=${activeIndex}&offset=${offset}&at=${encodeURIComponent(at)}`,
+          { method: "POST", signal: abort.signal },
+        );
+        if (!res.ok) throw new Error("Failed to run screen");
+        const data = (await res.json()) as ChunkResponse;
+        if (!data.ok) throw new Error(data.error ?? "Screen run failed");
+
+        offset = data.nextOffset;
+        chunk += 1;
+        setProgress({ processed: data.nextOffset, total: data.total, lastTicker: data.lastTicker });
+
+        // Surface partial results as the run fills in, without hammering the DB.
+        if (!data.done && chunk % 4 === 0) await fetchResults(filters, activeIndex, true);
+        if (data.done) break;
       }
-    } catch {
-      setIsRunning(false);
+
       setProgress(null);
+      setIsRunning(false);
+      await fetchResults(filters, activeIndex, true);
+    } catch (err) {
+      // A user-triggered abort (re-run / navigation) is expected — stop quietly.
+      if (!(err instanceof DOMException && err.name === "AbortError")) {
+        setProgress(null);
+        setIsRunning(false);
+      }
     }
   }, [filters, fetchResults, activeIndex]);
 
