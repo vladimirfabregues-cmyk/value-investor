@@ -220,7 +220,7 @@ export function CompareView({
     if (leftId) params.set("left", leftId);
     if (rightId) params.set("right", rightId);
     const query = params.toString();
-    router.replace(query ? `/compare?${query}` : "/compare", { scroll: false });
+    router.replace(query ? `/value/compare?${query}` : "/value/compare", { scroll: false });
   }, [leftId, rightId, router]);
 
   useEffect(() => {

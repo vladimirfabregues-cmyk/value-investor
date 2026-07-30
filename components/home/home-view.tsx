@@ -120,7 +120,7 @@ export function HomeView({
         setAnalysis(payload.analysis);
         await refreshHistory();
         router.replace(
-          `/?analysis=${payload.id}&exchange=${encodeURIComponent(exchange)}&ticker=${encodeURIComponent(normalizedTicker)}`,
+          `/value?analysis=${payload.id}&exchange=${encodeURIComponent(exchange)}&ticker=${encodeURIComponent(normalizedTicker)}`,
         );
         return;
       }
@@ -132,7 +132,7 @@ export function HomeView({
           setAnalysis(event.analysis);
           await refreshHistory();
           router.replace(
-            `/?analysis=${event.id}&exchange=${encodeURIComponent(exchange)}&ticker=${encodeURIComponent(normalizedTicker)}`,
+            `/value?analysis=${event.id}&exchange=${encodeURIComponent(exchange)}&ticker=${encodeURIComponent(normalizedTicker)}`,
           );
           return;
         } else if (event.type === "error") {
@@ -314,7 +314,7 @@ export function HomeView({
             )}
 
             <Link
-              href="/screen"
+              href="/value/screen"
               className="flex items-center justify-between gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-5 py-4 transition hover:border-primary/30"
             >
               <span className="flex items-center gap-3">

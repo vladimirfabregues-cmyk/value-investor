@@ -120,7 +120,7 @@ export function RecentSearchItem({
           {/* Stretched link: the whole card opens the analysis, but the action
               buttons above it stay independently clickable. */}
           <Link
-            href={`/?analysis=${item.id}&exchange=${encodeURIComponent(item.exchange)}&ticker=${encodeURIComponent(item.ticker)}`}
+            href={`/value?analysis=${item.id}&exchange=${encodeURIComponent(item.exchange)}&ticker=${encodeURIComponent(item.ticker)}`}
             className="mt-1 block truncate text-sm text-muted-foreground after:absolute after:inset-0 after:content-[''] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
           >
             {item.companyName}
@@ -199,7 +199,7 @@ export function RecentSearchItem({
         // users — focus-within keeps it visible while tabbing through.
         <div className="mt-2 flex items-center gap-1.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
           <Link
-            href={`/?exchange=${encodeURIComponent(item.exchange)}&ticker=${encodeURIComponent(item.ticker)}`}
+            href={`/value?exchange=${encodeURIComponent(item.exchange)}&ticker=${encodeURIComponent(item.ticker)}`}
             className={ACTION_CLASS}
             title={t("common.analyseAgain")}
           >
@@ -208,7 +208,7 @@ export function RecentSearchItem({
           </Link>
 
           <Link
-            href={`/compare?left=${encodeURIComponent(item.id)}`}
+            href={`/value/compare?left=${encodeURIComponent(item.id)}`}
             className={ACTION_CLASS}
             title={t("common.compare")}
           >

@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Value Investor",
     description:
       "Graham & Buffett-style equity screening and intrinsic-value analysis across US, UK, European, and Japanese markets.",
-    start_url: "/screen",
+    start_url: "/value/screen",
     display: "standalone",
     orientation: "portrait",
     background_color: "#060a12",

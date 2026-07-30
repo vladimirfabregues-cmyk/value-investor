@@ -777,7 +777,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
 
                     <div className="mt-3 flex items-center gap-2">
                       <Link
-                        href={`/?exchange=${inferExchangeFromTicker(row.ticker).code}&ticker=${encodeURIComponent(row.ticker)}`}
+                        href={`/value?exchange=${inferExchangeFromTicker(row.ticker).code}&ticker=${encodeURIComponent(row.ticker)}`}
                         className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"
                       >
                         {t("screen.viewAnalysis")}
@@ -815,7 +815,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                     return (
                       <tr key={`${row.ticker}-${row.screenerIndex}`} className="group transition-colors hover:bg-primary/[0.04]">
                         <td className="px-4 py-2.5">
-                          <Link href={`/?exchange=${inferExchangeFromTicker(row.ticker).code}&ticker=${encodeURIComponent(row.ticker)}`} className="block">
+                          <Link href={`/value?exchange=${inferExchangeFromTicker(row.ticker).code}&ticker=${encodeURIComponent(row.ticker)}`} className="block">
                             <span className="font-mono text-[13px] font-semibold text-primary group-hover:underline">
                               {row.ticker}
                             </span>

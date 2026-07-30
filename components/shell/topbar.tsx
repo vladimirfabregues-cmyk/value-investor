@@ -16,12 +16,12 @@ interface TopbarProps {
   history: SavedAnalysisSummary[];
 }
 
-// Routes deliberately unchanged so saved links keep working; labels are keyed.
+// Value Investor lives under /value (its own zone); labels are keyed.
 const NAV = [
-  { href: "/", key: "nav.analyse" },
-  { href: "/screen", key: "nav.screener" },
-  { href: "/compare", key: "nav.compare" },
-  { href: "/about", key: "nav.about" },
+  { href: "/value", key: "nav.analyse" },
+  { href: "/value/screen", key: "nav.screener" },
+  { href: "/value/compare", key: "nav.compare" },
+  { href: "/value/about", key: "nav.about" },
 ] as const;
 
 export function Topbar({ history }: TopbarProps) {
@@ -57,7 +57,7 @@ export function Topbar({ history }: TopbarProps) {
             </SheetContent>
           </Sheet>
 
-          <Link href="/" className="group flex items-center gap-3">
+          <Link href="/value" className="group flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-primary/35 bg-gradient-to-b from-primary/20 to-primary/5 font-display text-sm font-semibold tracking-tight text-primary shadow-[0_8px_20px_rgba(181,148,88,0.15)] transition-shadow group-hover:shadow-[0_8px_24px_rgba(181,148,88,0.28)]">
               VI
             </div>
@@ -76,7 +76,7 @@ export function Topbar({ history }: TopbarProps) {
           className="order-3 flex w-full items-center gap-1 overflow-x-auto rounded-full border border-white/[0.07] bg-white/[0.03] p-1 sm:order-none sm:w-auto sm:overflow-visible"
         >
           {NAV.map(({ href, key }) => {
-            const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+            const active = href === "/value" ? pathname === "/value" : pathname.startsWith(href);
             return (
               <Link
                 key={href}

@@ -1,37 +1,66 @@
-export const dynamic = "force-dynamic";
+"use client";
 
-import { HomeView } from "@/components/home/home-view";
-import { getAnalysisById, getHistorySummaries } from "@/lib/db/queries";
-import { DEFAULT_EXCHANGE_CODE, inferExchangeFromTicker } from "@/lib/finance/exchanges";
+import Link from "next/link";
+import { ArrowRight, LineChart, Layers } from "lucide-react";
 
-interface HomePageProps {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}
+import { useTranslation } from "@/lib/i18n/locale-context";
 
-export default async function HomePage({ searchParams }: HomePageProps) {
-  const params = searchParams ? await searchParams : {};
-  const analysisId =
-    typeof params.analysis === "string" ? params.analysis : undefined;
-  const ticker = typeof params.ticker === "string" ? params.ticker : "";
-  // Absent exchange (older links) is inferred from the ticker suffix.
-  const exchange =
-    typeof params.exchange === "string"
-      ? params.exchange
-      : ticker
-        ? inferExchangeFromTicker(ticker).code
-        : DEFAULT_EXCHANGE_CODE;
-
-  const [history, initialAnalysis] = await Promise.all([
-    getHistorySummaries(),
-    analysisId ? getAnalysisById(analysisId) : Promise.resolve(null),
-  ]);
+/**
+ * Landing chooser. Two workspaces live under one domain: Value Investor at
+ * /value (this app) and ETF Screener at /etf (a separate Next zone served
+ * through a rewrite — hence a plain <a> for that hard cross-zone navigation).
+ */
+export default function ChooserPage() {
+  const { t } = useTranslation();
 
   return (
-    <HomeView
-      initialHistory={history}
-      initialTicker={ticker}
-      initialExchange={exchange}
-      initialAnalysis={initialAnalysis}
-    />
+    <main className="mx-auto flex min-h-dvh max-w-5xl flex-col items-center justify-center px-5 py-16 text-center">
+      <div className="text-[11px] font-medium uppercase tracking-[0.28em] text-primary/90">
+        {t("chooser.eyebrow")}
+      </div>
+      <h1 className="mt-3 font-display text-4xl leading-tight text-foreground sm:text-5xl">
+        {t("chooser.title")}
+      </h1>
+      <p className="mt-3 max-w-xl text-base leading-7 text-muted-foreground">
+        {t("chooser.subtitle")}
+      </p>
+
+      <div className="mt-10 grid w-full gap-4 sm:grid-cols-2">
+        <Link
+          href="/value"
+          className="group flex flex-col rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 text-left shadow-panel transition hover:border-primary/40 hover:bg-white/[0.04]"
+        >
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/30 bg-gradient-to-b from-primary/20 to-primary/5 text-primary">
+            <LineChart className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <h2 className="mt-4 font-display text-2xl text-foreground">{t("chooser.viTitle")}</h2>
+          <p className="mt-2 flex-1 text-sm leading-6 text-muted-foreground">{t("chooser.viDesc")}</p>
+          <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+            {t("chooser.viCta")}
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+          </span>
+        </Link>
+
+        {/* Cross-zone: /etf is served by a separate build via next.config rewrite. */}
+        <a
+          href="/etf"
+          className="group flex flex-col rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 text-left shadow-panel transition hover:border-primary/40 hover:bg-white/[0.04]"
+        >
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/30 bg-gradient-to-b from-primary/20 to-primary/5 text-primary">
+            <Layers className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <h2 className="mt-4 font-display text-2xl text-foreground">{t("chooser.etfTitle")}</h2>
+          <p className="mt-2 flex-1 text-sm leading-6 text-muted-foreground">{t("chooser.etfDesc")}</p>
+          <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+            {t("chooser.etfCta")}
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+          </span>
+        </a>
+      </div>
+
+      <p className="mt-10 max-w-md text-xs leading-5 text-muted-foreground">
+        {t("chooser.disclaimer")}
+      </p>
+    </main>
   );
 }

@@ -260,7 +260,7 @@ export function VerdictModal({ row, children }: VerdictModalProps) {
               {t("screen.modal.footer")}
             </p>
             <Link
-              href={`/?exchange=${inferExchangeFromTicker(row.ticker).code}&ticker=${encodeURIComponent(row.ticker)}`}
+              href={`/value?exchange=${inferExchangeFromTicker(row.ticker).code}&ticker=${encodeURIComponent(row.ticker)}`}
               className="inline-flex items-center gap-1.5 rounded-lg border border-primary/35 bg-primary/10 px-3.5 py-1.5 text-xs font-medium text-primary transition-all hover:bg-primary/20 hover:shadow-[0_4px_16px_rgba(181,148,88,0.2)]"
             >
               {t("screen.modal.runFullAnalysis")} <ArrowRight className="h-3 w-3" />

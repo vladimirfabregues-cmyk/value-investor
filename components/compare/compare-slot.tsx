@@ -229,7 +229,7 @@ export function CompareSlot({
               {t("compare.slot.notAnalysed", { name: unanalysed.name })}
             </p>
             <Link
-              href={`/?exchange=${encodeURIComponent(unanalysed.exchange)}&ticker=${encodeURIComponent(unanalysed.ticker)}`}
+              href={`/value?exchange=${encodeURIComponent(unanalysed.exchange)}&ticker=${encodeURIComponent(unanalysed.ticker)}`}
               className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
             >
               {t("compare.slot.analyseFirst", { ticker: unanalysed.ticker })}
