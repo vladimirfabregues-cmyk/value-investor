@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Database, Menu } from "lucide-react";
+import { Database, LayoutGrid, Menu } from "lucide-react";
 
 import { SidebarHistory } from "@/components/shell/sidebar-history";
 import { HistorySkeleton } from "@/components/shell/shell-layout";
@@ -56,6 +56,16 @@ export function Topbar({ history }: TopbarProps) {
               </div>
             </SheetContent>
           </Sheet>
+
+          {/* Return to the landing chooser (the app's root, above /value). */}
+          <Link
+            href="/"
+            aria-label={t("nav.workspaces")}
+            className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/[0.07] bg-white/[0.03] px-3 py-1.5 text-sm text-muted-foreground transition hover:border-primary/25 hover:text-foreground"
+          >
+            <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden sm:inline">{t("nav.workspaces")}</span>
+          </Link>
 
           <Link href="/value" className="group flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-primary/35 bg-gradient-to-b from-primary/20 to-primary/5 font-display text-sm font-semibold tracking-tight text-primary shadow-[0_8px_20px_rgba(181,148,88,0.15)] transition-shadow group-hover:shadow-[0_8px_24px_rgba(181,148,88,0.28)]">

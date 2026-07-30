@@ -30,6 +30,7 @@ const en: Dict = {
     tagline: "Conservative Equity Analysis",
     dataSources: "Yahoo Finance · SEC EDGAR",
     primaryLabel: "Primary",
+    workspaces: "Workspaces",
   },
   footer: {
     disclaimer:
@@ -766,6 +767,7 @@ const fr: Dict = {
     tagline: "Analyse boursière prudente",
     dataSources: "Yahoo Finance · SEC EDGAR",
     primaryLabel: "Principal",
+    workspaces: "Espaces",
   },
   footer: {
     disclaimer:
