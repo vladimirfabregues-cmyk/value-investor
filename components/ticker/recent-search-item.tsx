@@ -19,6 +19,8 @@ import { verdictClasses } from "@/lib/utils/format";
 import { exchangeByCode } from "@/lib/finance/exchanges";
 import { describeValuationGap } from "@/lib/finance/valuation-gap";
 import { useTranslation } from "@/lib/i18n/locale-context";
+import { renderVerdictReason } from "@/lib/history/verdict-reason";
+import { oneLineVerdictFrom } from "@/lib/finance/prose";
 import { MAX_NOTE_LENGTH } from "@/lib/history/history-prefs";
 import type { ChangeDescription } from "@/lib/history/history-changes";
 import type { SavedAnalysisSummary } from "@/types/analysis";
@@ -130,7 +132,15 @@ export function RecentSearchItem({
       </div>
 
       {/* Why the verdict landed there, then the gap, then when */}
-      <p className="text-xs leading-5 text-zinc-300">{item.verdictReason}</p>
+      <p className="text-xs leading-5 text-zinc-300">
+        {item.verdictReasonToken
+          ? renderVerdictReason(
+              item.verdictReasonToken,
+              oneLineVerdictFrom(item.finalVerdictLabel, item.marginOfSafetyPct, item.companyName, t),
+              t,
+            )
+          : item.verdictReason}
+      </p>
       <p className="text-xs leading-5 text-muted-foreground">{gapText}</p>
       <p className="text-xs leading-5 text-muted-foreground">
         {t("common.analysedOn", { date: formatIsoDate(item.analysisDate) })}

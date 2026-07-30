@@ -198,6 +198,15 @@ export const savedAnalysisSummarySchema = z
     marginOfSafetyPct: nullableFiniteNumberSchema,
     oneLineVerdict: z.string().min(1),
     verdictReason: z.string().min(1),
+    verdictReasonToken: z
+      .union([
+        z.object({ k: z.literal("gate"), name: z.string() }).strict(),
+        z.object({ k: z.literal("failed"), names: z.array(z.string()) }).strict(),
+        z.object({ k: z.literal("borderline"), names: z.array(z.string()) }).strict(),
+        z.object({ k: z.literal("allPassed") }).strict(),
+        z.object({ k: z.literal("none") }).strict(),
+      ])
+      .optional(),
     createdAt: z.string().min(1),
   })
   .strict();

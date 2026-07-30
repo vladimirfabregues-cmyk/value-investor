@@ -2,7 +2,7 @@ import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db/client";
 import { inferExchangeFromTicker, resolveSecurity } from "@/lib/finance/exchanges";
-import { deriveVerdictReason } from "@/lib/history/verdict-reason";
+import { deriveVerdictReason, deriveVerdictReasonToken } from "@/lib/history/verdict-reason";
 import {
   savedAnalysisSummarySchema,
   valueInvestingAnalysisSchema,
@@ -42,6 +42,7 @@ function mapSummary(row: {
     // Read straight from the stored JSON rather than a column: it costs no
     // migration and, unlike a backfilled column, works for every historic row.
     verdictReason: deriveVerdictReason(row.fullJson, row.oneLineVerdict),
+    verdictReasonToken: deriveVerdictReasonToken(row.fullJson),
     createdAt: row.createdAt.toISOString(),
   };
 }

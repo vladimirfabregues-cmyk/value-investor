@@ -176,6 +176,14 @@ export interface ValueInvestingAnalysis {
   sources: AnalysisSource[];
 }
 
+/** Locale-neutral description of why a verdict landed where it did. */
+export type VerdictReasonToken =
+  | { k: "gate"; name: string }
+  | { k: "failed"; names: string[] }
+  | { k: "borderline"; names: string[] }
+  | { k: "allPassed" }
+  | { k: "none" };
+
 export interface SavedAnalysisSummary {
   id: string;
   ticker: string;
@@ -187,8 +195,10 @@ export interface SavedAnalysisSummary {
   confidencePct: number;
   marginOfSafetyPct: number | null;
   oneLineVerdict: string;
-  /** Short reason the verdict landed where it did, for dense contexts */
+  /** Short reason the verdict landed where it did, for dense contexts (English) */
   verdictReason: string;
+  /** Structured form of the reason, so the UI can render it in the viewer's language */
+  verdictReasonToken?: VerdictReasonToken;
   createdAt: string;
 }
 

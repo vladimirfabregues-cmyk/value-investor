@@ -12,8 +12,10 @@ import { cn } from "@/lib/utils/cn";
 import { formatIsoDate } from "@/lib/utils/dates";
 import { verdictClasses } from "@/lib/utils/format";
 import { useTranslation } from "@/lib/i18n/locale-context";
+import { renderVerdictReason } from "@/lib/history/verdict-reason";
+import { oneLineVerdictFrom } from "@/lib/finance/prose";
 import { DEFAULT_EXCHANGE_CODE, exchangeByCode } from "@/lib/finance/exchanges";
-import { formatValuationGapShort } from "@/lib/finance/valuation-gap";
+import { describeValuationGap } from "@/lib/finance/valuation-gap";
 import type { SecuritySearchResult } from "@/lib/finance/security-search";
 import type { SavedAnalysisSummary } from "@/types/analysis";
 import type { SecurityLookupResponse } from "@/types/api";
@@ -96,6 +98,15 @@ export function CompareSlot({
   // ── Filled ───────────────────────────────────────────────────────────────
   if (selected && !picking) {
     const market = exchangeByCode(selected.exchange);
+    const gap = describeValuationGap(selected.marginOfSafetyPct);
+    const gapText =
+      gap.magnitudePct === null
+        ? "—"
+        : gap.kind === "margin"
+          ? t("analysis.evidence.marginOfSafety", { value: gap.display })
+          : gap.kind === "premium"
+            ? t("analysis.evidence.premium", { value: gap.display })
+            : t("analysis.evidence.pricedAtValue");
     return (
       <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
         <div className="mb-3 flex items-start justify-between gap-3">
@@ -123,11 +134,19 @@ export function CompareSlot({
         <dl className="space-y-1 text-xs text-muted-foreground">
           <div>
             <dt className="sr-only">{t("compare.slot.mainReason")}</dt>
-            <dd className="text-zinc-300">{selected.verdictReason}</dd>
+            <dd className="text-zinc-300">
+              {selected.verdictReasonToken
+                ? renderVerdictReason(
+                    selected.verdictReasonToken,
+                    oneLineVerdictFrom(selected.finalVerdictLabel, selected.marginOfSafetyPct, selected.companyName, t),
+                    t,
+                  )
+                : selected.verdictReason}
+            </dd>
           </div>
           <div>
             <dt className="sr-only">{t("compare.slot.valuationGap")}</dt>
-            <dd>{formatValuationGapShort(selected.marginOfSafetyPct)}</dd>
+            <dd>{gapText}</dd>
           </div>
           <div>
             <dt className="sr-only">{t("compare.slot.analysisDate")}</dt>

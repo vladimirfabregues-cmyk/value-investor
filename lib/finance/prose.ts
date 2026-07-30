@@ -236,15 +236,25 @@ export function buildKeyRisk(m: ProseModel, t: Translator): string {
   return t("prose.risk.execution");
 }
 
-export function buildOneLineVerdict(m: ProseModel, t: Translator): string {
-  const gap = describeValuationGap(m.intrinsic.margin_of_safety_pct);
+/** The one-line verdict from just the three fields it needs (also used by history). */
+export function oneLineVerdictFrom(
+  verdict: VerdictLabel,
+  marginOfSafetyPct: number | null,
+  companyName: string,
+  t: Translator,
+): string {
+  const gap = describeValuationGap(marginOfSafetyPct);
   const mosStr =
     gap.kind === "margin"
       ? t("prose.oneLine.mosMargin", { v: gap.display })
       : gap.kind === "premium"
         ? t("prose.oneLine.mosPremium", { v: gap.display })
         : "";
-  return t(`prose.oneLine.${m.verdict}`, { company: m.companyName, mos: mosStr });
+  return t(`prose.oneLine.${verdict}`, { company: companyName, mos: mosStr });
+}
+
+export function buildOneLineVerdict(m: ProseModel, t: Translator): string {
+  return oneLineVerdictFrom(m.verdict, m.intrinsic.margin_of_safety_pct, m.companyName, t);
 }
 
 export function buildReasoning(m: ProseModel, t: Translator): string {

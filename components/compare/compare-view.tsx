@@ -16,6 +16,7 @@ import {
   countUnavailableRows,
   type ComparisonRow,
 } from "@/lib/compare/comparison";
+import { localizeComparison } from "@/lib/compare/comparison-i18n";
 import { comparisonFilename, comparisonToCsv } from "@/lib/compare/export";
 import {
   isComparisonSaved,
@@ -78,7 +79,7 @@ function MetricTable({
     <div className="overflow-x-auto">
       <table className="w-full min-w-[36rem] border-collapse text-left">
         <caption className="sr-only">
-          {title}: {leftTicker} compared with {rightTicker}
+          {t("compare.tableCaption", { title, left: leftTicker, right: rightTicker })}
         </caption>
         <thead>
           <tr className="border-b border-white/10">
@@ -190,7 +191,7 @@ export function CompareView({
   initialLeftId = null,
   initialRightId = null,
 }: CompareViewProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const router = useRouter();
   const [history] = useState(initialHistory);
 
@@ -272,6 +273,12 @@ export function CompareView({
   const comparison = useMemo(
     () => (left && right ? buildComparison(left, right, { hideUnavailable }) : null),
     [left, right, hideUnavailable],
+  );
+  // English `comparison` feeds the CSV export; the screen renders this localised copy.
+  const localized = useMemo(
+    () => (comparison && left && right ? localizeComparison(comparison, left, right, t) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- t is stable per locale
+    [comparison, left, right, locale],
   );
   const hiddenCount = useMemo(
     () => (left && right ? countUnavailableRows(left, right) : 0),
@@ -467,10 +474,10 @@ export function CompareView({
           </Card>
         )}
 
-        {comparison && left && right && (
+        {localized && left && right && (
           <>
             {/* Caveats come before the numbers, not after them */}
-            {comparison.warnings.length > 0 && (
+            {localized.warnings.length > 0 && (
               <Card className="border-orange-500/20 bg-orange-500/[0.05]">
                 <CardHeader>
                   <CardTitle level={2} className="flex items-center gap-2 text-base">
@@ -479,10 +486,10 @@ export function CompareView({
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {comparison.warnings.map((warning) => (
+                  {localized.warnings.map((warning) => (
                     <div key={warning.id}>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-foreground">{t(`compare.warningTitles.${warning.id}`)}</span>
+                        <span className="text-sm font-medium text-foreground">{warning.title}</span>
                         <Badge variant="secondary" className="text-[10px]">
                           {warning.level === "blocking" ? t("compare.notComparable") : t("compare.readWithCare")}
                         </Badge>
@@ -527,13 +534,13 @@ export function CompareView({
               )}
             </div>
 
-            {comparison.sections.map((section) => {
+            {localized.sections.map((section) => {
               if (section.rows.length === 0) return null;
 
               return (
                 <Card key={section.id}>
                   <CardHeader>
-                    <CardTitle level={2}>{t(`compare.sections.${section.id}`)}</CardTitle>
+                    <CardTitle level={2}>{section.title}</CardTitle>
                     <p className="mt-1.5 text-sm text-muted-foreground">{section.description}</p>
                   </CardHeader>
                   <CardContent className="space-y-5">
