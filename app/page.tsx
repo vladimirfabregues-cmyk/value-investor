@@ -15,14 +15,16 @@ export default function ChooserPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-5xl flex-col items-center justify-center px-5 py-16 text-center">
+      <h1 className="sr-only">{t("chooser.title")}</h1>
       <div className="text-[11px] font-medium uppercase tracking-[0.28em] text-primary/90">
         {t("chooser.eyebrow")}
       </div>
-      <h1 className="mt-3 font-display text-4xl leading-tight text-foreground sm:text-5xl">
-        {t("chooser.title")}
-      </h1>
-      <p className="mt-3 max-w-xl text-base leading-7 text-muted-foreground">
-        {t("chooser.subtitle")}
+      <p className="mt-5 max-w-2xl text-balance font-display text-base leading-relaxed text-foreground/85 sm:text-xl sm:leading-8">
+        {t("chooser.leadIntro")}
+        <strong className="whitespace-nowrap font-semibold text-foreground">{t("chooser.viTitle")}</strong>
+        {t("chooser.leadVi")}
+        <strong className="whitespace-nowrap font-semibold text-foreground">{t("chooser.etfTitle")}</strong>
+        {t("chooser.leadEtf")}
       </p>
 
       <div className="mt-10 grid w-full gap-4 sm:grid-cols-2">
