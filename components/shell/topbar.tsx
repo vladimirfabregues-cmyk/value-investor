@@ -76,7 +76,7 @@ export function Topbar({ history }: TopbarProps) {
               IC
             </div>
             <div className="hidden sm:block">
-              <div className="font-display text-base leading-none text-foreground transition-colors group-hover:text-primary-bright">
+              <div className="whitespace-nowrap font-display text-base leading-none text-foreground transition-colors group-hover:text-primary-bright">
                 The Investment Casebook
               </div>
               <div className="mt-1 text-[10px] uppercase tracking-[0.28em] text-primary/80">
