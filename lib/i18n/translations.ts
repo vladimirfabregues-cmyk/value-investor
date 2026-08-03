@@ -263,7 +263,7 @@ const en: Dict = {
         balanceDetail: "Leverage, liquidity or interest cover breached the threshold considered safe for this sector. This overrides the composite score and forces an Avoid.",
         valueTrapName: "Value-trap risk",
         valueTrapDetail: "The company looks cheap while earnings or cash flow are negative and business quality is weak — the classic value trap. This overrides the composite score and forces an Avoid.",
-        capSuffix: " The verdict is capped at Watch regardless of the composite score.",
+        capSuffix: " The conclusion is capped at Watch regardless of the composite score.",
       },
       sector: { financial: "financial", property: "property", utility: "utility", operating: "operating-company" },
       expl: {
@@ -275,7 +275,7 @@ const en: Dict = {
         allPassed: "Every component check passed and no red flag was triggered.",
         and: " and ",
         gapMargin: "Estimated value is {v} above the current price.",
-        gapPremium: "The price stands {v} above estimated value, so the verdict cannot rely on a valuation cushion.",
+        gapPremium: "The price stands {v} above estimated value, so the conclusion cannot rely on a valuation cushion.",
         gapNone: "The price is close to estimated value.",
       },
     },
@@ -307,11 +307,11 @@ const en: Dict = {
   },
   history: {
     title: "History",
-    subtitle: "Saved analyses and verdict snapshots.",
+    subtitle: "Saved analyses and conclusion snapshots.",
     searchLabel: "Search history",
     searchPlaceholder: "Ticker, company or market",
     filters: "Filters",
-    verdict: "Verdict",
+    verdict: "Conclusion",
     market: "Market",
     clear: "Clear",
     pinned: "Pinned",
@@ -381,7 +381,7 @@ const en: Dict = {
       pricedLabel: "Priced at estimated value",
     },
     whyVerdict: {
-      title: "Why this verdict",
+      title: "Why this conclusion",
       subtitle: "How the checks and gates combined to produce the final result.",
       overallScore: "Overall score",
       passed: "Passed",
@@ -567,7 +567,7 @@ const en: Dict = {
     cols: {
       company: "Company",
       sector: "Sector",
-      verdict: "Verdict",
+      verdict: "Conclusion",
       overallScore: "Overall score",
       marginOfSafety: "Margin of safety",
       marginOfSafetyTitle: "Margin of safety, or premium when price exceeds estimated value",
@@ -591,16 +591,16 @@ const en: Dict = {
       quality: "Quality",
     },
     capped: "Capped: {list}",
-    cappedTitle: "Verdict capped: {list}",
-    cappedCountOne: "{n} verdict cap: {list}",
-    cappedCountOther: "{n} verdict caps: {list}",
+    cappedTitle: "Conclusion capped: {list}",
+    cappedCountOne: "{n} conclusion cap: {list}",
+    cappedCountOther: "{n} conclusion caps: {list}",
     viewAnalysis: "View analysis",
-    whyVerdict: "Why this verdict",
+    whyVerdict: "Why this conclusion",
     resultsOne: "{n} result",
     resultsOther: "{n} results",
     failedSuffixOne: " · {n} ticker failed",
     failedSuffixOther: " · {n} tickers failed",
-    tableHint: "Click a verdict for the full breakdown · ⚠ marks capped verdicts",
+    tableHint: "Click a conclusion for the full breakdown · ⚠ marks capped conclusions",
     empty: {
       noData: "No data yet for {market}",
       noMatch: "No companies match the current filters",
@@ -609,7 +609,7 @@ const en: Dict = {
       noMatchHint: "Relax or clear the filters above to see more of the screened universe.",
     },
     warnings: {
-      stale: "Results mix screening runs up to {days} days apart — older rows may predate methodology changes. Re-run this market for consistent verdicts.",
+      stale: "Results mix screening runs up to {days} days apart — older rows may predate methodology changes. Re-run this market for consistent conclusions.",
       age: "Latest results are {days} days old — prices and fundamentals have moved since.",
       concentrationLabel: "Concentration:",
       concentration:
@@ -650,7 +650,7 @@ const en: Dict = {
   compare: {
     title: "Compare stocks",
     subtitle:
-      "Put two analysed companies side by side — verdict and valuation first, then the fundamentals, the risks, and the model differences that qualify both.",
+      "Put two analysed companies side by side — conclusion and valuation first, then the fundamentals, the risks, and the model differences that qualify both.",
     firstCompany: "First company",
     secondCompany: "Second company",
     swap: "Swap the two companies",
@@ -688,7 +688,7 @@ const en: Dict = {
       analysisDate: "Analysis date",
     },
     sections: {
-      verdict: "Verdict and valuation",
+      verdict: "Conclusion and valuation",
       fundamentals: "Financial health and business quality",
       risks: "Principal risks",
       provenance: "Model, period and sources",
@@ -698,7 +698,7 @@ const en: Dict = {
       method: "Valued by different models",
       sector: "Different sectors",
       dates: "Analysed at different times",
-      explanation: "Incomplete verdict record",
+      explanation: "Incomplete conclusion record",
     },
     descriptions: {
       verdict: "What each analysis concluded, and the gap between price and estimated value.",
@@ -707,7 +707,7 @@ const en: Dict = {
       provenance: "The differences that qualify everything above.",
     },
     rows: {
-      verdict: "Verdict",
+      verdict: "Conclusion",
       reason: "Main reason",
       "one-liner": "In one line",
       confidence: "Confidence",
@@ -750,7 +750,7 @@ const en: Dict = {
       methodDetail: "{left} is valued using {leftMethod}, {right} using {rightMethod}. Each suits its sector, but the resulting estimates of value are not like-for-like.",
       sectorDetail: "{left} and {right} carry structurally different multiples, margins and balance-sheet norms. A higher score on one row does not make one company the better investment.",
       datesDetail: "These analyses are {days} days apart ({left} and {right}). Prices, and any figure derived from them, reflect different market conditions.",
-      explanationDetail: "The analysis of {ticker} predates structured verdict explanations, so its checks and valuation model cannot be compared row by row.",
+      explanationDetail: "The analysis of {ticker} predates structured conclusion explanations, so its checks and valuation model cannot be compared row by row.",
     },
   },
   about: {
@@ -1000,7 +1000,7 @@ const fr: Dict = {
         balanceDetail: "L'endettement, la liquidité ou la couverture des intérêts a franchi le seuil jugé sûr pour ce secteur. Cela l'emporte sur le score composite et force un Éviter.",
         valueTrapName: "Risque de piège de valeur",
         valueTrapDetail: "La société paraît bon marché alors que les bénéfices ou la trésorerie sont négatifs et la qualité faible — le piège de valeur classique. Cela l'emporte sur le score composite et force un Éviter.",
-        capSuffix: " Le verdict est plafonné à « À surveiller » quel que soit le score composite.",
+        capSuffix: " La conclusion est plafonnée à « À surveiller » quel que soit le score composite.",
       },
       sector: { financial: "financier", property: "immobilier", utility: "des services aux collectivités", operating: "des sociétés d'exploitation" },
       expl: {
@@ -1012,7 +1012,7 @@ const fr: Dict = {
         allPassed: "Toutes les vérifications par composant sont validées et aucun signal d'alerte n'a été déclenché.",
         and: " et ",
         gapMargin: "La valeur estimée est supérieure de {v} au cours actuel.",
-        gapPremium: "Le cours dépasse de {v} la valeur estimée ; le verdict ne peut donc pas s'appuyer sur un coussin de valorisation.",
+        gapPremium: "Le cours dépasse de {v} la valeur estimée ; la conclusion ne peut donc pas s'appuyer sur un coussin de valorisation.",
         gapNone: "Le cours est proche de la valeur estimée.",
       },
     },
@@ -1045,11 +1045,11 @@ const fr: Dict = {
   },
   history: {
     title: "Historique",
-    subtitle: "Analyses enregistrées et instantanés de verdict.",
+    subtitle: "Analyses enregistrées et instantanés de conclusion.",
     searchLabel: "Rechercher dans l'historique",
     searchPlaceholder: "Symbole, société ou marché",
     filters: "Filtres",
-    verdict: "Verdict",
+    verdict: "Conclusion",
     market: "Marché",
     clear: "Effacer",
     pinned: "Épinglés",
@@ -1120,7 +1120,7 @@ const fr: Dict = {
       pricedLabel: "Au niveau de la valeur estimée",
     },
     whyVerdict: {
-      title: "Pourquoi ce verdict",
+      title: "Pourquoi cette conclusion",
       subtitle: "Comment les contrôles et les seuils ont abouti au résultat final.",
       overallScore: "Score global",
       passed: "Réussi",
@@ -1307,7 +1307,7 @@ const fr: Dict = {
     cols: {
       company: "Société",
       sector: "Secteur",
-      verdict: "Verdict",
+      verdict: "Conclusion",
       overallScore: "Score global",
       marginOfSafety: "Marge de sécurité",
       marginOfSafetyTitle: "Marge de sécurité, ou prime lorsque le cours dépasse la valeur estimée",
@@ -1331,16 +1331,16 @@ const fr: Dict = {
       quality: "Qualité",
     },
     capped: "Plafonné : {list}",
-    cappedTitle: "Verdict plafonné : {list}",
-    cappedCountOne: "{n} plafond de verdict : {list}",
-    cappedCountOther: "{n} plafonds de verdict : {list}",
+    cappedTitle: "Conclusion plafonnée : {list}",
+    cappedCountOne: "{n} plafond de conclusion : {list}",
+    cappedCountOther: "{n} plafonds de conclusion : {list}",
     viewAnalysis: "Voir l'analyse",
-    whyVerdict: "Pourquoi ce verdict",
+    whyVerdict: "Pourquoi cette conclusion",
     resultsOne: "{n} résultat",
     resultsOther: "{n} résultats",
     failedSuffixOne: " · {n} symbole en échec",
     failedSuffixOther: " · {n} symboles en échec",
-    tableHint: "Cliquez sur un verdict pour le détail complet · ⚠ indique un verdict plafonné",
+    tableHint: "Cliquez sur une conclusion pour le détail complet · ⚠ indique une conclusion plafonnée",
     empty: {
       noData: "Aucune donnée pour {market}",
       noMatch: "Aucune société ne correspond aux filtres actuels",
@@ -1349,7 +1349,7 @@ const fr: Dict = {
       noMatchHint: "Assouplissez ou effacez les filtres ci-dessus pour voir davantage de l'univers analysé.",
     },
     warnings: {
-      stale: "Les résultats mélangent des lancements espacés de {days} jours — les lignes plus anciennes peuvent précéder des changements de méthodologie. Relancez ce marché pour des verdicts cohérents.",
+      stale: "Les résultats mélangent des lancements espacés de {days} jours — les lignes plus anciennes peuvent précéder des changements de méthodologie. Relancez ce marché pour des conclusions cohérentes.",
       age: "Les derniers résultats datent de {days} jours — les cours et les fondamentaux ont évolué depuis.",
       concentrationLabel: "Concentration :",
       concentration:
@@ -1390,7 +1390,7 @@ const fr: Dict = {
   compare: {
     title: "Comparer des actions",
     subtitle:
-      "Placez deux sociétés analysées côte à côte — d'abord le verdict et la valorisation, puis les fondamentaux, les risques et les différences de modèle qui nuancent les deux.",
+      "Placez deux sociétés analysées côte à côte — d'abord la conclusion et la valorisation, puis les fondamentaux, les risques et les différences de modèle qui nuancent les deux.",
     firstCompany: "Première société",
     secondCompany: "Deuxième société",
     swap: "Intervertir les deux sociétés",
@@ -1428,7 +1428,7 @@ const fr: Dict = {
       analysisDate: "Date d'analyse",
     },
     sections: {
-      verdict: "Verdict et valorisation",
+      verdict: "Conclusion et valorisation",
       fundamentals: "Santé financière et qualité de l'entreprise",
       risks: "Risques principaux",
       provenance: "Modèle, période et sources",
@@ -1438,7 +1438,7 @@ const fr: Dict = {
       method: "Valorisées par des modèles différents",
       sector: "Secteurs différents",
       dates: "Analysées à des moments différents",
-      explanation: "Historique de verdict incomplet",
+      explanation: "Historique de conclusion incomplet",
     },
     descriptions: {
       verdict: "Ce que chaque analyse a conclu, et l'écart entre le cours et la valeur estimée.",
@@ -1447,7 +1447,7 @@ const fr: Dict = {
       provenance: "Les différences qui nuancent tout ce qui précède.",
     },
     rows: {
-      verdict: "Verdict",
+      verdict: "Conclusion",
       reason: "Raison principale",
       "one-liner": "En une phrase",
       confidence: "Confiance",
@@ -1490,7 +1490,7 @@ const fr: Dict = {
       methodDetail: "{left} est valorisé par {leftMethod}, {right} par {rightMethod}. Chacun convient à son secteur, mais les estimations de valeur qui en résultent ne sont pas directement comparables.",
       sectorDetail: "{left} et {right} présentent des multiples, des marges et des normes de bilan structurellement différents. Un score plus élevé sur une ligne ne fait pas d'une société le meilleur investissement.",
       datesDetail: "Ces analyses sont espacées de {days} jours ({left} et {right}). Les cours, et tout chiffre qui en découle, reflètent des conditions de marché différentes.",
-      explanationDetail: "L'analyse de {ticker} est antérieure aux explications de verdict structurées ; ses vérifications et son modèle de valorisation ne peuvent pas être comparés ligne par ligne.",
+      explanationDetail: "L'analyse de {ticker} est antérieure aux explications de conclusion structurées ; ses vérifications et son modèle de valorisation ne peuvent pas être comparés ligne par ligne.",
     },
   },
   about: {

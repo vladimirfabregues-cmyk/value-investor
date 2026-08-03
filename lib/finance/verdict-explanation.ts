@@ -134,8 +134,8 @@ export function buildVerdictExplanation(m: ValueMetricsResult): VerdictExplanati
     hardGates.push({
       name: CAP_LABELS[cap] ?? cap,
       detail:
-        (CAP_DETAIL[cap] ?? "This red flag caps the verdict.") +
-        " The verdict is capped at Watch regardless of the composite score.",
+        (CAP_DETAIL[cap] ?? "This red flag caps the conclusion.") +
+        " The conclusion is capped at Watch regardless of the composite score.",
     });
   }
 
@@ -174,7 +174,7 @@ export function buildVerdictExplanation(m: ValueMetricsResult): VerdictExplanati
     gap.kind === "margin"
       ? `Estimated value is ${gap.display} above the current price.`
       : gap.kind === "premium"
-        ? `The price stands ${gap.display} above estimated value, so the verdict cannot rely on a valuation cushion.`
+        ? `The price stands ${gap.display} above estimated value, so the conclusion cannot rely on a valuation cushion.`
         : "The price is close to estimated value.",
   );
 

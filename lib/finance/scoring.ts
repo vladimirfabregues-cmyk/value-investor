@@ -376,7 +376,7 @@ export function calculateValueMetrics(
   const dataQualityNotes = [
     ...missingDataNotes,
     ...(peakEarnings
-      ? ["TTM earnings exceed 1.4× the 5-year average — likely cyclical peak; intrinsic value uses averaged earnings and the verdict is capped."]
+      ? ["TTM earnings exceed 1.4× the 5-year average — likely cyclical peak; intrinsic value uses averaged earnings and the conclusion is capped."]
       : []),
   ];
 
