@@ -68,13 +68,18 @@ export function Topbar({ history }: TopbarProps) {
             <span className="hidden sm:inline">{t("nav.workspaces")}</span>
           </Link>
 
+          {/* Master-brand seal + wordmark. The gold "IC" disc reads as a bookplate
+              seal; the wordmark returns to this tool's home, while the section
+              label ("Companies") distinguishes it from the Funds zone. */}
           <Link href="/value" className="group flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-primary/35 bg-gradient-to-b from-primary/20 to-primary/5 font-display text-sm font-semibold tracking-tight text-primary shadow-[0_8px_20px_rgba(181,148,88,0.15)] transition-shadow group-hover:shadow-[0_8px_24px_rgba(181,148,88,0.28)]">
-              VI
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary font-display text-sm font-semibold tracking-tight text-primary-foreground shadow-[0_8px_20px_rgba(181,148,88,0.28)] transition-shadow group-hover:shadow-[0_8px_26px_rgba(181,148,88,0.4)]">
+              IC
             </div>
             <div className="hidden sm:block">
-              <div className="font-display text-xl leading-none text-foreground">Value Investor</div>
-              <div className="mt-0.5 text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
+              <div className="font-display text-base leading-none text-foreground transition-colors group-hover:text-primary-bright">
+                The Investment Casebook
+              </div>
+              <div className="mt-1 text-[10px] uppercase tracking-[0.28em] text-primary/80">
                 {t("nav.tagline")}
               </div>
             </div>

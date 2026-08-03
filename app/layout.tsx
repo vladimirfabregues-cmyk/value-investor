@@ -6,10 +6,10 @@ import { LanguageToggle } from "@/components/i18n/language-toggle";
 import { LocaleProvider } from "@/lib/i18n/locale-context";
 
 export const metadata: Metadata = {
-  title: "Value Investor — Conservative Equity Analysis",
+  title: "The Investment Casebook",
   description:
-    "Graham & Buffett-style equity screening and intrinsic-value analysis across US, UK, European, and Japanese markets.",
-  applicationName: "Value Investor",
+    "Premium investment research — deep company analysis and ETF research, with the reasoning behind every conclusion. Every conclusion has a case.",
+  applicationName: "The Investment Casebook",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: "Value Investor",
+    title: "Casebook",
     statusBarStyle: "black-translucent",
   },
 };

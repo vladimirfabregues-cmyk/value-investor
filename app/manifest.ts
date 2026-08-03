@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Value Investor — Conservative Equity Analysis",
-    short_name: "Value Investor",
+    name: "The Investment Casebook",
+    short_name: "Casebook",
     description:
-      "Graham & Buffett-style equity screening and intrinsic-value analysis across US, UK, European, and Japanese markets.",
+      "Premium investment research — deep company analysis and ETF research, with the reasoning behind every conclusion.",
     start_url: "/value/screen",
     display: "standalone",
     orientation: "portrait",

@@ -18,6 +18,7 @@ const config: Config = {
         "popover-foreground": "hsl(var(--popover-foreground))",
         primary: "hsl(var(--primary))",
         "primary-foreground": "hsl(var(--primary-foreground))",
+        "primary-bright": "hsl(var(--primary-bright))",
         secondary: "hsl(var(--secondary))",
         "secondary-foreground": "hsl(var(--secondary-foreground))",
         muted: "hsl(var(--muted))",
@@ -47,6 +48,7 @@ const config: Config = {
       fontFamily: {
         display: ["var(--font-display)"],
         sans: ["var(--font-sans)"],
+        mono: ["var(--font-mono)"],
       },
       backgroundImage: {
         "hero-grid":
