@@ -17,11 +17,12 @@ interface TopbarProps {
 }
 
 // Value Investor lives under /value (its own zone); labels are keyed.
+// "About" is intentionally not here: it's a terminal-level page reached from
+// the welcome/landing screen, not part of the Value Investor workspace nav.
 const NAV = [
   { href: "/value", key: "nav.analyse" },
   { href: "/value/screen", key: "nav.screener" },
   { href: "/value/compare", key: "nav.compare" },
-  { href: "/value/about", key: "nav.about" },
 ] as const;
 
 export function Topbar({ history }: TopbarProps) {

@@ -53,6 +53,7 @@ const en: Dict = {
     etfTitle: "ETF Screener",
     etfDesc: "Compare UCITS ETFs within fair peer groups on cost, tracking and durability, and explore macro scenarios.",
     etfCta: "Open ETF Screener",
+    aboutLink: "About the author",
     disclaimer: "Informational research tools. Not investment advice.",
   },
   verdict: {
@@ -757,6 +758,7 @@ const en: Dict = {
   },
   about: {
     eyebrow: "About",
+    connect: "Connect on LinkedIn",
   },
 };
 
@@ -792,6 +794,7 @@ const fr: Dict = {
     etfTitle: "Screener d'ETF",
     etfDesc: "Comparez les ETF UCITS au sein de groupes de pairs comparables — coût, suivi, robustesse — et explorez des scénarios macro.",
     etfCta: "Ouvrir le screener d'ETF",
+    aboutLink: "À propos de l'auteur",
     disclaimer: "Outils de recherche informatifs. Ne constituent pas un conseil en investissement.",
   },
   verdict: {
@@ -1498,6 +1501,7 @@ const fr: Dict = {
   },
   about: {
     eyebrow: "À propos",
+    connect: "Se connecter sur LinkedIn",
   },
 };
 

@@ -60,7 +60,13 @@ export default function ChooserPage() {
         </a>
       </div>
 
-      <p className="mt-10 max-w-md text-xs leading-5 text-muted-foreground">
+      <Link
+        href="/value/about"
+        className="mt-10 text-sm font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+      >
+        {t("chooser.aboutLink")}
+      </Link>
+      <p className="mt-4 max-w-md text-xs leading-5 text-muted-foreground">
         {t("chooser.disclaimer")}
       </p>
     </main>

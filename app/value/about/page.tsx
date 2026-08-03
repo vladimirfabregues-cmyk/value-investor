@@ -5,6 +5,7 @@ import Image from "next/image";
 import { AppShell } from "@/components/shell/app-shell";
 import { AboutEyebrow } from "@/components/about/about-eyebrow";
 import { AboutBio } from "@/components/about/about-bio";
+import { AboutConnect } from "@/components/about/about-connect";
 import { getHistorySummaries } from "@/lib/db/queries";
 
 export default async function AboutPage() {
@@ -30,6 +31,7 @@ export default async function AboutPage() {
               Vladimir Fabregues
             </h1>
             <AboutBio part="intro" />
+            <AboutConnect />
           </div>
         </header>
 
