@@ -61,7 +61,7 @@ export default function ChooserPage() {
       </div>
 
       <Link
-        href="/value/about"
+        href="/about"
         className="mt-10 text-sm font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
       >
         {t("chooser.aboutLink")}

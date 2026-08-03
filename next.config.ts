@@ -15,13 +15,14 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     // Value Investor moved under /value; keep old links and installed PWAs working.
-    // Redirects run before rewrites, so /etf/about is caught here (a single,
-    // canonical About page) before the /etf/:path* proxy would forward it.
+    // About is a shared, top-level page (/about); point the old per-app URLs at
+    // it. Redirects run before rewrites, so /etf/about is caught here before the
+    // /etf/:path* proxy would forward it into the ETF zone.
     return [
       { source: "/screen", destination: "/value/screen", permanent: false },
       { source: "/compare", destination: "/value/compare", permanent: false },
-      { source: "/about", destination: "/value/about", permanent: false },
-      { source: "/etf/about", destination: "/value/about", permanent: false },
+      { source: "/value/about", destination: "/about", permanent: false },
+      { source: "/etf/about", destination: "/about", permanent: false },
     ];
   },
 };
