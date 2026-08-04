@@ -131,11 +131,11 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
             tone={confidence.tone}
             hint={t("analysis.decision.dataConfidenceHint")}
           />
-          <div className="col-span-1 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-3 sm:col-span-3">
-            <dt className="text-xs font-medium text-muted-foreground">
+          <div className="col-span-1 rounded-xl border border-white/[0.07] bg-gradient-to-b from-white/[0.05] to-white/[0.015] px-3.5 py-3 sm:col-span-3">
+            <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               {t("analysis.decision.valuationModel")}
             </dt>
-            <dd className="mt-1 text-sm text-foreground/90">
+            <dd className="mt-1.5 text-sm text-foreground/90">
               {analysis.verdict_explanation
                 ? t(`methods.${analysis.verdict_explanation.valuation_method}`)
                 : t("methods.dcf")}
@@ -207,14 +207,14 @@ function Metric({
   tone?: string;
 }) {
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-3">
-      <dt className="text-xs font-medium text-muted-foreground">
+    <div className="rounded-xl border border-white/[0.07] bg-gradient-to-b from-white/[0.05] to-white/[0.015] px-3.5 py-3">
+      <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </dt>
-      <dd className={`mt-1 font-display text-xl tabular-nums ${tone ?? "text-foreground"}`}>
+      <dd className={`mt-1.5 font-display text-xl tabular-nums ${tone ?? "text-foreground"}`}>
         {value}
       </dd>
-      {hint && <p className="mt-0.5 text-[10px] leading-4 text-muted-foreground">{hint}</p>}
+      {hint && <p className="mt-1 text-[10px] leading-4 text-muted-foreground">{hint}</p>}
     </div>
   );
 }

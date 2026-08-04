@@ -72,7 +72,7 @@ export function IntrinsicValueCard({
             ],
           ];
           return (
-            <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
+            <div className="rounded-xl border border-white/[0.07] bg-gradient-to-b from-white/[0.05] to-white/[0.015] px-4 py-3">
               <div className="mb-2 text-sm font-medium text-foreground">{t("analysis.evidence.dcfAssumptions")}</div>
               <dl className="grid gap-2 sm:grid-cols-2">
                 {rows.map(([label, value]) => (
