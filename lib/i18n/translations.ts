@@ -38,6 +38,7 @@ const en: Dict = {
   },
   language: {
     label: "Language",
+    change: "Change language",
     english: "English",
     french: "Français",
   },
@@ -776,6 +777,7 @@ const fr: Dict = {
   },
   language: {
     label: "Langue",
+    change: "Changer de langue",
     english: "English",
     french: "Français",
   },
