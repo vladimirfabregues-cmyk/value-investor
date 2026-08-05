@@ -1,11 +1,12 @@
 import type { MetadataRoute } from "next";
 
+import { BRAND } from "@/lib/brand";
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "The Investment Casebook",
-    short_name: "Casebook",
-    description:
-      "Premium investment research — deep company analysis and ETF research, with the reasoning behind every conclusion.",
+    name: BRAND.name,
+    short_name: BRAND.appShortName,
+    description: BRAND.description,
     start_url: "/value/screen",
     display: "standalone",
     orientation: "portrait",

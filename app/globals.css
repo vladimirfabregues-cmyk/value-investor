@@ -38,6 +38,15 @@
     --chart-3: 204 62% 58%;
     --chart-4: 28 74% 57%;
     --chart-5: 350 69% 58%;
+
+    /* A stronger hairline for emphasis dividers (the subtle one is --border). */
+    --border-strong: 219 18% 30%;
+    /* Semantic status hues, tuned to read clearly on the dark navy field.
+       Status must always pair with an icon/label, never colour alone. */
+    --info: 204 68% 66%;
+    --success: 152 52% 60%;
+    --warning: 40 80% 62%;
+    --risk: 0 72% 68%;
   }
 
   * {

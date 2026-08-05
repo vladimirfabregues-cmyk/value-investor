@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const SITE_ORIGIN = "https://value-investor-vladimirfabregues-1828s-projects.vercel.app";
+import { BRAND } from "@/lib/brand";
 
 /**
  * Served at /robots.txt. The hub owns the origin, so this governs crawling of
@@ -9,7 +9,7 @@ const SITE_ORIGIN = "https://value-investor-vladimirfabregues-1828s-projects.ver
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: { userAgent: "*", allow: "/" },
-    sitemap: `${SITE_ORIGIN}/sitemap.xml`,
-    host: SITE_ORIGIN,
+    sitemap: `${BRAND.origin}/sitemap.xml`,
+    host: BRAND.origin,
   };
 }

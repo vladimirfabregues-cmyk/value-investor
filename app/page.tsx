@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, LineChart, Layers } from "lucide-react";
 
+import { CasebookLogo } from "@/components/brand/casebook-logo";
 import { useTranslation } from "@/lib/i18n/locale-context";
 
 /**
@@ -15,15 +16,8 @@ export default function ChooserPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-5xl flex-col items-center justify-center px-5 py-16 text-center">
-      {/* Masthead: gold "IC" bookplate seal + wordmark (the page's h1). */}
-      <div className="flex items-center gap-3">
-        <span className="grid h-11 w-11 place-items-center rounded-full bg-primary font-display text-base font-semibold text-primary-foreground shadow-[0_10px_30px_rgba(181,148,88,0.3)]">
-          IC
-        </span>
-        <h1 className="font-display text-xl tracking-tight text-foreground sm:text-2xl">
-          The Investment Casebook
-        </h1>
-      </div>
+      {/* Masthead: the shared CasebookLogo, wordmark as the page h1. */}
+      <CasebookLogo size="lg" wordmarkAs="h1" />
 
       {/* Tagline — the editorial hero line. */}
       <p className="mt-8 text-balance font-display text-3xl leading-tight text-foreground sm:text-[2.6rem] sm:leading-[1.1]">

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const SITE_ORIGIN = "https://value-investor-vladimirfabregues-1828s-projects.vercel.app";
+import { BRAND } from "@/lib/brand";
 
 /**
  * Served at /sitemap.xml. Lists the public, indexable pages across both zones —
@@ -24,7 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/etf/disclaimer", priority: 0.3 },
   ];
   return paths.map(({ path, priority }) => ({
-    url: `${SITE_ORIGIN}${path}`,
+    url: `${BRAND.origin}${path}`,
     lastModified: now,
     changeFrequency: "weekly",
     priority,

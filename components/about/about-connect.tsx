@@ -1,8 +1,9 @@
 "use client";
 
+import { BRAND } from "@/lib/brand";
 import { useTranslation } from "@/lib/i18n/locale-context";
 
-const LINKEDIN = "https://www.linkedin.com/in/vladimir-fabregues/";
+const LINKEDIN = BRAND.social.linkedin;
 
 /**
  * "Connect on LinkedIn" call-to-action for the About page. A client component
