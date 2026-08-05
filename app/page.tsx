@@ -1,75 +1,74 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, LineChart, Layers } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-import { CasebookLogo } from "@/components/brand/casebook-logo";
 import { useTranslation } from "@/lib/i18n/locale-context";
+import { CasebookLogo } from "@/components/brand/casebook-logo";
+import { CaseFilePreview } from "@/components/home/case-file-preview";
+import { BRAND } from "@/lib/brand";
 
 /**
- * The Investment Casebook — front door. Two workspaces live under one origin:
- * Companies at /value (this app) and Funds at /etf (a separate Next zone served
- * through a rewrite — hence a plain <a> for that hard cross-zone navigation).
+ * The Investment Casebook — homepage hero. Two-column on desktop (copy left,
+ * case-file visual right); on mobile the copy + CTAs come first, then the
+ * visual. Companies (/value) is the primary route; Funds (/etf, a separate
+ * zone → plain <a>) the secondary. Copy is server-rendered via SSR of this
+ * client component; no raster background, no animation library.
  */
-export default function ChooserPage() {
+export default function HomePage() {
   const { t } = useTranslation();
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-5xl flex-col items-center justify-center px-5 py-16 text-center">
-      {/* Masthead: the shared CasebookLogo, wordmark as the page h1. */}
-      <CasebookLogo size="lg" wordmarkAs="h1" />
+    <main className="mx-auto flex min-h-dvh max-w-6xl flex-col justify-center gap-10 px-5 py-16 lg:gap-12 lg:py-20">
+      <CasebookLogo size="md" />
 
-      {/* Tagline — the editorial hero line. */}
-      <p className="mt-8 text-balance font-display text-3xl leading-tight text-foreground sm:text-[2.6rem] sm:leading-[1.1]">
-        {t("chooser.tagline")}
-      </p>
+      <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14">
+        {/* Copy + actions */}
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-primary/90">
+            {t("hero.eyebrow")}
+          </p>
+          <h1 className="mt-4 text-balance font-display text-4xl leading-[1.04] text-foreground sm:text-5xl lg:text-[3.5rem]">
+            {t("hero.h1")}
+          </h1>
+          <p className="mt-5 max-w-[680px] text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
+            {t("hero.lead")}
+          </p>
 
-      <p className="mt-5 max-w-2xl text-balance text-base leading-7 text-muted-foreground">
-        {t("chooser.lead")}
-      </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href={BRAND.products.companies.path}
+              className="group inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-[0_8px_22px_rgba(181,148,88,0.28)] transition hover:bg-primary-bright focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+            >
+              {t("hero.ctaCompany")}
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+            </Link>
+            {/* Cross-zone: /etf is a separate build via next.config rewrite. */}
+            <a
+              href={BRAND.products.funds.path}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/15 px-5 text-sm font-medium text-foreground/85 transition hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+            >
+              {t("hero.ctaEtf")}
+            </a>
+          </div>
 
-      <div className="mt-10 grid w-full gap-4 sm:grid-cols-2">
-        <Link
-          href="/value"
-          className="group flex flex-col rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 text-left shadow-panel transition hover:border-primary/40 hover:bg-white/[0.04]"
-        >
-          <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/30 bg-gradient-to-b from-primary/20 to-primary/5 text-primary">
-            <LineChart className="h-5 w-5" aria-hidden="true" />
-          </span>
-          <h2 className="mt-4 font-display text-2xl text-foreground">{t("chooser.companiesTitle")}</h2>
-          <p className="mt-2 flex-1 text-sm leading-6 text-muted-foreground">{t("chooser.companiesDesc")}</p>
-          <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-            {t("chooser.companiesCta")}
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-          </span>
-        </Link>
+          <p className="mt-5 text-xs leading-5 text-muted-foreground">{t("hero.microDisclaimer")}</p>
+        </div>
 
-        {/* Cross-zone: /etf is served by a separate build via next.config rewrite. */}
-        <a
-          href="/etf"
-          className="group flex flex-col rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 text-left shadow-panel transition hover:border-primary/40 hover:bg-white/[0.04]"
-        >
-          <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/30 bg-gradient-to-b from-primary/20 to-primary/5 text-primary">
-            <Layers className="h-5 w-5" aria-hidden="true" />
-          </span>
-          <h2 className="mt-4 font-display text-2xl text-foreground">{t("chooser.fundsTitle")}</h2>
-          <p className="mt-2 flex-1 text-sm leading-6 text-muted-foreground">{t("chooser.fundsDesc")}</p>
-          <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-            {t("chooser.fundsCta")}
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-          </span>
-        </a>
+        {/* Case-file visual */}
+        <div className="w-full lg:pl-2">
+          <CaseFilePreview />
+        </div>
       </div>
 
-      <Link
-        href="/about"
-        className="mt-10 text-sm font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
-      >
-        {t("chooser.aboutLink")}
-      </Link>
-      <p className="mt-4 max-w-md text-xs leading-5 text-muted-foreground">
-        {t("chooser.disclaimer")}
-      </p>
+      <div>
+        <Link
+          href="/about"
+          className="text-sm font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+        >
+          {t("hero.aboutLink")}
+        </Link>
+      </div>
     </main>
   );
 }
