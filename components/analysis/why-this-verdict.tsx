@@ -69,7 +69,7 @@ export function WhyThisVerdict({ analysis }: WhyThisVerdictProps) {
             return (
               <li
                 key={check.name}
-                className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3"
+                className="flex items-start gap-3 rounded-xl border border-white/[0.07] bg-gradient-to-b from-white/[0.05] to-white/[0.015] p-3"
               >
                 <span
                   className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${meta.ring}`}

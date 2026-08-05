@@ -17,7 +17,7 @@ function BulletList({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-5">
+    <div className="rounded-2xl border border-white/[0.07] bg-gradient-to-b from-white/[0.05] to-white/[0.015] p-5">
       <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
         {icon}
         {title}
