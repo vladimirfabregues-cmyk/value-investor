@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/locale-context";
 import { CasebookLogo } from "@/components/brand/casebook-logo";
 import { CaseFilePreview } from "@/components/home/case-file-preview";
+import { TrustStrip } from "@/components/home/trust-strip";
 import { BRAND } from "@/lib/brand";
 
 /**
@@ -19,7 +20,8 @@ export default function HomePage() {
   const { t } = useTranslation();
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-6xl flex-col justify-center gap-10 px-5 py-16 lg:gap-12 lg:py-20">
+    <main className="mx-auto max-w-6xl px-5">
+      <div className="flex min-h-[86dvh] flex-col justify-center gap-10 py-16 lg:gap-12 lg:py-20">
       <CasebookLogo size="md" />
 
       <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14">
@@ -60,8 +62,11 @@ export default function HomePage() {
           <CaseFilePreview />
         </div>
       </div>
+      </div>
 
-      <div>
+      <TrustStrip />
+
+      <div className="py-8">
         <Link
           href="/about"
           className="text-sm font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"

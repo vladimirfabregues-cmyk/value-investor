@@ -60,6 +60,25 @@ const en: Dict = {
       caption: "A conclusion is the final page—not the first.",
     },
   },
+  trust: {
+    label: "Research transparency principles",
+    sourceDated: {
+      title: "Source-dated data",
+      text: "Material datasets show their source and as-of date.",
+    },
+    versioned: {
+      title: "Versioned methodology",
+      text: "Changes to formulas, weights or thresholds create a new version.",
+    },
+    assumptions: {
+      title: "Visible assumptions",
+      text: "Important modelling assumptions can be inspected.",
+    },
+    limitations: {
+      title: "Disclosed limitations",
+      text: "Missing data and model constraints are not hidden.",
+    },
+  },
   verdict: {
     STRONG_BUY: "Strong buy",
     BUY: "Buy",
@@ -803,6 +822,25 @@ const fr: Dict = {
       limitations: { title: "Limites", sub: "Lacunes et sensibilités" },
       conclusion: { title: "Conclusion", sub: "Évaluation et confiance" },
       caption: "Une conclusion est la dernière page — pas la première.",
+    },
+  },
+  trust: {
+    label: "Principes de transparence de la recherche",
+    sourceDated: {
+      title: "Données datées à la source",
+      text: "Les jeux de données importants indiquent leur source et leur date d'arrêté.",
+    },
+    versioned: {
+      title: "Méthodologie versionnée",
+      text: "Toute modification des formules, pondérations ou seuils crée une nouvelle version.",
+    },
+    assumptions: {
+      title: "Hypothèses visibles",
+      text: "Les hypothèses de modélisation importantes peuvent être inspectées.",
+    },
+    limitations: {
+      title: "Limites divulguées",
+      text: "Les données manquantes et les contraintes du modèle ne sont pas cachées.",
     },
   },
   verdict: {
