@@ -68,9 +68,9 @@ describe("homepage final-cta section", () => {
     }
   });
 
-  it("sits before the page foot on the homepage", () => {
+  it("sits last on the homepage, after the data-coverage section", () => {
     const page = readFileSync(join(process.cwd(), "app/page.tsx"), "utf8");
     expect(page).toContain("<FinalCta />");
-    expect(page.indexOf("<FinalCta />")).toBeLessThan(page.indexOf('href="/about"'));
+    expect(page.indexOf("<FinalCta />")).toBeGreaterThan(page.indexOf("<DataCoverage />"));
   });
 });

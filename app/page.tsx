@@ -80,15 +80,6 @@ export default function HomePage() {
       <DataCoverage />
 
       <FinalCta />
-
-      <div className="py-8">
-        <Link
-          href="/about"
-          className="text-sm font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
-        >
-          {t("hero.aboutLink")}
-        </Link>
-      </div>
     </main>
   );
 }

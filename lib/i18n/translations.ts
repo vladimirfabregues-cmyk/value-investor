@@ -394,6 +394,93 @@ const en: Dict = {
     ctaCompany: "Analyse a company",
     ctaEtf: "Compare ETFs",
   },
+  siteFooter: {
+    description: "Transparent company and ETF research for self-directed investors.",
+    label: "Site footer",
+    groups: {
+      tools: "Research tools",
+      standards: "Research standards",
+      legal: "Legal",
+    },
+    links: {
+      companyAnalysis: "Company Analysis",
+      etfResearch: "ETF Research",
+      companyScreener: "Company Screener",
+      etfScreener: "ETF Screener",
+      compare: "Compare",
+      methodology: "Methodology",
+      dataCoverage: "Data & Coverage",
+      about: "About",
+      important: "Important information",
+    },
+    disclaimer:
+      "The Investment Casebook provides informational research and education tools. It does not provide investment, tax or legal advice, personal recommendations, or an offer or solicitation to buy or sell any security. Capital is at risk. Data and model outputs may be delayed, incomplete or incorrect; verify material facts independently.",
+    readFull: "Read the full important information",
+    methodLabel: "Method",
+    rights: "All rights reserved.",
+  },
+  legal: {
+    title: "Important information",
+    intro: "This page consolidates the risk and status information that applies across The Investment Casebook. Short, context-specific warnings also appear on the relevant product pages.",
+    reviewNote: "This wording is provided for transparency and remains subject to ongoing owner and legal review.",
+    s1: {
+      title: "Informational purpose",
+      body: "The Investment Casebook provides informational research and education tools. It is intended to help you form and challenge your own view, not to tell you what to do.",
+    },
+    s2: {
+      title: "No personal recommendation",
+      body: "Nothing here is a personal recommendation or advice about the merits of any transaction for you. Assessments are general and do not account for your objectives, circumstances or risk tolerance.",
+    },
+    s3: {
+      title: "No offer or solicitation",
+      body: "Nothing here is an offer, solicitation or inducement to buy or sell any security, fund or other financial instrument.",
+    },
+    s4: {
+      title: "Capital at risk",
+      body: "The value of investments can fall as well as rise and you may get back less than you invested. Capital is at risk.",
+    },
+    s5: {
+      title: "Data accuracy and delays",
+      body: "Data is drawn from third-party sources and may be delayed, incomplete or incorrect. Figures are estimates, not statements of fact, and are shown with their source and as-of date where available.",
+    },
+    s6: {
+      title: "Model and valuation limitations",
+      body: "Modelled values are estimates produced by a deterministic engine from historical and current inputs. They depend on assumptions that may not hold, and different reasonable assumptions would produce different results.",
+    },
+    s7: {
+      title: "Scenario-analysis limitations",
+      body: "Scenario outputs are illustrative sensitivities, not forecasts or predictions of future returns. They show how an output could move under stated assumptions, nothing more.",
+    },
+    s8: {
+      title: "Past performance",
+      body: "Past performance is not a reliable indicator of future results.",
+    },
+    s9: {
+      title: "Tax and legal information",
+      body: "Any tax or legal information is general and depends on your individual circumstances and jurisdiction, which may change. It is not tax or legal advice; consult a qualified professional.",
+    },
+    s10: {
+      title: "Curated ETF coverage",
+      body: "ETF coverage is curated, not exhaustive, and is organised into named peer groups. Scores are relative to a stated peer group and are not a claim that a fund is universally best.",
+    },
+    s11: {
+      title: "Third-party sources",
+      body: "Company data is sourced from providers such as Yahoo Finance and SEC EDGAR; fund reference data is maintained in the Funds section. Those providers do not endorse this tool, and their terms apply to their data.",
+    },
+    s12: {
+      title: "Independent verification",
+      body: "Before any investment decision, verify material facts against primary sources: company annual and interim reports, regulatory filings, and the issuer's own fund documentation (KID/KIID and prospectus) for ETFs.",
+    },
+    s13: {
+      title: "Regulatory status",
+      body: "The Investment Casebook is a research and education tool. It does not hold itself out as a regulated financial adviser and makes no claim of authorisation by any regulator. This notice does not change the regulatory treatment of any content; it describes how the tool is intended to be used.",
+    },
+    s14: {
+      title: "Contact and correction requests",
+      body: "To flag a data error or request a correction, reach the author via the About page. Corrections to source data may also require raising the issue with the original data provider.",
+      linkLabel: "Go to the About page",
+    },
+  },
   verdict: {
     STRONG_BUY: "Strong buy",
     BUY: "Buy",
@@ -1472,6 +1559,93 @@ const fr: Dict = {
     body: "Analysez une société cotée ou comparez des ETF UCITS grâce à une recherche transparente et inspectable.",
     ctaCompany: "Analyser une société",
     ctaEtf: "Comparer des ETF",
+  },
+  siteFooter: {
+    description: "Recherche transparente sur les sociétés et les ETF pour les investisseurs autonomes.",
+    label: "Pied de page du site",
+    groups: {
+      tools: "Outils de recherche",
+      standards: "Normes de recherche",
+      legal: "Mentions légales",
+    },
+    links: {
+      companyAnalysis: "Analyse de sociétés",
+      etfResearch: "Recherche ETF",
+      companyScreener: "Filtre de sociétés",
+      etfScreener: "Filtre d'ETF",
+      compare: "Comparer",
+      methodology: "Méthodologie",
+      dataCoverage: "Données et couverture",
+      about: "À propos",
+      important: "Informations importantes",
+    },
+    disclaimer:
+      "The Investment Casebook fournit des outils de recherche et d'éducation à titre informatif. Il ne fournit pas de conseil en investissement, fiscal ou juridique, ni de recommandation personnalisée, ni d'offre ou de sollicitation d'achat ou de vente d'un titre. Le capital est exposé à un risque. Les données et les sorties de modèles peuvent être différées, incomplètes ou erronées ; vérifiez les faits importants de manière indépendante.",
+    readFull: "Lire l'ensemble des informations importantes",
+    methodLabel: "Méthode",
+    rights: "Tous droits réservés.",
+  },
+  legal: {
+    title: "Informations importantes",
+    intro: "Cette page regroupe les informations sur les risques et le statut qui s'appliquent à l'ensemble de The Investment Casebook. De courts avertissements contextuels figurent également sur les pages produit concernées.",
+    reviewNote: "Ce texte est fourni à des fins de transparence et reste soumis à la revue continue du propriétaire et à une revue juridique.",
+    s1: {
+      title: "Finalité informative",
+      body: "The Investment Casebook fournit des outils de recherche et d'éducation à titre informatif. L'objectif est de vous aider à former et à remettre en question votre propre opinion, non de vous dire quoi faire.",
+    },
+    s2: {
+      title: "Aucune recommandation personnalisée",
+      body: "Rien ici ne constitue une recommandation personnalisée ou un conseil sur l'opportunité d'une transaction pour vous. Les évaluations sont générales et ne tiennent pas compte de vos objectifs, de votre situation ou de votre tolérance au risque.",
+    },
+    s3: {
+      title: "Aucune offre ni sollicitation",
+      body: "Rien ici ne constitue une offre, une sollicitation ou une incitation à acheter ou vendre un titre, un fonds ou tout autre instrument financier.",
+    },
+    s4: {
+      title: "Capital exposé à un risque",
+      body: "La valeur des investissements peut baisser comme augmenter et vous pourriez récupérer moins que votre mise. Le capital est exposé à un risque.",
+    },
+    s5: {
+      title: "Exactitude et délais des données",
+      body: "Les données proviennent de sources tierces et peuvent être différées, incomplètes ou erronées. Les chiffres sont des estimations, non des faits établis, et sont affichés avec leur source et leur date d'arrêté lorsque disponibles.",
+    },
+    s6: {
+      title: "Limites des modèles et des valorisations",
+      body: "Les valeurs modélisées sont des estimations produites par un moteur déterministe à partir de données historiques et actuelles. Elles dépendent d'hypothèses qui peuvent ne pas se vérifier, et d'autres hypothèses raisonnables donneraient des résultats différents.",
+    },
+    s7: {
+      title: "Limites de l'analyse de scénarios",
+      body: "Les sorties de scénarios sont des sensibilités illustratives, non des prévisions ou des prédictions de rendements futurs. Elles montrent comment une sortie pourrait évoluer selon des hypothèses données, rien de plus.",
+    },
+    s8: {
+      title: "Performances passées",
+      body: "Les performances passées ne préjugent pas des résultats futurs.",
+    },
+    s9: {
+      title: "Informations fiscales et juridiques",
+      body: "Toute information fiscale ou juridique est générale et dépend de votre situation individuelle et de votre juridiction, susceptibles de changer. Il ne s'agit pas d'un conseil fiscal ou juridique ; consultez un professionnel qualifié.",
+    },
+    s10: {
+      title: "Couverture ETF curée",
+      body: "La couverture ETF est curée, non exhaustive, et organisée en groupes de pairs nommés. Les scores sont relatifs à un groupe de pairs indiqué et ne prétendent pas qu'un fonds est le meilleur dans l'absolu.",
+    },
+    s11: {
+      title: "Sources tierces",
+      body: "Les données sur les sociétés proviennent de fournisseurs tels que Yahoo Finance et SEC EDGAR ; les données de référence des fonds sont maintenues dans la section Fonds. Ces fournisseurs n'approuvent pas cet outil, et leurs conditions s'appliquent à leurs données.",
+    },
+    s12: {
+      title: "Vérification indépendante",
+      body: "Avant toute décision d'investissement, vérifiez les faits importants auprès des sources primaires : rapports annuels et intermédiaires des sociétés, dépôts réglementaires, et la documentation du fonds de l'émetteur (DIC/DICI et prospectus) pour les ETF.",
+    },
+    s13: {
+      title: "Statut réglementaire",
+      body: "The Investment Casebook est un outil de recherche et d'éducation. Il ne se présente pas comme un conseiller financier réglementé et ne revendique aucune autorisation d'un régulateur. Cette mention ne modifie pas le traitement réglementaire d'un contenu ; elle décrit l'usage prévu de l'outil.",
+    },
+    s14: {
+      title: "Contact et demandes de correction",
+      body: "Pour signaler une erreur de données ou demander une correction, contactez l'auteur via la page À propos. Les corrections des données sources peuvent aussi nécessiter de signaler le problème au fournisseur de données d'origine.",
+      linkLabel: "Aller à la page À propos",
+    },
   },
   verdict: {
     STRONG_BUY: "Achat fort",

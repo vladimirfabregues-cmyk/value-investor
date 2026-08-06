@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import "@/app/globals.css";
 import { BRAND } from "@/lib/brand";
 import { LanguageToggle } from "@/components/i18n/language-toggle";
+import { SiteFooter } from "@/components/shell/site-footer";
 import { LocaleProvider } from "@/lib/i18n/locale-context";
 
 export const metadata: Metadata = {
@@ -86,6 +87,7 @@ export default function RootLayout({
         />
         <LocaleProvider>
           {children}
+          <SiteFooter />
           <LanguageToggle />
         </LocaleProvider>
       </body>
