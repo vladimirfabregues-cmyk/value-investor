@@ -11,6 +11,7 @@ import { ResearchTools } from "@/components/home/research-tools";
 import { CaseAnatomy } from "@/components/home/case-anatomy";
 import { MethodologyPrinciples } from "@/components/home/methodology-principles";
 import { DataCoverage } from "@/components/home/data-coverage";
+import { FinalCta } from "@/components/home/final-cta";
 import { BRAND } from "@/lib/brand";
 
 /**
@@ -77,6 +78,8 @@ export default function HomePage() {
       <MethodologyPrinciples />
 
       <DataCoverage />
+
+      <FinalCta />
 
       <div className="py-8">
         <Link
