@@ -329,7 +329,7 @@ export function HomeView({
               <span aria-hidden="true" className="text-muted-foreground">→</span>
             </Link>
 
-            <HowValuationWorks />
+            <HowValuationWorks id="how-valuation-works" />
           </>
         )}
       </div>

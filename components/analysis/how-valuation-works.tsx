@@ -11,10 +11,10 @@ import { useTranslation } from "@/lib/i18n/locale-context";
  * A native <details> keeps it one keystroke away, is open/closed by the
  * browser without JavaScript, and is announced correctly by screen readers.
  */
-export function HowValuationWorks() {
+export function HowValuationWorks({ id }: { id?: string } = {}) {
   const { t } = useTranslation();
   return (
-    <details className="group rounded-2xl border border-white/[0.07] bg-white/[0.02]">
+    <details id={id} className="group scroll-mt-24 rounded-2xl border border-white/[0.07] bg-white/[0.02]">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 text-sm font-medium text-foreground/90 [&::-webkit-details-marker]:hidden">
         {t("analysis.methodology.title")}
         <ChevronDown
