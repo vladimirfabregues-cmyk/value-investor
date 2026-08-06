@@ -10,6 +10,7 @@ import { TrustStrip } from "@/components/home/trust-strip";
 import { ResearchTools } from "@/components/home/research-tools";
 import { CaseAnatomy } from "@/components/home/case-anatomy";
 import { MethodologyPrinciples } from "@/components/home/methodology-principles";
+import { DataCoverage } from "@/components/home/data-coverage";
 import { BRAND } from "@/lib/brand";
 
 /**
@@ -74,6 +75,8 @@ export default function HomePage() {
       <CaseAnatomy />
 
       <MethodologyPrinciples />
+
+      <DataCoverage />
 
       <div className="py-8">
         <Link
