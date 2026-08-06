@@ -173,6 +173,75 @@ const en: Dict = {
       openCompare: "Open the fund comparison",
     },
   },
+  methodologyPrinciples: {
+    eyebrow: "Research principles",
+    h2: "Built for scrutiny, not persuasion.",
+    body: "The platform is designed to help you challenge a conclusion—not simply accept one.",
+    cta: "Read the methodology",
+    p1: {
+      title: "Use the model that fits the economics",
+      body: "Operating companies, banks, insurers, property trusts and utilities should not be forced into one valuation template.",
+    },
+    p2: {
+      title: "Compare like with like",
+      body: "ETF scores are meaningful only within a named, comparable exposure group.",
+    },
+    p3: {
+      title: "Do not average away material weaknesses",
+      body: "Critical balance-sheet, data-quality or product-structure issues remain visible and can limit an assessment.",
+    },
+    p4: {
+      title: "Keep missing data visible",
+      body: "Unavailable inputs are disclosed rather than silently estimated.",
+    },
+    p5: {
+      title: "Show the working",
+      body: "Scores and assessments decompose into the inputs that produced them.",
+    },
+    p6: {
+      title: "Version the method",
+      body: "Changes to formulas, weights or thresholds create a documented new version.",
+    },
+  },
+  methodologyHub: {
+    title: "Methodology",
+    intro: "One research standard, applied through two specialised methods.",
+    company: {
+      title: "Company Analysis",
+      body: "Model selection depends on the company's economics—operating businesses, banks, insurers, property trusts and utilities are each valued the way that fits them, then tested for balance-sheet, earnings-quality and cyclicality risk.",
+      link: "How company analysis works",
+      versionLabel: "Company methodology version",
+    },
+    etf: {
+      title: "ETF Research",
+      body: "Funds are scored only against a named, comparable exposure group—never across the whole market—across cost, tracking, liquidity, diversification, durability and structure.",
+      link: "How ETF scoring works",
+      versionNote: "The ETF methodology and dataset versions are shown on the Funds methodology page, which the Funds section keeps as its source of truth.",
+    },
+    disclosures: {
+      title: "How to read every case",
+      sourceDates: {
+        term: "Source dates",
+        desc: "Material datasets show where they came from and the date they were current.",
+      },
+      missingData: {
+        term: "Missing data",
+        desc: "Unavailable inputs are disclosed, not silently estimated.",
+      },
+      changes: {
+        term: "Methodology changes",
+        desc: "Changes to formulas, weights or thresholds create a documented new version.",
+      },
+      gates: {
+        term: "Gates and caps",
+        desc: "Critical balance-sheet, data-quality or structural issues can cap an assessment regardless of score.",
+      },
+      forecasts: {
+        term: "Analysis vs forecast",
+        desc: "Descriptive analysis of current and historical data is kept distinct from forward-looking scenarios.",
+      },
+    },
+  },
   verdict: {
     STRONG_BUY: "Strong buy",
     BUY: "Buy",
@@ -1029,6 +1098,75 @@ const fr: Dict = {
       relative: "Tout score est relatif au groupe de pairs nommé, sans prétendre être le meilleur dans l'absolu.",
       previewNote: "Aucun fonds, score ou rendement n'est affiché ici. Ceci illustre la structure d'un dossier ETF.",
       openCompare: "Ouvrir la comparaison de fonds",
+    },
+  },
+  methodologyPrinciples: {
+    eyebrow: "Principes de recherche",
+    h2: "Conçu pour l'examen critique, pas pour convaincre.",
+    body: "La plateforme est conçue pour vous aider à remettre en question une conclusion, et non simplement à l'accepter.",
+    cta: "Lire la méthodologie",
+    p1: {
+      title: "Utiliser le modèle adapté à l'économie",
+      body: "Sociétés opérationnelles, banques, assureurs, foncières et services aux collectivités ne doivent pas être forcés dans un modèle de valorisation unique.",
+    },
+    p2: {
+      title: "Comparer ce qui est comparable",
+      body: "Les scores d'ETF n'ont de sens qu'au sein d'un groupe d'exposition nommé et comparable.",
+    },
+    p3: {
+      title: "Ne pas diluer les faiblesses matérielles",
+      body: "Les problèmes critiques de bilan, de qualité des données ou de structure de produit restent visibles et peuvent limiter une évaluation.",
+    },
+    p4: {
+      title: "Garder les données manquantes visibles",
+      body: "Les données indisponibles sont divulguées plutôt qu'estimées en silence.",
+    },
+    p5: {
+      title: "Montrer le raisonnement",
+      body: "Les scores et évaluations se décomposent en les données qui les ont produits.",
+    },
+    p6: {
+      title: "Versionner la méthode",
+      body: "Toute modification des formules, pondérations ou seuils crée une nouvelle version documentée.",
+    },
+  },
+  methodologyHub: {
+    title: "Méthodologie",
+    intro: "Une seule norme de recherche, appliquée par deux méthodes spécialisées.",
+    company: {
+      title: "Analyse de sociétés",
+      body: "Le choix du modèle dépend de l'économie de la société : sociétés opérationnelles, banques, assureurs, foncières et services aux collectivités sont valorisés chacun selon la méthode qui leur convient, puis testés sur le bilan, la qualité des résultats et la cyclicité.",
+      link: "Comment fonctionne l'analyse de société",
+      versionLabel: "Version de la méthodologie société",
+    },
+    etf: {
+      title: "Recherche ETF",
+      body: "Les fonds sont notés uniquement au sein d'un groupe d'exposition nommé et comparable, jamais sur l'ensemble du marché : coût, réplication, liquidité, diversification, robustesse et structure.",
+      link: "Comment fonctionne la notation des ETF",
+      versionNote: "Les versions de la méthodologie et du jeu de données ETF sont affichées sur la page de méthodologie de la section Fonds, qui en est la source de référence.",
+    },
+    disclosures: {
+      title: "Comment lire chaque dossier",
+      sourceDates: {
+        term: "Dates des sources",
+        desc: "Les jeux de données importants indiquent leur provenance et la date à laquelle ils étaient à jour.",
+      },
+      missingData: {
+        term: "Données manquantes",
+        desc: "Les données indisponibles sont divulguées, non estimées en silence.",
+      },
+      changes: {
+        term: "Changements de méthodologie",
+        desc: "Toute modification des formules, pondérations ou seuils crée une nouvelle version documentée.",
+      },
+      gates: {
+        term: "Filtres et plafonds",
+        desc: "Des problèmes critiques de bilan, de qualité des données ou de structure peuvent plafonner une évaluation quel que soit le score.",
+      },
+      forecasts: {
+        term: "Analyse et prévision",
+        desc: "L'analyse descriptive des données actuelles et historiques reste distincte des scénarios prospectifs.",
+      },
     },
   },
   verdict: {

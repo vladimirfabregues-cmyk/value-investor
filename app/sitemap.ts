@@ -13,6 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const paths: Array<{ path: string; priority: number }> = [
     { path: "", priority: 1 },
     { path: "/about", priority: 0.4 },
+    { path: "/methodology", priority: 0.6 },
     { path: "/value", priority: 0.9 },
     { path: "/value/screen", priority: 0.8 },
     { path: "/value/compare", priority: 0.6 },

@@ -9,6 +9,7 @@ import { CaseFilePreview } from "@/components/home/case-file-preview";
 import { TrustStrip } from "@/components/home/trust-strip";
 import { ResearchTools } from "@/components/home/research-tools";
 import { CaseAnatomy } from "@/components/home/case-anatomy";
+import { MethodologyPrinciples } from "@/components/home/methodology-principles";
 import { BRAND } from "@/lib/brand";
 
 /**
@@ -71,6 +72,8 @@ export default function HomePage() {
       <ResearchTools />
 
       <CaseAnatomy />
+
+      <MethodologyPrinciples />
 
       <div className="py-8">
         <Link
