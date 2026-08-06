@@ -8,6 +8,7 @@ import { CasebookLogo } from "@/components/brand/casebook-logo";
 import { CaseFilePreview } from "@/components/home/case-file-preview";
 import { TrustStrip } from "@/components/home/trust-strip";
 import { ResearchTools } from "@/components/home/research-tools";
+import { CaseAnatomy } from "@/components/home/case-anatomy";
 import { BRAND } from "@/lib/brand";
 
 /**
@@ -68,6 +69,8 @@ export default function HomePage() {
       <TrustStrip />
 
       <ResearchTools />
+
+      <CaseAnatomy />
 
       <div className="py-8">
         <Link
