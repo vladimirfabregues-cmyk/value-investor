@@ -42,7 +42,7 @@ describe("methodology principles + hub", () => {
   });
 
   it("the hub links to both product methodologies", () => {
-    expect(hubSrc).toContain('href="/value#how-valuation-works"');
+    expect(hubSrc).toContain('href="/methodology/company"');
     expect(hubSrc).toContain('href="/etf/methodology"');
   });
 

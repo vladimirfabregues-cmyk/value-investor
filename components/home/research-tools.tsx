@@ -150,10 +150,7 @@ export function ResearchTools() {
                 aria-hidden="true"
               />
             </Link>
-            <Link
-              href={`${BRAND.products.companies.path}#how-valuation-works`}
-              className={METHOD_LINK_CLASS}
-            >
+            <Link href="/methodology/company" className={METHOD_LINK_CLASS}>
               {t("researchTools.company.methodology")}
             </Link>
           </div>

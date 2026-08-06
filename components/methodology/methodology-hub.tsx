@@ -55,7 +55,7 @@ export function MethodologyHub() {
             </div>
           </dl>
           <Link
-            href="/value#how-valuation-works"
+            href="/methodology/company"
             className="inline-flex items-center gap-1 self-start text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
           >
             {t("methodologyHub.company.link")}

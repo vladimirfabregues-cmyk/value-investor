@@ -65,8 +65,8 @@ describe("homepage research-tools section", () => {
   it("destinations point at the existing entry + methodology routes", () => {
     expect(BRAND.products.companies.path).toBe("/value");
     expect(BRAND.products.funds.path).toBe("/etf");
-    // Company primary → analysis entry; methodology → in-page explainer anchor.
-    expect(src).toContain("BRAND.products.companies.path}#how-valuation-works");
+    // Company primary → analysis entry; methodology → dedicated methodology page.
+    expect(src).toContain('href="/methodology/company"');
     // ETF primary → funds zone; methodology → existing /etf/methodology route.
     expect(src).toContain("BRAND.products.funds.path}/methodology");
   });

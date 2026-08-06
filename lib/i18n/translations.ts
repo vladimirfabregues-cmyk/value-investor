@@ -242,6 +242,60 @@ const en: Dict = {
       },
     },
   },
+  companyMethodology: {
+    title: "How company analysis works",
+    intro: "Every company is analysed the same way: choose the valuation model that fits its economics, estimate a value range, then test the balance sheet, earnings quality and cyclicality before reaching a conclusion. The process is deterministic—the same inputs always produce the same result.",
+    models: {
+      title: "A model chosen for the economics",
+      body: "One template cannot fit every business, so the valuation model is selected from the company's sector and economics.",
+      dcf: {
+        term: "Operating companies · discounted cash flow",
+        desc: "Free cash flow is projected and discounted at a sector-specific rate on a conservative basis, then cross-checked against the Graham number.",
+      },
+      pb: {
+        term: "Banks and insurers · justified price-to-book",
+        desc: "Valued on cycle-average return on equity rather than cash flow, because reported free cash flow for a financial is float and deposit timing, not owner earnings.",
+      },
+      nav: {
+        term: "Property and investment trusts · net asset value",
+        desc: "Anchored to book value, blended with a funds-from-operations estimate; for trusts, the margin of safety is the discount to net asset value.",
+      },
+      ddm: {
+        term: "Utilities · dividend discount",
+        desc: "Valued on the dividend stream, since heavy ongoing capital expenditure makes reported free cash flow lumpy.",
+      },
+    },
+    checks: {
+      title: "Checks on the estimate",
+      body: "A value estimate is only trustworthy if the business behind it is sound, so three checks run against every company.",
+      resilience: {
+        term: "Financial resilience",
+        desc: "Leverage, interest coverage and free-cash-flow consistency show whether the balance sheet can absorb a shock.",
+      },
+      earnings: {
+        term: "Earnings quality",
+        desc: "Whether reported profits are actually backed by cash rather than accruals.",
+      },
+      quality: {
+        term: "Business quality and cyclicality",
+        desc: "Margins, returns on capital, moat indicators and revenue stability show how durable—and how cyclical—the earnings are.",
+      },
+    },
+    gates: {
+      title: "Material weaknesses can cap the result",
+      body: "Critical issues are not averaged away. Any of the following can hold a conclusion back regardless of an otherwise high score, and the reason is always shown on the result:",
+      items: "Earnings at a cyclical peak; revenue in structural decline; heavy share issuance; profits not backed by cash; or a valuation no second model corroborates.",
+    },
+    conclusion: {
+      title: "From scores to a conclusion",
+      body: "Valuation, financial health and business quality combine into a composite score; the gap between price and the modelled value becomes a margin of safety; and a confidence level reflects data quality and how well the models agree. The output is an assessment of the evidence, with its reasoning shown—never an instruction to buy or sell.",
+    },
+    provenance: {
+      title: "Versioning and sources",
+      versionLabel: "Valuation model version",
+      body: "Every saved analysis is stamped with the model version that produced it, so a conclusion can be traced back to the rules in force at the time. Data comes from third-party sources (Yahoo Finance, SEC EDGAR), is shown with its as-of date, and missing inputs are disclosed rather than estimated.",
+    },
+  },
   verdict: {
     STRONG_BUY: "Strong buy",
     BUY: "Buy",
@@ -1167,6 +1221,60 @@ const fr: Dict = {
         term: "Analyse et prévision",
         desc: "L'analyse descriptive des données actuelles et historiques reste distincte des scénarios prospectifs.",
       },
+    },
+  },
+  companyMethodology: {
+    title: "Comment fonctionne l'analyse de société",
+    intro: "Chaque société est analysée de la même manière : choisir le modèle de valorisation adapté à son économie, estimer une fourchette de valeur, puis tester le bilan, la qualité des résultats et la cyclicité avant d'arriver à une conclusion. Le processus est déterministe : les mêmes données produisent toujours le même résultat.",
+    models: {
+      title: "Un modèle choisi selon l'économie",
+      body: "Un seul modèle ne peut convenir à toutes les entreprises ; le modèle de valorisation est donc choisi selon le secteur et l'économie de la société.",
+      dcf: {
+        term: "Sociétés opérationnelles · flux de trésorerie actualisés",
+        desc: "Le flux de trésorerie disponible est projeté et actualisé à un taux propre au secteur, sur une base prudente, puis recoupé avec le nombre de Graham.",
+      },
+      pb: {
+        term: "Banques et assureurs · price-to-book justifié",
+        desc: "Valorisés sur la rentabilité des fonds propres moyenne de cycle plutôt que sur les flux, car le « flux de trésorerie disponible » déclaré d'un financier reflète le float et le calendrier des dépôts, non le résultat de l'actionnaire.",
+      },
+      nav: {
+        term: "Foncières et sociétés d'investissement · actif net",
+        desc: "Ancré à la valeur comptable, mêlé à une estimation des fonds provenant de l'exploitation ; pour ces sociétés, la marge de sécurité est la décote sur l'actif net.",
+      },
+      ddm: {
+        term: "Services aux collectivités · actualisation des dividendes",
+        desc: "Valorisés sur le flux de dividendes, car les lourdes dépenses d'investissement rendent le flux de trésorerie disponible déclaré irrégulier.",
+      },
+    },
+    checks: {
+      title: "Contrôles de l'estimation",
+      body: "Une estimation de valeur n'est fiable que si l'entreprise qui la sous-tend est solide ; trois contrôles sont donc appliqués à chaque société.",
+      resilience: {
+        term: "Résilience financière",
+        desc: "L'endettement, la couverture des intérêts et la régularité du flux de trésorerie montrent si le bilan peut absorber un choc.",
+      },
+      earnings: {
+        term: "Qualité des résultats",
+        desc: "Si les bénéfices déclarés sont réellement adossés à de la trésorerie plutôt qu'à des écritures comptables.",
+      },
+      quality: {
+        term: "Qualité de l'entreprise et cyclicité",
+        desc: "Les marges, les rendements du capital, les indicateurs de barrières et la stabilité du chiffre d'affaires montrent la durabilité — et la cyclicité — des résultats.",
+      },
+    },
+    gates: {
+      title: "Les faiblesses matérielles peuvent plafonner le résultat",
+      body: "Les problèmes critiques ne sont pas dilués. Chacun des éléments suivants peut freiner une conclusion malgré un score par ailleurs élevé, et la raison est toujours indiquée sur le résultat :",
+      items: "Bénéfices à un pic de cycle ; chiffre d'affaires en déclin structurel ; émission massive d'actions ; bénéfices non adossés à de la trésorerie ; ou une valorisation qu'aucun second modèle ne corrobore.",
+    },
+    conclusion: {
+      title: "Des scores à une conclusion",
+      body: "Valorisation, santé financière et qualité de l'entreprise se combinent en un score composite ; l'écart entre le prix et la valeur modélisée devient une marge de sécurité ; et un niveau de confiance reflète la qualité des données et la concordance des modèles. Le résultat est une évaluation des preuves, avec son raisonnement affiché — jamais une instruction d'acheter ou de vendre.",
+    },
+    provenance: {
+      title: "Versionnage et sources",
+      versionLabel: "Version du modèle de valorisation",
+      body: "Chaque analyse enregistrée porte la version du modèle qui l'a produite, afin qu'une conclusion puisse être rattachée aux règles en vigueur à l'époque. Les données proviennent de sources tierces (Yahoo Finance, SEC EDGAR), sont affichées avec leur date d'arrêté, et les données manquantes sont divulguées plutôt qu'estimées.",
     },
   },
   verdict: {
