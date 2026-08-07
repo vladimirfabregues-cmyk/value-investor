@@ -9,7 +9,6 @@ import { Menu, X } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/locale-context";
 import type { Locale } from "@/lib/i18n/translations";
 import { CasebookLogo } from "@/components/brand/casebook-logo";
-import { BRAND } from "@/lib/brand";
 import { cn } from "@/lib/utils/cn";
 
 type NavItem = { key: string; href: string; crossZone?: boolean };
@@ -17,7 +16,6 @@ type NavItem = { key: string; href: string; crossZone?: boolean };
 const NAV: NavItem[] = [
   { key: "stocks", href: "/value" },
   { key: "etfs", href: "/etf", crossZone: true },
-  { key: "compare", href: "/value/compare" },
   { key: "methodology", href: "/methodology" },
   { key: "about", href: "/about" },
 ];
@@ -108,12 +106,6 @@ export function SiteHeader() {
 
         <div className="hidden items-center gap-3 md:flex">
           <LangSwitch />
-          <Link
-            href={BRAND.products.companies.path}
-            className="inline-flex h-9 items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground transition hover:bg-primary-bright focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-          >
-            {t("siteNav.primary")}
-          </Link>
         </div>
 
         {/* Mobile trigger */}
@@ -139,14 +131,8 @@ export function SiteHeader() {
                 "rounded-lg px-3 py-2.5 text-base font-medium text-foreground/90 hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
               ),
             )}
-            <div className="mt-3 flex items-center justify-between border-t border-white/[0.08] pt-4">
+            <div className="mt-3 border-t border-white/[0.08] pt-4">
               <LangSwitch />
-              <Link
-                href={BRAND.products.companies.path}
-                className="inline-flex h-10 items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground transition hover:bg-primary-bright focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-              >
-                {t("siteNav.primary")}
-              </Link>
             </div>
           </nav>
         </div>

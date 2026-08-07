@@ -25,7 +25,7 @@ describe("global site header", () => {
 
   it("nav labels resolve in both locales", () => {
     for (const t of [en, fr]) {
-      for (const k of ["stocks", "etfs", "compare", "methodology", "about", "primary"]) {
+      for (const k of ["stocks", "etfs", "methodology", "about"]) {
         expect(t(`siteNav.${k}`)).not.toContain("siteNav");
       }
     }
@@ -35,7 +35,7 @@ describe("global site header", () => {
 
   it("has no dead nav links — every href resolves to a real route", () => {
     const hrefs = [...src.matchAll(/href:\s*"([^"]+)"/g)].map((m) => m[1]);
-    expect(hrefs).toEqual(["/value", "/etf", "/value/compare", "/methodology", "/about"]);
+    expect(hrefs).toEqual(["/value", "/etf", "/methodology", "/about"]);
     for (const href of hrefs) {
       const ok = ZONE_ROUTES.has(href) || existsSync(join(process.cwd(), ROUTE_TO_FILE[href] ?? ""));
       expect(ok, `dead nav link: ${href}`).toBe(true);
