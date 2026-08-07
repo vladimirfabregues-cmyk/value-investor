@@ -53,7 +53,7 @@ const en: Dict = {
     caseFile: {
       label: "The Casebook method",
       evidence: { title: "Evidence", sub: "Source and date" },
-      method: { title: "Method", sub: "Model or peer group" },
+      method: { title: "Approach", sub: "Model or peer group" },
       checks: { title: "Checks", sub: "Quality and resilience" },
       limitations: { title: "Limitations", sub: "Gaps and sensitivities" },
       conclusion: { title: "Conclusion", sub: "Assessment and confidence" },
@@ -129,7 +129,7 @@ const en: Dict = {
     stagesLabel: "Case stages",
     stages: {
       evidence: { n: "01", title: "Evidence", question: "What data is being used, from where and as of when?" },
-      method: { n: "02", title: "Method", question: "Which valuation model or peer group is appropriate?" },
+      method: { n: "02", title: "Approach", question: "Which valuation model or peer group is appropriate?" },
       checks: { n: "03", title: "Checks", question: "What does the quality, resilience or structural analysis show?" },
       limitations: { n: "04", title: "Limitations", question: "What is missing, uncertain or sensitive to assumptions?" },
       conclusion: { n: "05", title: "Conclusion", question: "What does the evidence support, and with what confidence?" },
@@ -1231,7 +1231,7 @@ const fr: Dict = {
     caseFile: {
       label: "La méthode Casebook",
       evidence: { title: "Preuves", sub: "Source et date" },
-      method: { title: "Méthode", sub: "Modèle ou groupe de pairs" },
+      method: { title: "Approche", sub: "Modèle ou groupe de pairs" },
       checks: { title: "Vérifications", sub: "Qualité et résilience" },
       limitations: { title: "Limites", sub: "Lacunes et sensibilités" },
       conclusion: { title: "Conclusion", sub: "Évaluation et confiance" },
@@ -1307,7 +1307,7 @@ const fr: Dict = {
     stagesLabel: "Étapes du dossier",
     stages: {
       evidence: { n: "01", title: "Preuves", question: "Quelles données sont utilisées, de quelle source et à quelle date ?" },
-      method: { n: "02", title: "Méthode", question: "Quel modèle de valorisation ou groupe de pairs est approprié ?" },
+      method: { n: "02", title: "Approche", question: "Quel modèle de valorisation ou groupe de pairs est approprié ?" },
       checks: { n: "03", title: "Contrôles", question: "Que montrent les analyses de qualité, de résilience ou de structure ?" },
       limitations: { n: "04", title: "Limites", question: "Qu'est-ce qui manque, reste incertain ou dépend des hypothèses ?" },
       conclusion: { n: "05", title: "Conclusion", question: "Que soutiennent les preuves, et avec quel niveau de confiance ?" },
