@@ -44,8 +44,8 @@ const en: Dict = {
   },
   hero: {
     eyebrow: "Independent research for self-directed investors",
-    h1: "Every conclusion has a case.",
-    lead: "Analyse listed companies and compare UCITS ETFs through transparent, evidence-led methods. See the data, assumptions, limitations and reasoning before forming your own view.",
+    h1: "Investment research built to be challenged.",
+    lead: "Analyse companies. Compare ETFs. Inspect the assumptions, evidence and methodology behind every result.",
     ctaCompany: "Analyse a company",
     ctaEtf: "Compare UCITS ETFs",
     microDisclaimer: "Informational research tools · No personal recommendations · Capital at risk",
@@ -1222,8 +1222,8 @@ const fr: Dict = {
   },
   hero: {
     eyebrow: "Recherche indépendante pour investisseurs autonomes",
-    h1: "Chaque conclusion s'appuie sur un dossier.",
-    lead: "Analysez des sociétés cotées et comparez des ETF UCITS selon des méthodes transparentes et fondées sur les faits. Consultez les données, les hypothèses, les limites et le raisonnement avant de vous forger votre propre opinion.",
+    h1: "Une recherche d'investissement faite pour être remise en question.",
+    lead: "Analysez des sociétés. Comparez des ETF. Inspectez les hypothèses, les preuves et la méthodologie derrière chaque résultat.",
     ctaCompany: "Analyser une société",
     ctaEtf: "Comparer des ETF UCITS",
     microDisclaimer: "Outils de recherche informatifs · Aucune recommandation personnalisée · Capital à risque",

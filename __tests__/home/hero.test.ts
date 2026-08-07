@@ -12,9 +12,9 @@ describe("homepage hero", () => {
   const en = makeTranslator("en");
   const fr = makeTranslator("fr");
 
-  it("H1 is the tagline in both locales", () => {
-    expect(en("hero.h1")).toBe("Every conclusion has a case.");
-    expect(fr("hero.h1")).toBe("Chaque conclusion s'appuie sur un dossier.");
+  it("H1 is the positioning line in both locales", () => {
+    expect(en("hero.h1")).toBe("Investment research built to be challenged.");
+    expect(fr("hero.h1")).toBe("Une recherche d'investissement faite pour être remise en question.");
   });
 
   it("micro-disclaimer states the risk in both locales", () => {
