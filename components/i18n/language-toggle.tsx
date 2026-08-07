@@ -1,5 +1,7 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+
 import { useTranslation } from "@/lib/i18n/locale-context";
 import type { Locale } from "@/lib/i18n/translations";
 import { cn } from "@/lib/utils/cn";
@@ -16,6 +18,11 @@ import { cn } from "@/lib/utils/cn";
  */
 export function LanguageToggle() {
   const { locale, setLocale, t } = useTranslation();
+  const pathname = usePathname();
+
+  // The front-of-site carries its EN/FR switch in the global header; this fixed
+  // control is only for the /value app workspace, which has no such header.
+  if (!pathname?.startsWith("/value")) return null;
 
   const langs: { code: Locale; short: string; label: string }[] = [
     { code: "en", short: "EN", label: t("language.english") },

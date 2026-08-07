@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import "@/app/globals.css";
 import { BRAND } from "@/lib/brand";
 import { LanguageToggle } from "@/components/i18n/language-toggle";
+import { SiteHeader } from "@/components/shell/site-header";
 import { SiteFooter } from "@/components/shell/site-footer";
 import { LocaleProvider } from "@/lib/i18n/locale-context";
 
@@ -86,6 +87,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(SITE_JSONLD) }}
         />
         <LocaleProvider>
+          <SiteHeader />
           {children}
           <SiteFooter />
           <LanguageToggle />
