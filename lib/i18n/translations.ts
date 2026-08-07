@@ -30,7 +30,7 @@ const en: Dict = {
     tagline: "Companies",
     dataSources: "Yahoo Finance · SEC EDGAR",
     primaryLabel: "Primary",
-    workspaces: "Workspaces",
+    workspaces: "Homepage",
   },
   footer: {
     disclaimer:
@@ -1208,7 +1208,7 @@ const fr: Dict = {
     tagline: "Sociétés",
     dataSources: "Yahoo Finance · SEC EDGAR",
     primaryLabel: "Principal",
-    workspaces: "Espaces",
+    workspaces: "Accueil",
   },
   footer: {
     disclaimer:
