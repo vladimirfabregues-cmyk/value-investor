@@ -75,20 +75,22 @@ function CapFlags({ caps }: { caps: string | null }) {
   if (!caps) return null;
   const list = caps.split(",");
   const readable = list.map((c) => capLabel(c, t)).join(" · ");
+  // One count only: the digit is shown, and the full sentence is the badge's
+  // accessible name + tooltip. Previously a visible (aria-hidden) digit sat
+  // beside an sr-only sentence that also began with the digit, so the text/
+  // a11y tree read the count twice ("11 conclusion cap: …").
+  const label = t(list.length === 1 ? "screen.cappedCountOne" : "screen.cappedCountOther", {
+    n: list.length,
+    list: readable,
+  });
   return (
     <span
-      title={t("screen.cappedTitle", { list: readable })}
+      title={label}
+      aria-label={label}
       className="inline-flex cursor-help items-center gap-1 rounded-full border border-amber-500/25 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-300"
     >
       <AlertTriangle className="h-2.5 w-2.5" aria-hidden="true" />
-      <span aria-hidden="true">{list.length}</span>
-      {/* The bare count is meaningless to a screen reader; spell it out. */}
-      <span className="sr-only">
-        {t(list.length === 1 ? "screen.cappedCountOne" : "screen.cappedCountOther", {
-          n: list.length,
-          list: readable,
-        })}
-      </span>
+      <span>{list.length}</span>
     </span>
   );
 }
