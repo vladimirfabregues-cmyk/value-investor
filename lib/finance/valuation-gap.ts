@@ -79,6 +79,40 @@ export function describeValuationGap(
   };
 }
 
+/**
+ * One signed convention for a sortable discount/premium *column* (P1-7): a
+ * discount (margin of safety) is a positive %, a premium is shown in
+ * parentheses, fair value as "~0%", and an unavailable value as an em-dash.
+ * This keeps a single column one value type so it sorts meaningfully — unlike
+ * the row-wise "X margin" / "X premium" wording used in compare/history where
+ * the label sits beside the number.
+ */
+export function formatDiscountPremium(
+  marginOfSafetyPct: number | null | undefined,
+): string {
+  const gap = describeValuationGap(marginOfSafetyPct);
+  if (gap.magnitudePct === null) return "—";
+  if (gap.kind === "premium") return `(${gap.display})`;
+  return gap.display;
+}
+
+/**
+ * Deterministic comparator for a discount/premium column: higher discount
+ * first for "desc", and nulls ALWAYS sort last regardless of direction.
+ */
+export function compareMarginOfSafety(
+  a: number | null | undefined,
+  b: number | null | undefined,
+  dir: "asc" | "desc" = "desc",
+): number {
+  const aNull = a === null || a === undefined || !Number.isFinite(a);
+  const bNull = b === null || b === undefined || !Number.isFinite(b);
+  if (aNull && bNull) return 0;
+  if (aNull) return 1;
+  if (bNull) return -1;
+  return dir === "asc" ? (a as number) - (b as number) : (b as number) - (a as number);
+}
+
 /** Compact one-line form for dense contexts (tables, history rows). */
 export function formatValuationGapShort(
   marginOfSafetyPct: number | null | undefined,

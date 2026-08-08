@@ -131,7 +131,9 @@ export async function getScreenResults(
         : {}),
       errorMessage: null,
     },
-    orderBy: { [sortBy]: sortDir },
+    // Nulls always sort last, both directions — margin of safety is nullable
+    // and Postgres would otherwise put nulls first on an ascending sort.
+    orderBy: { [sortBy]: { sort: sortDir, nulls: "last" } },
     take: limit,
   });
 

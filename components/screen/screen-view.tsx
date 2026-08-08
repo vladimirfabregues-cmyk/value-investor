@@ -7,7 +7,7 @@ import { AlertTriangle, Clock, Play, RefreshCw, TrendingUp, TrendingDown, X } fr
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { VerdictModal } from "@/components/screen/verdict-modal";
-import { describeValuationGap } from "@/lib/finance/valuation-gap";
+import { describeValuationGap, formatDiscountPremium } from "@/lib/finance/valuation-gap";
 import { inferExchangeFromTicker } from "@/lib/finance/exchanges";
 import { capLabel } from "@/lib/finance/verdict-explanation-prose";
 import { translateSector } from "@/lib/finance/prose";
@@ -123,8 +123,16 @@ function MosBadge({ value }: { value: number | null | undefined }) {
   const { t } = useTranslation();
   // Never render a negative "margin of safety" — above estimated value is a premium.
   const gap = describeValuationGap(value);
-  if (gap.magnitudePct === null) return <span className="text-xs text-muted-foreground">—</span>;
+  if (gap.magnitudePct === null) {
+    return (
+      <span title={t("screen.mosUnavailable")} className="text-xs text-muted-foreground">
+        —
+      </span>
+    );
+  }
   const isPremium = gap.kind === "premium";
+  // One signed convention for the whole column: discount positive, premium in
+  // parentheses. Parentheses carry the meaning; colour/icon are secondary.
   const title =
     gap.kind === "margin"
       ? t("analysis.evidence.marginOfSafety", { value: gap.display })
@@ -139,7 +147,7 @@ function MosBadge({ value }: { value: number | null | undefined }) {
       }`}
     >
       {gap.tone === "positive" ? <TrendingUp className="h-3 w-3" aria-hidden="true" /> : isPremium ? <TrendingDown className="h-3 w-3" aria-hidden="true" /> : null}
-      {isPremium ? t("analysis.evidence.premium", { value: gap.display }) : gap.display}
+      {formatDiscountPremium(value)}
     </span>
   );
 }
@@ -208,8 +216,21 @@ function buildSectorPeMap(rows: ScreenResultRecord[]): Map<string, number> {
   return out;
 }
 
+/** Display ceiling for the P/E column — beyond this the exact multiple is not
+ *  meaningfully scannable and the sector-median delta communicates nothing. */
+const PE_DISPLAY_CAP = 100;
+
 function PeVsSectorBadge({ pe, sectorMedian }: { pe: number | null; sectorMedian: number | null }) {
   if (pe === null || pe <= 0) return <span className="text-xs text-muted-foreground">—</span>;
+  // Cap the display so an outlier (e.g. 677×) can't blow out the column; the
+  // true multiple stays available in the tooltip.
+  if (pe > PE_DISPLAY_CAP) {
+    return (
+      <span title={`P/E ${pe.toFixed(1)}×`} className="tabular-nums text-xs text-foreground/80">
+        &gt;{PE_DISPLAY_CAP}×
+      </span>
+    );
+  }
   const peStr = pe.toFixed(1) + "×";
   if (sectorMedian === null) return <span className="tabular-nums text-xs text-foreground/80">{peStr}</span>;
   const delta = ((pe - sectorMedian) / sectorMedian) * 100;
