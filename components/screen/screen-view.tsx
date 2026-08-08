@@ -288,19 +288,29 @@ function SortableTh({
 }
 
 /** One stage of the screening funnel (Universe → Screened → Passed all gates). */
-function FunnelStage({ label, value, emphasise }: { label: string; value: number; emphasise?: boolean }) {
+function FunnelStage({
+  label,
+  value,
+  locale,
+  emphasise,
+}: {
+  label: string;
+  value: number;
+  locale: "en" | "fr";
+  emphasise?: boolean;
+}) {
   return (
     <span className="inline-flex items-baseline gap-1.5">
       <span className="text-muted-foreground">{label}</span>
       <span className={`font-display tabular-nums ${emphasise ? "text-primary" : "text-foreground"}`}>
-        {value.toLocaleString()}
+        {value.toLocaleString(locale === "fr" ? "fr-FR" : "en-GB")}
       </span>
     </span>
   );
 }
 
 export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const verdictLabel = useVerdictLabel();
   const [activeIndex, setActiveIndex] = useState<ActiveIndex>("RUSSELL2000");
   const [results, setResults] = useState<ScreenResultRecord[]>(initialResults);
@@ -539,11 +549,11 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
           aria-label={t("screen.funnel.label")}
           className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-3 text-sm"
         >
-          <FunnelStage label={t("screen.funnel.universe")} value={funnel.universe} />
+          <FunnelStage label={t("screen.funnel.universe")} value={funnel.universe} locale={locale} />
           <span aria-hidden="true" className="text-muted-foreground">→</span>
-          <FunnelStage label={t("screen.funnel.screened")} value={funnel.screened} />
+          <FunnelStage label={t("screen.funnel.screened")} value={funnel.screened} locale={locale} />
           <span aria-hidden="true" className="text-muted-foreground">→</span>
-          <FunnelStage label={t("screen.funnel.passed")} value={funnel.passedAllGates} emphasise />
+          <FunnelStage label={t("screen.funnel.passed")} value={funnel.passedAllGates} locale={locale} emphasise />
         </div>
       )}
 

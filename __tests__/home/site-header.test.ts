@@ -29,8 +29,10 @@ describe("global site header", () => {
         expect(t(`siteNav.${k}`)).not.toContain("siteNav");
       }
     }
-    expect(en("siteNav.stocks")).toBe("Stocks");
-    expect(fr("siteNav.stocks")).toBe("Actions");
+    // Appendix A: the company research area is "Analyse stock" / "Analyser une action".
+    expect(en("siteNav.stocks")).toBe("Analyse stock");
+    expect(fr("siteNav.stocks")).toBe("Analyser une action");
+    expect(en("siteNav.etfs")).toBe("ETFs");
   });
 
   it("has no dead nav links — every href resolves to a real route", () => {
