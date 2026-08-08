@@ -12,6 +12,7 @@ import { inferExchangeFromTicker } from "@/lib/finance/exchanges";
 import { capLabel } from "@/lib/finance/verdict-explanation-prose";
 import { translateSector } from "@/lib/finance/prose";
 import { useTranslation } from "@/lib/i18n/locale-context";
+import { computeScreenFunnel } from "@/lib/screener/funnel";
 import type { ScreenResultRecord, ScreenResultFilters } from "@/lib/db/screen-queries";
 
 /** One chunk's response from POST /api/screen/run. */
@@ -265,6 +266,18 @@ function SortableTh({
   );
 }
 
+/** One stage of the screening funnel (Universe → Screened → Passed all gates). */
+function FunnelStage({ label, value, emphasise }: { label: string; value: number; emphasise?: boolean }) {
+  return (
+    <span className="inline-flex items-baseline gap-1.5">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={`font-display tabular-nums ${emphasise ? "text-primary" : "text-foreground"}`}>
+        {value.toLocaleString()}
+      </span>
+    </span>
+  );
+}
+
 export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
   const { t } = useTranslation();
   const verdictLabel = useVerdictLabel();
@@ -414,6 +427,9 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
     return acc;
   }, {});
 
+  // One source of truth for every count on the page (P1-3).
+  const funnel = computeScreenFunnel(meta);
+
   const activeMarket = MARKET_GROUPS.flatMap((g) => g.markets).find((m) => m.key === activeIndex);
 
   return (
@@ -496,6 +512,20 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
         </div>
       )}
 
+      {/* ── Screening funnel: one source of truth for every count (P1-3) ── */}
+      {meta.totalScreened > 0 && (
+        <div
+          aria-label={t("screen.funnel.label")}
+          className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-3 text-sm"
+        >
+          <FunnelStage label={t("screen.funnel.universe")} value={funnel.universe} />
+          <span aria-hidden="true" className="text-muted-foreground">→</span>
+          <FunnelStage label={t("screen.funnel.screened")} value={funnel.screened} />
+          <span aria-hidden="true" className="text-muted-foreground">→</span>
+          <FunnelStage label={t("screen.funnel.passed")} value={funnel.passedAllGates} emphasise />
+        </div>
+      )}
+
       {/* ── Candidates summary: actionable names first ── */}
       {allResults.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-primary/[0.05] px-4 py-3">
@@ -503,16 +533,16 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
           <div role="status" aria-live="polite">
             <p className="text-sm font-medium text-foreground">
               {candidatesOnly
-                ? t(results.length === 1 ? "screen.candidatesFoundOne" : "screen.candidatesFoundOther", { n: results.length })
+                ? t(funnel.candidateTotal === 1 ? "screen.candidatesFoundOne" : "screen.candidatesFoundOther", { n: funnel.candidateTotal })
                 : t(results.length === 1 ? "screen.companiesShownOne" : "screen.companiesShownOther", { n: results.length })}
             </p>
             <p className="mt-0.5 text-xs text-muted-foreground">
               {candidatesOnly
                 ? t("screen.candidatesHint", {
-                    buy: verdictCounts.STRONG_BUY + verdictCounts.BUY,
-                    watch: verdictCounts.WATCH,
+                    passed: funnel.passedAllGates,
+                    watch: funnel.onWatch,
                   })
-                : t("screen.allHint")}
+                : t("screen.allHint", { shown: results.length, total: funnel.screened })}
             </p>
           </div>
           <button
