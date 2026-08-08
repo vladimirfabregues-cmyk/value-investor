@@ -24,21 +24,23 @@ describe("data-coverage adapter", () => {
     expect(homeSrc).not.toMatch(/["']1\.0\.0["']/);
   });
 
-  it("ETF figures are an honest unavailable fallback, never fabricated", () => {
-    expect(cov.etf.available).toBe(false);
-    for (const v of [
-      cov.etf.fundCount,
-      cov.etf.exposureGroupCount,
-      cov.etf.priceHistoryCount,
-      cov.etf.datasetVersion,
-      cov.etf.methodologyVersion,
-      cov.etf.referenceAsOf,
-      cov.etf.priceHistoryAsOf,
-      cov.etf.macroAsOf,
-    ]) {
-      expect(v).toBeNull();
-    }
+  it("ETF figures come from a dated snapshot synced from the Funds zone (P1-4)", () => {
+    expect(cov.etf.available).toBe(true);
+    expect(cov.etf.fundCount).toBe(54);
+    expect(cov.etf.exposureGroupCount).toBe(33);
+    expect(cov.etf.datasetVersion).toBe("2026.06");
+    expect(cov.etf.methodologyVersion).toBe("1.0.0");
+    // A snapshot is always dated — never surfaced without an as-of date.
+    expect(cov.etf.priceHistoryAsOf).toBeTruthy();
+    // The "-demo" placeholder must never ship in the dataset version.
+    expect(cov.etf.datasetVersion).not.toContain("demo");
     expect(cov.etf.href).toMatch(/^\/etf/);
+  });
+
+  it("the homepage no longer renders the placeholder strings (P1-4)", () => {
+    const homeSrc = readFileSync(join(process.cwd(), "components/home/data-coverage.tsx"), "utf8");
+    expect(homeSrc).not.toContain("labels.unavailableHere");
+    expect(homeSrc).not.toContain("labels.onDemand");
   });
 
   it("uses per-type cadences, not one global freshness threshold", () => {

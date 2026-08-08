@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { useTranslation } from "@/lib/i18n/locale-context";
-import { getDataCoverage, sourceFamilies } from "@/lib/coverage/data-coverage";
+import { getDataCoverage, sourceFamilies, formatCoverageDate } from "@/lib/coverage/data-coverage";
 
 /**
  * Homepage "Data and coverage" section. Every number, version and date comes
@@ -36,9 +36,10 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 }
 
 export function DataCoverage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { company, etf } = getDataCoverage();
   const families = sourceFamilies(company.sources);
+  const etfPricesDate = formatCoverageDate(etf.priceHistoryAsOf, locale, t("coverage.labels.none"));
 
   return (
     <section aria-labelledby="data-coverage-heading" className="scroll-mt-24 border-t border-white/[0.08] py-14 sm:py-16">
@@ -62,13 +63,12 @@ export function DataCoverage() {
           <Pill>{t("coverage.labels.curatedCoverage")}</Pill>
         </Card>
 
-        {/* 2 · ETF coverage — figures owned by the Funds zone */}
+        {/* 2 · ETF coverage — a dated snapshot synced from the Funds zone */}
         <Card title={t("coverage.cards.etf")}>
-          {etf.available ? (
-            <p className="font-display text-2xl tabular-nums text-foreground">{etf.fundCount}</p>
-          ) : (
-            <p className="text-sm text-muted-foreground">{t("coverage.labels.unavailableHere")}</p>
-          )}
+          <p className="font-display text-2xl tabular-nums text-foreground">{etf.fundCount}</p>
+          <p className="text-xs text-muted-foreground">
+            {t("coverage.labels.etfFunds", { funds: etf.fundCount ?? 0, groups: etf.exposureGroupCount ?? 0 })}
+          </p>
           <Link
             href="/data-and-coverage"
             className="inline-flex items-center gap-1 text-xs font-medium text-primary underline-offset-4 hover:underline"
@@ -85,11 +85,10 @@ export function DataCoverage() {
 
         {/* 4 · Latest data dates */}
         <Card title={t("coverage.cards.dates")}>
-          <p>
-            <span className="text-muted-foreground">{t("coverage.labels.asOf")}: </span>
-            {t("coverage.labels.onDemand")}
-          </p>
-          <span className="text-xs text-muted-foreground">{t("coverage.note.onDemand")}</span>
+          <p className="text-sm text-foreground/90">{t("coverage.labels.livePerAnalysis")}</p>
+          <span className="text-xs text-muted-foreground">
+            {t("coverage.labels.pricesAsOf", { date: etfPricesDate })}
+          </span>
         </Card>
 
         {/* 5 · Methodology versions */}
@@ -98,7 +97,9 @@ export function DataCoverage() {
             <span className="text-muted-foreground">{t("coverage.labels.method")}: </span>
             <span className="font-mono">v{company.methodologyVersion}</span>
           </p>
-          <span className="text-xs text-muted-foreground">{t("coverage.labels.unavailableHere")}</span>
+          <span className="text-xs tabular-nums text-muted-foreground">
+            {t("coverage.labels.etfVersion", { method: etf.methodologyVersion ?? "—", dataset: etf.datasetVersion ?? "—" })}
+          </span>
         </Card>
       </div>
 

@@ -61,13 +61,12 @@ describe("site footer + legal", () => {
     expect(footerSrc).toContain("return null");
   });
 
-  it("renders dynamic metadata only when available (honest fallback)", () => {
+  it("renders dynamic metadata from the adapter, not hard-coded literals", () => {
     const coverage = getDataCoverage();
-    // Company methodology version is available and must render.
+    // Company methodology version is available and drives the footer stamp.
     expect(coverage.company.methodologyVersion).toBeTruthy();
     expect(footerSrc).toContain("methodVersion ?");
-    // ETF dataset version is unavailable in the hub and must NOT be hard-coded.
-    expect(coverage.etf.datasetVersion).toBeNull();
+    // The version is read from the adapter, never written as a literal here.
     expect(footerSrc).not.toMatch(/v\d+\.\d+\.\d+/);
   });
 

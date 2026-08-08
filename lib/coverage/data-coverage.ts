@@ -5,12 +5,11 @@
  * Design rules honoured here:
  *  - No counts, versions or dates are hard-coded in UI copy. Everything a card
  *    or page shows comes from this adapter.
- *  - The adapter reports only what this repository can actually attest to.
- *    Company coverage is fully known here (supported markets, data sources,
- *    valuation-model version). ETF reference/price/macro datasets, fund and
- *    exposure-group counts and the ETF dataset/methodology versions are owned
- *    by the separate Funds zone, which is their source of truth — so those
- *    fields are reported as `unavailable` with a pointer, never invented.
+ *  - Company coverage is fully known here (supported markets, data sources,
+ *    valuation-model version). ETF figures are owned by the separate Funds
+ *    zone (their source of truth); the hub cannot import them, so it carries a
+ *    dated, manually-synced snapshot (ETF_COVERAGE_SNAPSHOT) shown with its
+ *    as-of date rather than a placeholder — never an undated or invented value.
  *  - Freshness is cadence-aware: prices, filings and macro data update on
  *    different rhythms, so each source carries its own cadence rather than
  *    being judged against one arbitrary threshold.
@@ -19,6 +18,22 @@
  */
 import { EXCHANGES } from "@/lib/finance/exchanges";
 import { VALUATION_MODEL_VERSION } from "@/lib/finance/model-version";
+
+/**
+ * ETF coverage snapshot — manually synced from the Funds zone, which is the
+ * source of truth and cannot be imported here (separate build). Each figure is
+ * a periodic snapshot, not live data, so it is always shown with its as-of
+ * date. Update when the Funds zone publishes new figures; when the zone exposes
+ * them programmatically this should be replaced by a live read.
+ * (P1-4: removes the "Maintained in the Funds section" placeholders.)
+ */
+export const ETF_COVERAGE_SNAPSHOT = {
+  funds: 54,
+  exposureGroups: 33,
+  datasetVersion: "2026.06",
+  methodologyVersion: "1.0.0",
+  pricesAsOf: "2026-07-07",
+} as const;
 
 /** How often the underlying data naturally changes. */
 export type UpdateCadence = "on-demand" | "daily" | "quarterly" | "as-filed" | "monthly" | "unknown";
@@ -122,17 +137,16 @@ export function getDataCoverage(): DataCoverage {
     ],
   };
 
-  // ETF figures are maintained by the Funds zone; the hub does not hold them.
   const etf: EtfCoverage = {
-    available: false,
-    fundCount: null,
-    exposureGroupCount: null,
+    available: true,
+    fundCount: ETF_COVERAGE_SNAPSHOT.funds,
+    exposureGroupCount: ETF_COVERAGE_SNAPSHOT.exposureGroups,
     priceHistoryCount: null,
     referenceAsOf: null,
-    priceHistoryAsOf: null,
+    priceHistoryAsOf: ETF_COVERAGE_SNAPSHOT.pricesAsOf,
     macroAsOf: null,
-    datasetVersion: null,
-    methodologyVersion: null,
+    datasetVersion: ETF_COVERAGE_SNAPSHOT.datasetVersion,
+    methodologyVersion: ETF_COVERAGE_SNAPSHOT.methodologyVersion,
     sources: [],
     href: "/etf/methodology",
   };

@@ -697,7 +697,9 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
         const top = [...bySector.entries()].sort((a, b) => b[1] - a[1])[0];
         const concentrated = top && buyRated.length >= 4 && top[1] / buyRated.length > 0.25;
 
-        if (spanDays <= 7 && ageDays <= 30 && !concentrated) return null;
+        // Screener runs go stale fast: flag a last run older than 7 days (ETF
+        // reference data uses a longer 30-day cadence elsewhere). (P1-5)
+        if (spanDays <= 7 && ageDays <= 7 && !concentrated) return null;
         return (
           <div className="space-y-2">
             {spanDays > 7 && (
@@ -706,7 +708,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                 <span>{t("screen.warnings.stale", { days: Math.round(spanDays) })}</span>
               </div>
             )}
-            {ageDays > 30 && (
+            {ageDays > 7 && (
               <div className="flex items-start gap-2.5 rounded-xl border border-amber-500/25 bg-amber-500/[0.07] px-4 py-3 text-xs leading-5 text-amber-200/90">
                 <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-400" />
                 <span>{t("screen.warnings.age", { days: Math.round(ageDays) })}</span>
