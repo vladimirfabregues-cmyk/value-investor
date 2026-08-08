@@ -131,9 +131,14 @@ export async function getScreenResults(
         : {}),
       errorMessage: null,
     },
-    // Nulls always sort last, both directions — margin of safety is nullable
-    // and Postgres would otherwise put nulls first on an ascending sort.
-    orderBy: { [sortBy]: { sort: sortDir, nulls: "last" } },
+    // Margin of safety is nullable — pin its nulls last in both directions
+    // (Postgres puts nulls first on ascending). The other sort fields are
+    // non-nullable, where Prisma rejects the `nulls` option, so use the plain
+    // form for them.
+    orderBy:
+      sortBy === "marginOfSafety"
+        ? { marginOfSafety: { sort: sortDir, nulls: "last" } }
+        : { [sortBy]: sortDir },
     take: limit,
   });
 
