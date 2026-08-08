@@ -115,9 +115,19 @@ export function localizeVerdictExplanation(
     if (hardGates.length > 1) sentences.push(t("prose.ve.expl.further", { n: hardGates.length - 1 }));
   } else {
     const failed = checks.filter((c) => c.status === "fail").map((c) => c.name.toLowerCase());
+    const borderline = checks.filter((c) => c.status === "warn");
     if (failed.length > 0) {
       const key = failed.length === 1 ? "prose.ve.expl.failedOne" : "prose.ve.expl.failedOther";
       sentences.push(t(key, { names: failed.join(t("prose.ve.expl.and")) }));
+    } else if (borderline.length > 0) {
+      // Mirrors gateStatusClause() — a borderline component must never be
+      // summarised as "all passed".
+      const items = borderline.map((c) =>
+        c.score !== null
+          ? t("prose.ve.expl.borderlineItem", { name: c.name.toLowerCase(), score: c.score })
+          : t("prose.ve.expl.borderlineItemNoScore", { name: c.name.toLowerCase() }),
+      );
+      sentences.push(t("prose.ve.expl.borderline", { names: items.join(t("prose.ve.expl.and")) }));
     } else {
       sentences.push(t("prose.ve.expl.allPassed"));
     }

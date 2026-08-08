@@ -7,7 +7,7 @@
  */
 
 import type { ValueMetricsResult } from "@/types/finance";
-import type { VerdictExplanation, VerdictCheck } from "@/types/analysis";
+import type { CheckStatus, VerdictExplanation, VerdictCheck } from "@/types/analysis";
 import { describeValuationGap } from "@/lib/finance/valuation-gap";
 
 /** Human-readable meaning of each red flag that can cap a verdict. */
@@ -56,6 +56,43 @@ function bandStatus(score: number): VerdictCheck["status"] {
   if (score >= 70) return "pass";
   if (score >= 55) return "warn";
   return "fail";
+}
+
+/**
+ * The single status clause of the explanation — a *pure function of the gate
+ * states*. This is the guard against the class of bug where the summary claims
+ * "every check passed" while a component row shows Borderline or Failed: the
+ * clause is derived from the same check-status array the rows render.
+ *
+ * The English wording here is the source of truth; the localised renderer in
+ * `verdict-explanation-prose.ts` mirrors it (kept honest by the prose-drift
+ * test), so any change to the ordering/logic must be made in both.
+ */
+export function gateStatusClause(
+  checks: ReadonlyArray<{ name: string; status: CheckStatus; score: number | null }>,
+  hardGates: ReadonlyArray<{ name: string; detail: string }>,
+): string {
+  const failed = checks.filter((c) => c.status === "fail").map((c) => c.name.toLowerCase());
+  const borderline = checks.filter((c) => c.status === "warn");
+
+  if (hardGates.length > 0) {
+    const first = hardGates[0];
+    let s = `However, ${first.name.toLowerCase()} triggered a hard gate, which takes precedence over the composite score. ${first.detail}`;
+    if (hardGates.length > 1) s += ` A further ${hardGates.length - 1} red flag(s) also applied.`;
+    return s;
+  }
+  if (failed.length > 0) {
+    return `No hard gate was triggered, but ${failed.join(" and ")} did not pass.`;
+  }
+  if (borderline.length > 0) {
+    const items = borderline.map((c) =>
+      c.score !== null
+        ? `${c.name.toLowerCase()} is borderline at ${c.score}/100`
+        : `${c.name.toLowerCase()} is borderline`,
+    );
+    return `All gates cleared, but ${items.join(" and ")}.`;
+  }
+  return "Every component check passed and no red flag was triggered.";
 }
 
 function statusWord(status: VerdictCheck["status"]): string {
@@ -141,7 +178,6 @@ export function buildVerdictExplanation(m: ValueMetricsResult): VerdictExplanati
 
   // ── Plain-language explanation ───────────────────────────────────────────
   const overall = Math.round(m.composite_score);
-  const failed = checks.filter((c) => c.status === "fail").map((c) => c.name.toLowerCase());
   const sentences: string[] = [];
 
   sentences.push(
@@ -156,19 +192,7 @@ export function buildVerdictExplanation(m: ValueMetricsResult): VerdictExplanati
     } sector this business belongs to.`,
   );
 
-  if (hardGates.length > 0) {
-    const overriding = hardGates[0];
-    sentences.push(
-      `However, ${overriding.name.toLowerCase()} triggered a hard gate, which takes precedence over the composite score. ${overriding.detail}`,
-    );
-    if (hardGates.length > 1) {
-      sentences.push(`A further ${hardGates.length - 1} red flag(s) also applied.`);
-    }
-  } else if (failed.length > 0) {
-    sentences.push(`No hard gate was triggered, but ${failed.join(" and ")} did not pass.`);
-  } else {
-    sentences.push("Every component check passed and no red flag was triggered.");
-  }
+  sentences.push(gateStatusClause(checks, hardGates));
 
   sentences.push(
     gap.kind === "margin"
