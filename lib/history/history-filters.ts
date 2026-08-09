@@ -8,15 +8,11 @@
  */
 
 import { exchangeByCode, securityKey } from "@/lib/finance/exchanges";
+import { VERDICT_LABELS } from "@/lib/finance/verdict";
 import type { SavedAnalysisSummary, VerdictLabel } from "@/types/analysis";
 
-export const VERDICT_ORDER: VerdictLabel[] = [
-  "STRONG_BUY",
-  "BUY",
-  "WATCH",
-  "HOLD",
-  "AVOID",
-];
+/** Most → least favourable; single source is `lib/finance/verdict`. */
+export const VERDICT_ORDER: readonly VerdictLabel[] = VERDICT_LABELS;
 
 export interface HistoryFilters {
   /** Free text over ticker, company name and market */

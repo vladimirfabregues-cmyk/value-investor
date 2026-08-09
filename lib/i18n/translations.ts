@@ -505,6 +505,14 @@ const en: Dict = {
     HOLD: "Hold",
     AVOID: "Avoid",
   },
+  verdictDef: {
+    orderNote: "Ordered most to least favourable: Strong buy → Buy → Watch → Hold → Avoid.",
+    STRONG_BUY: "Passes every gate with a wide margin of safety.",
+    BUY: "Passes every gate with an adequate margin of safety.",
+    WATCH: "Would qualify on price, but a conclusion cap holds it back — not a middling score.",
+    HOLD: "Fairly priced, or the evidence is too mixed to act on.",
+    AVOID: "Fails a gate, or trades at a premium with no margin of safety.",
+  },
   confidence: {
     high: "High",
     medium: "Medium",
@@ -1697,6 +1705,14 @@ const fr: Dict = {
     WATCH: "À surveiller",
     HOLD: "Conserver",
     AVOID: "Éviter",
+  },
+  verdictDef: {
+    orderNote: "Du plus au moins favorable : Achat fort → Achat → À surveiller → Conserver → Éviter.",
+    STRONG_BUY: "Franchit tous les filtres avec une large marge de sécurité.",
+    BUY: "Franchit tous les filtres avec une marge de sécurité suffisante.",
+    WATCH: "Éligible sur le prix, mais un plafond de conclusion le retient — ce n'est pas un score moyen.",
+    HOLD: "Correctement valorisé, ou preuves trop mitigées pour agir.",
+    AVOID: "Échoue à un filtre, ou se paie avec une prime sans marge de sécurité.",
   },
   confidence: {
     high: "Élevée",

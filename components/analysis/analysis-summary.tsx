@@ -20,12 +20,13 @@ interface AnalysisSummaryProps {
   isReanalysing?: boolean;
 }
 
-const VERDICT_STYLE: Record<string, { label: string; chip: string; dot: string }> = {
-  STRONG_BUY: { label: "Strong buy", chip: "border-emerald-500/40 bg-emerald-500/12 text-emerald-200", dot: "bg-emerald-400" },
-  BUY:        { label: "Buy",        chip: "border-green-500/35 bg-green-500/12 text-green-200",     dot: "bg-green-400" },
-  WATCH:      { label: "Watch",      chip: "border-amber-500/35 bg-amber-500/12 text-amber-200",     dot: "bg-amber-400" },
-  HOLD:       { label: "Hold",       chip: "border-slate-500/40 bg-slate-500/12 text-slate-200",     dot: "bg-slate-400" },
-  AVOID:      { label: "Avoid",      chip: "border-red-500/35 bg-red-500/12 text-red-200",           dot: "bg-red-400" },
+// Per-verdict styling only — the label comes from the i18n dictionary (P2-1).
+const VERDICT_STYLE: Record<string, { chip: string; dot: string }> = {
+  STRONG_BUY: { chip: "border-emerald-500/40 bg-emerald-500/12 text-emerald-200", dot: "bg-emerald-400" },
+  BUY:        { chip: "border-green-500/35 bg-green-500/12 text-green-200",     dot: "bg-green-400" },
+  WATCH:      { chip: "border-amber-500/35 bg-amber-500/12 text-amber-200",     dot: "bg-amber-400" },
+  HOLD:       { chip: "border-slate-500/40 bg-slate-500/12 text-slate-200",     dot: "bg-slate-400" },
+  AVOID:      { chip: "border-red-500/35 bg-red-500/12 text-red-200",           dot: "bg-red-400" },
 };
 
 /** Data confidence band — the word is localised at render via its key. */

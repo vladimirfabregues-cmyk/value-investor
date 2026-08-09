@@ -13,6 +13,7 @@ import { capLabel } from "@/lib/finance/verdict-explanation-prose";
 import { translateSector } from "@/lib/finance/prose";
 import { useTranslation } from "@/lib/i18n/locale-context";
 import { computeScreenFunnel } from "@/lib/screener/funnel";
+import { VERDICT_LABELS } from "@/lib/finance/verdict";
 import type { ScreenResultRecord, ScreenResultFilters } from "@/lib/db/screen-queries";
 
 /** One chunk's response from POST /api/screen/run. */
@@ -40,7 +41,7 @@ interface ScreenViewProps {
   initialMeta: ScreenMeta;
 }
 
-const VERDICTS = ["STRONG_BUY", "BUY", "WATCH", "HOLD", "AVOID"] as const;
+const VERDICTS = VERDICT_LABELS;
 
 const SECTORS = [
   "Communication Services",
@@ -56,13 +57,15 @@ const SECTORS = [
   "Utilities",
 ];
 
-const VERDICT_CONFIG: Record<string, { label: string; dot: string; text: string; chip: string }> = {
-  STRONG_BUY: { label: "Strong Buy", dot: "bg-emerald-400", text: "text-emerald-300", chip: "border-emerald-500/30 bg-emerald-500/10" },
-  BUY:        { label: "Buy",        dot: "bg-green-400",   text: "text-green-300",   chip: "border-green-500/25 bg-green-500/10" },
-  WATCH:      { label: "Watch",      dot: "bg-amber-400",   text: "text-amber-300",   chip: "border-amber-500/25 bg-amber-500/10" },
-  HOLD:       { label: "Hold",       dot: "bg-slate-400",   text: "text-slate-300",   chip: "border-slate-500/30 bg-slate-500/10" },
-  AVOID:      { label: "Avoid",      dot: "bg-red-400",     text: "text-red-300",     chip: "border-red-500/25 bg-red-500/10" },
-  UNKNOWN:    { label: "Error",      dot: "bg-zinc-500",    text: "text-zinc-400",    chip: "border-zinc-500/30 bg-zinc-500/10" },
+// Per-verdict styling only — the display label comes from the i18n dictionary
+// via useVerdictLabel(), never hard-coded here (P2-1).
+const VERDICT_CONFIG: Record<string, { dot: string; text: string; chip: string }> = {
+  STRONG_BUY: { dot: "bg-emerald-400", text: "text-emerald-300", chip: "border-emerald-500/30 bg-emerald-500/10" },
+  BUY:        { dot: "bg-green-400",   text: "text-green-300",   chip: "border-green-500/25 bg-green-500/10" },
+  WATCH:      { dot: "bg-amber-400",   text: "text-amber-300",   chip: "border-amber-500/25 bg-amber-500/10" },
+  HOLD:       { dot: "bg-slate-400",   text: "text-slate-300",   chip: "border-slate-500/30 bg-slate-500/10" },
+  AVOID:      { dot: "bg-red-400",     text: "text-red-300",     chip: "border-red-500/25 bg-red-500/10" },
+  UNKNOWN:    { dot: "bg-zinc-500",    text: "text-zinc-400",    chip: "border-zinc-500/30 bg-zinc-500/10" },
 };
 
 /** Verdict label: the five standard verdicts share the app-wide keys; UNKNOWN → "Error". */

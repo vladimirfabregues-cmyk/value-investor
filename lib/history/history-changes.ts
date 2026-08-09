@@ -8,7 +8,12 @@
  */
 
 import { entrySecurityKey } from "@/lib/history/history-filters";
+import { VERDICT_RANK } from "@/lib/finance/verdict";
+import { makeTranslator } from "@/lib/i18n/translate";
 import type { SavedAnalysisSummary, VerdictLabel } from "@/types/analysis";
+
+/** History deltas are English-only prose; read the label from the one dict. */
+const enT = makeTranslator("en");
 
 export interface HistoryChange {
   previousId: string;
@@ -77,23 +82,6 @@ export interface ChangeDescription {
   tone: "positive" | "negative" | "neutral";
 }
 
-const READABLE_VERDICT: Record<VerdictLabel, string> = {
-  STRONG_BUY: "Strong buy",
-  BUY: "Buy",
-  WATCH: "Watch",
-  HOLD: "Hold",
-  AVOID: "Avoid",
-};
-
-/** Rank used only to say whether a verdict moved up or down. */
-const VERDICT_RANK: Record<VerdictLabel, number> = {
-  AVOID: 0,
-  HOLD: 1,
-  WATCH: 2,
-  BUY: 3,
-  STRONG_BUY: 4,
-};
-
 /** Previous-versus-current verdict, e.g. "Upgraded from Watch". */
 export function describeVerdictChange(
   current: VerdictLabel,
@@ -109,7 +97,7 @@ export function describeVerdictChange(
     VERDICT_RANK[current] > VERDICT_RANK[change.previousVerdict] ? "Upgraded" : "Downgraded";
 
   return {
-    text: `${direction} from ${READABLE_VERDICT[change.previousVerdict]}`,
+    text: `${direction} from ${enT(`verdict.${change.previousVerdict}`)}`,
     tone: direction === "Upgraded" ? "positive" : "negative",
   };
 }
