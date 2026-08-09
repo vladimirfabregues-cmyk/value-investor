@@ -106,7 +106,14 @@ export function WhyThisVerdict({ analysis }: WhyThisVerdictProps) {
               </h3>
             </div>
             <p className="mt-1 text-xs text-amber-200/70">
-              {t("analysis.whyVerdict.hardGateNote")}
+              {t("analysis.whyVerdict.hardGateNote")}{" "}
+              {/* Define the term of art at its first appearance (P2-3). */}
+              <a
+                href="/glossary#conclusion-cap"
+                className="font-medium text-amber-200 underline underline-offset-4 hover:text-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 rounded"
+              >
+                {t("glossary.whatIsCap")}
+              </a>
             </p>
             <ul className="mt-3 space-y-2.5">
               {hard_gates.map((gate) => (

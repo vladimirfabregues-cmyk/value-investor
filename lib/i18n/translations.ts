@@ -513,6 +513,69 @@ const en: Dict = {
     HOLD: "Fairly priced, or the evidence is too mixed to act on.",
     AVOID: "Fails a gate, or trades at a premium with no margin of safety.",
   },
+  glossary: {
+    title: "Glossary",
+    intro: "Plain-English definitions of the terms of art used across the platform.",
+    whatIsCap: "What's a conclusion cap?",
+    terms: {
+      conclusionCap: {
+        term: "Conclusion cap",
+        def: "A red flag that holds a conclusion back regardless of how well the company scores — for example earnings at a cyclical peak, or profits not backed by cash.",
+      },
+      marginOfSafety: {
+        term: "Margin of safety",
+        def: "How far the market price sits below the modelled value — the discount that cushions you if the estimate proves too optimistic.",
+      },
+      baseValue: {
+        term: "Base value",
+        def: "The single blended estimate of intrinsic value, from the model that best fits the company's economics.",
+      },
+      valueRange: {
+        term: "Value range",
+        def: "The spread between the models' estimates — how much the value moves under different reasonable methods.",
+      },
+      modelAgreement: {
+        term: "Model agreement",
+        def: "How closely two independent valuation methods land on the same value; high agreement means the estimate is corroborated.",
+      },
+      dataConfidence: {
+        term: "Data confidence",
+        def: "How complete and reliable the underlying inputs were — a caveat about the data, not a judgement on the company.",
+      },
+      peerGroup: {
+        term: "Peer group (exposure group)",
+        def: "A set of genuinely comparable funds; an ETF's scores are relative to this group, never to the whole market.",
+      },
+      justifiedPb: {
+        term: "Justified price-to-book",
+        def: "A fair price-to-book multiple derived from a company's sustainable return on equity — used to value banks and insurers.",
+      },
+      cycleRoe: {
+        term: "Cycle-average return on equity",
+        def: "Return on equity averaged across a full business cycle, so a single boom or bust year doesn't distort the valuation.",
+      },
+      normalizedEarnings: {
+        term: "Normalized earnings",
+        def: "Earnings adjusted to a mid-cycle level, removing one-off spikes or troughs.",
+      },
+      grahamNumber: {
+        term: "Graham number",
+        def: "A conservative fair-value benchmark from Benjamin Graham, combining earnings and book value.",
+      },
+      ffo: {
+        term: "Funds from operations",
+        def: "A property-company cash-earnings measure that adds depreciation back to net income.",
+      },
+      tracking: {
+        term: "Tracking (ETF)",
+        def: "How closely a fund follows its index — a persistent tracking difference quietly erodes returns.",
+      },
+      structure: {
+        term: "Structure (ETF)",
+        def: "How the fund is built — physical vs synthetic replication, domicile and tax treatment — which affects risk and after-tax return.",
+      },
+    },
+  },
   confidence: {
     high: "High",
     medium: "Medium",
@@ -1713,6 +1776,69 @@ const fr: Dict = {
     WATCH: "Éligible sur le prix, mais un plafond de conclusion le retient — ce n'est pas un score moyen.",
     HOLD: "Correctement valorisé, ou preuves trop mitigées pour agir.",
     AVOID: "Échoue à un filtre, ou se paie avec une prime sans marge de sécurité.",
+  },
+  glossary: {
+    title: "Glossaire",
+    intro: "Définitions en langage clair des termes techniques utilisés sur la plateforme.",
+    whatIsCap: "Qu'est-ce qu'un plafond de conclusion ?",
+    terms: {
+      conclusionCap: {
+        term: "Plafond de conclusion",
+        def: "Un signal d'alerte qui retient une conclusion quel que soit le score de la société — par exemple des bénéfices à un pic de cycle, ou des profits non adossés à de la trésorerie.",
+      },
+      marginOfSafety: {
+        term: "Marge de sécurité",
+        def: "L'écart entre le cours de marché et la valeur modélisée — la décote qui vous protège si l'estimation se révèle trop optimiste.",
+      },
+      baseValue: {
+        term: "Valeur de base",
+        def: "L'estimation unique et mixte de la valeur intrinsèque, issue du modèle le mieux adapté à l'économie de la société.",
+      },
+      valueRange: {
+        term: "Fourchette de valeur",
+        def: "L'écart entre les estimations des modèles — de combien la valeur varie selon différentes méthodes raisonnables.",
+      },
+      modelAgreement: {
+        term: "Concordance des modèles",
+        def: "À quel point deux méthodes de valorisation indépendantes aboutissent à la même valeur ; une forte concordance signifie que l'estimation est corroborée.",
+      },
+      dataConfidence: {
+        term: "Confiance dans les données",
+        def: "À quel point les données sous-jacentes étaient complètes et fiables — une réserve sur les données, non un jugement sur la société.",
+      },
+      peerGroup: {
+        term: "Groupe de pairs (groupe d'exposition)",
+        def: "Un ensemble de fonds réellement comparables ; les scores d'un ETF sont relatifs à ce groupe, jamais à l'ensemble du marché.",
+      },
+      justifiedPb: {
+        term: "Price-to-book justifié",
+        def: "Un multiple cours/valeur comptable équitable dérivé de la rentabilité durable des fonds propres — utilisé pour valoriser banques et assureurs.",
+      },
+      cycleRoe: {
+        term: "Rentabilité des fonds propres moyenne de cycle",
+        def: "La rentabilité des fonds propres moyennée sur un cycle complet, afin qu'une seule année d'euphorie ou de crise ne fausse pas la valorisation.",
+      },
+      normalizedEarnings: {
+        term: "Bénéfices normalisés",
+        def: "Des bénéfices ajustés à un niveau de milieu de cycle, en retirant les pics ou creux ponctuels.",
+      },
+      grahamNumber: {
+        term: "Nombre de Graham",
+        def: "Un repère de valeur prudent de Benjamin Graham, combinant bénéfices et valeur comptable.",
+      },
+      ffo: {
+        term: "Fonds provenant de l'exploitation (FFO)",
+        def: "Une mesure des résultats en trésorerie des foncières, qui réintègre les amortissements au résultat net.",
+      },
+      tracking: {
+        term: "Réplication (ETF)",
+        def: "À quel point un fonds suit son indice — un écart de réplication persistant érode discrètement les rendements.",
+      },
+      structure: {
+        term: "Structure (ETF)",
+        def: "La façon dont le fonds est construit — réplication physique ou synthétique, domiciliation et fiscalité — ce qui influe sur le risque et le rendement après impôt.",
+      },
+    },
   },
   confidence: {
     high: "Élevée",

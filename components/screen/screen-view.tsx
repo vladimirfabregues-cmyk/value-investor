@@ -13,7 +13,7 @@ import { capLabel } from "@/lib/finance/verdict-explanation-prose";
 import { translateSector } from "@/lib/finance/prose";
 import { useTranslation } from "@/lib/i18n/locale-context";
 import { computeScreenFunnel } from "@/lib/screener/funnel";
-import { VERDICT_LABELS } from "@/lib/finance/verdict";
+import { VERDICT_LABELS, verdictDefinition } from "@/lib/finance/verdict";
 import type { ScreenResultRecord, ScreenResultFilters } from "@/lib/db/screen-queries";
 
 /** One chunk's response from POST /api/screen/run. */
@@ -577,6 +577,18 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                     watch: funnel.onWatch,
                   })
                 : t("screen.allHint", { shown: results.length, total: funnel.screened })}
+              {/* Define the term of art at first appearance (P2-3). */}
+              {funnel.onWatch > 0 && (
+                <>
+                  {" "}
+                  <a
+                    href="/glossary#conclusion-cap"
+                    className="text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                  >
+                    {t("glossary.whatIsCap")}
+                  </a>
+                </>
+              )}
             </p>
           </div>
           <button
@@ -593,33 +605,43 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
       {/* Shown whenever the index has been screened, so the full verdict
           distribution (incl. Hold/Avoid) is visible even in candidates-only view. */}
       {meta.totalScreened > 0 && (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-          {VERDICTS.map((v) => {
-            const cfg = VERDICT_CONFIG[v];
-            const active = filters.verdict === v;
-            return (
-              <button
-                key={v}
-                onClick={() => toggleVerdictFilter(v)}
-                className={`rounded-xl border p-3 text-left transition-all ${
-                  active
-                    ? `${cfg.chip} shadow-[0_6px_20px_rgba(0,0,0,0.25)]`
-                    : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.14]"
-                }`}
-                title={active ? t("screen.clearFilterTitle") : t("screen.showOnly", { label: verdictLabel(v) })}
-              >
-                <div className="flex items-center gap-1.5">
-                  <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-                  <span className={`text-[11px] font-medium uppercase tracking-wider ${active ? cfg.text : "text-muted-foreground"}`}>
-                    {verdictLabel(v)}
-                  </span>
-                </div>
-                <div className={`mt-1.5 font-display text-2xl tabular-nums ${active ? cfg.text : "text-foreground"}`}>
-                  {verdictCounts[v]}
-                </div>
-              </button>
-            );
-          })}
+        <div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+            {VERDICTS.map((v) => {
+              const cfg = VERDICT_CONFIG[v];
+              const active = filters.verdict === v;
+              const action = active
+                ? t("screen.clearFilterTitle")
+                : t("screen.showOnly", { label: verdictLabel(v) });
+              return (
+                <button
+                  key={v}
+                  onClick={() => toggleVerdictFilter(v)}
+                  className={`rounded-xl border p-3 text-left transition-all ${
+                    active
+                      ? `${cfg.chip} shadow-[0_6px_20px_rgba(0,0,0,0.25)]`
+                      : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.14]"
+                  }`}
+                  // Hover explains what the label means (in particular that
+                  // Watch is a capped conclusion, not a middling one) plus the
+                  // click action. (P2-2)
+                  title={`${verdictDefinition(v, t)} — ${action}`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
+                    <span className={`text-[11px] font-medium uppercase tracking-wider ${active ? cfg.text : "text-muted-foreground"}`}>
+                      {verdictLabel(v)}
+                    </span>
+                  </div>
+                  <div className={`mt-1.5 font-display text-2xl tabular-nums ${active ? cfg.text : "text-foreground"}`}>
+                    {verdictCounts[v]}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          {/* Explicit ranking so a first-time user knows Watch outranks Hold. */}
+          <p className="mt-2 text-xs text-muted-foreground">{t("verdictDef.orderNote")}</p>
         </div>
       )}
 
