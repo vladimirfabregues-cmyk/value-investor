@@ -2,10 +2,9 @@
 
 import { TrendingUp } from "lucide-react";
 
-import { MarketSelector } from "@/components/ticker/market-selector";
 import { SecuritySearch } from "@/components/ticker/security-search";
 import { Button } from "@/components/ui/button";
-import { exchangeByCode, toYahooTicker } from "@/lib/finance/exchanges";
+import { exchangeByCode, inferExchangeFromTicker, toYahooTicker } from "@/lib/finance/exchanges";
 import { useTranslation } from "@/lib/i18n/locale-context";
 import type { SecuritySearchResult } from "@/lib/finance/security-search";
 
@@ -19,12 +18,13 @@ interface TickerSearchFormProps {
   onSubmit: () => void;
 }
 
-/** Examples carry their market so no example can select the wrong listing. */
+/** Examples carry their market so no example can select the wrong listing.
+ *  Labels use one canonical ticker format (P3-2). */
 const EXAMPLES: { ticker: string; exchange: string; label: string }[] = [
-  { ticker: "AAPL", exchange: "US", label: "AAPL · US" },
-  { ticker: "MSFT", exchange: "US", label: "MSFT · US" },
-  { ticker: "DPLM.L", exchange: "XLON", label: "DPLM · LSE" },
-  { ticker: "MC.PA", exchange: "XPAR", label: "MC · EPA" },
+  { ticker: "AAPL", exchange: "US", label: "AAPL" },
+  { ticker: "MSFT", exchange: "US", label: "MSFT" },
+  { ticker: "DPLM.L", exchange: "XLON", label: "DPLM.L" },
+  { ticker: "MC.PA", exchange: "XPAR", label: "MC.PA" },
 ];
 
 export function TickerSearchForm({
@@ -37,8 +37,13 @@ export function TickerSearchForm({
   onSubmit,
 }: TickerSearchFormProps) {
   const { t } = useTranslation();
-  const selected = exchangeByCode(exchange);
-  const resolved = ticker.trim() ? toYahooTicker(exchange, ticker) : "";
+  // A ticker suffix (e.g. .PA) names its own market; otherwise use the picked
+  // exchange, else US. This is what "will be analysed as" reflects (P3-1/P3-2).
+  const effectiveExchange = ticker.trim().includes(".")
+    ? inferExchangeFromTicker(ticker).code
+    : exchange;
+  const selected = exchangeByCode(effectiveExchange);
+  const resolved = ticker.trim() ? toYahooTicker(effectiveExchange, ticker) : "";
 
   return (
     <div className="space-y-4">
@@ -49,18 +54,15 @@ export function TickerSearchForm({
           onSubmit();
         }}
       >
-        {/* 1. Market first */}
-        <MarketSelector value={exchange} onChange={onExchangeChange} disabled={isLoading} />
-
-        {/* 2. Then the company, scoped to that market */}
+        {/* Ticker-first: one search across all markets. Exchange is resolved
+            from the chosen result, not selected up front. */}
         <SecuritySearch
           value={ticker}
-          exchange={exchange}
           isLoading={isLoading}
           error={error}
           onValueChange={onTickerChange}
           onSelect={(result: SecuritySearchResult) => {
-            // Carry the market with the pick so the wrong listing can't be chosen.
+            // Carry the market with the pick so the resolved listing is exact.
             onExchangeChange(result.exchange);
             onTickerChange(result.ticker);
           }}

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 
 import {
   describeResultMarket,
+  formatMarketCap,
   fromProviderQuote,
   fromScreenedRow,
   matchRank,
@@ -9,8 +10,8 @@ import {
   type SecuritySearchResult,
 } from "@/lib/finance/security-search";
 
-const screened = (ticker: string, companyName: string) =>
-  fromScreenedRow({ ticker, companyName, sector: null, currency: null })!;
+const screened = (ticker: string, companyName: string, marketCap: number | null = null) =>
+  fromScreenedRow({ ticker, companyName, sector: null, currency: null, marketCap })!;
 
 describe("normalising candidates", () => {
   it("derives the market from a screened row's ticker", () => {
@@ -105,6 +106,46 @@ describe("deduplication and limits", () => {
   it("respects the result limit", () => {
     const many = Array.from({ length: 40 }, (_, i) => screened(`TST${i}`, `Test Co ${i}`));
     expect(rankResults(many, { query: "TST", limit: 5 })).toHaveLength(5);
+  });
+});
+
+describe("market-cap discriminator (P3-1)", () => {
+  it("ranks a large-cap listing above a same-ticker micro-cap lookalike", () => {
+    // The GLE collision: Global Engine (micro-cap, US) vs Société Générale (Paris).
+    const results = rankResults(
+      [
+        screened("GLE", "Global Engine Group Holding", 8e7),
+        screened("GLE.PA", "Societe Generale", 3.5e10),
+      ],
+      { query: "GLE" },
+    );
+    expect(results[0].name).toBe("Societe Generale");
+  });
+
+  it("flags the largest-cap listing of a company as primary", () => {
+    const results = rankResults(
+      [
+        screened("SAN.MC", "Banco Santander", 6e10),
+        screened("SAN", "Banco Santander", 6e10), // US ADR, same cap tier
+      ],
+      { query: "santander" },
+    );
+    const primaries = results.filter((r) => r.isPrimary);
+    expect(primaries).toHaveLength(1); // one primary per company name
+  });
+});
+
+describe("formatMarketCap", () => {
+  it("formats with the currency symbol and a compact unit", () => {
+    expect(formatMarketCap(1.9e12, "USD")).toBe("$1.9T");
+    expect(formatMarketCap(5.43e10, "EUR")).toBe("€54.3B");
+    expect(formatMarketCap(4.2e8, "GBP")).toBe("£420M");
+  });
+
+  it("returns null for missing or non-positive caps (honest empty)", () => {
+    expect(formatMarketCap(null, "USD")).toBeNull();
+    expect(formatMarketCap(0, "USD")).toBeNull();
+    expect(formatMarketCap(Number.NaN, "USD")).toBeNull();
   });
 });
 

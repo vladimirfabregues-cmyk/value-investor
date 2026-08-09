@@ -19,6 +19,11 @@ export interface SecuritySearchResult {
   name: string;
   sector: string | null;
   currency: string | null;
+  /** Market capitalisation, when known — the discriminator for same-ticker
+   *  collisions across markets (a listed group dwarfs a lookalike micro-cap). */
+  marketCap: number | null;
+  /** The largest-cap listing for this company among the current results. */
+  isPrimary?: boolean;
   /** Where the match came from: already screened by us, or the live provider */
   source: "screened" | "provider";
 }
@@ -29,6 +34,7 @@ export interface ScreenedRow {
   companyName: string;
   sector: string | null;
   currency: string | null;
+  marketCap?: number | null;
 }
 
 /** A quote as returned by the data provider's search. */
@@ -37,6 +43,7 @@ export interface ProviderQuote {
   shortname?: string;
   longname?: string;
   quoteType?: string;
+  marketCap?: number | null;
 }
 
 function toResult(
@@ -44,6 +51,7 @@ function toResult(
   name: string,
   sector: string | null,
   currency: string | null,
+  marketCap: number | null,
   source: SecuritySearchResult["source"],
 ): SecuritySearchResult | null {
   const clean = (ticker ?? "").trim().toUpperCase();
@@ -58,12 +66,13 @@ function toResult(
     name: (name ?? "").trim() || clean,
     sector: sector ?? null,
     currency: currency ?? exchange.currency ?? null,
+    marketCap: marketCap ?? null,
     source,
   };
 }
 
 export function fromScreenedRow(row: ScreenedRow): SecuritySearchResult | null {
-  return toResult(row.ticker, row.companyName, row.sector, row.currency, "screened");
+  return toResult(row.ticker, row.companyName, row.sector, row.currency, row.marketCap ?? null, "screened");
 }
 
 export function fromProviderQuote(quote: ProviderQuote): SecuritySearchResult | null {
@@ -75,6 +84,7 @@ export function fromProviderQuote(quote: ProviderQuote): SecuritySearchResult | 
     quote.longname ?? quote.shortname ?? quote.symbol,
     null,
     null,
+    quote.marketCap ?? null,
     "provider",
   );
 }
@@ -100,17 +110,24 @@ export function matchRank(result: SecuritySearchResult, query: string): number {
 
 export interface RankOptions {
   query: string;
-  /** When set, results from other markets are dropped entirely */
+  /** Optional market *filter*. Ticker-first search spans all markets by
+   *  default; this only narrows results when the user explicitly asks. */
   exchange?: string | null;
   limit?: number;
 }
 
+/** Normalised company name, for grouping listings of the same issuer. */
+function nameKey(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
 /**
- * Scope to the selected market, drop non-matches, rank, and dedupe by the full
- * security identity so the same company never appears twice.
+ * Rank across all covered markets (unless an optional exchange filter is set),
+ * drop non-matches, and dedupe by the full security identity.
  *
- * Scoping is a hard filter, not a sort: it is what stops the app silently
- * offering a company from the wrong exchange.
+ * Market cap is the tie-breaker within the same match quality: a listed group
+ * outranks a same-ticker micro-cap lookalike (the GLE / Société Générale
+ * collision). The largest-cap listing of each company is flagged `isPrimary`.
  */
 export function rankResults(
   candidates: SecuritySearchResult[],
@@ -129,6 +146,10 @@ export function rankResults(
       if (a.result.source !== b.result.source) {
         return a.result.source === "screened" ? -1 : 1;
       }
+      // Larger market cap first; unknown caps sort last.
+      const ca = a.result.marketCap ?? -1;
+      const cb = b.result.marketCap ?? -1;
+      if (ca !== cb) return cb - ca;
       return a.result.name.localeCompare(b.result.name);
     });
 
@@ -141,7 +162,44 @@ export function rankResults(
     out.push(result);
     if (out.length >= limit) break;
   }
+
+  // Flag the largest-cap listing per company as primary (results are already
+  // cap-sorted within a match tier, so the first sighting of a name wins).
+  const primaryName = new Set<string>();
+  for (const result of out) {
+    const key = nameKey(result.name);
+    if (!key) continue;
+    if (!primaryName.has(key)) {
+      primaryName.add(key);
+      result.isPrimary = true;
+    }
+  }
   return out;
+}
+
+/** Compact market-cap label, e.g. "$1.9T", "€54.3B", "£420M". */
+export function formatMarketCap(
+  cap: number | null,
+  currency: string | null,
+  locale: "en" | "fr" = "en",
+): string | null {
+  if (cap === null || !Number.isFinite(cap) || cap <= 0) return null;
+  const sym = currency === "USD" ? "$" : currency === "EUR" ? "€" : currency === "GBP" ? "£" : "";
+  const units: Array<[number, string]> = [
+    [1e12, "T"],
+    [1e9, "B"],
+    [1e6, "M"],
+  ];
+  for (const [scale, suffix] of units) {
+    if (cap >= scale) {
+      const v = cap / scale;
+      const s = v.toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", {
+        maximumFractionDigits: v >= 100 ? 0 : 1,
+      });
+      return `${sym}${s}${suffix}`;
+    }
+  }
+  return `${sym}${Math.round(cap).toLocaleString(locale === "fr" ? "fr-FR" : "en-GB")}`;
 }
 
 /** Human-readable context line, e.g. "London Stock Exchange (LSE) · United Kingdom". */

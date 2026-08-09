@@ -45,7 +45,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           { companyName: { contains: query, mode: "insensitive" } },
         ],
       },
-      select: { ticker: true, companyName: true, sector: true, currency: true },
+      select: { ticker: true, companyName: true, sector: true, currency: true, marketCap: true },
       take: 60,
       distinct: ["ticker"],
     });

@@ -23,7 +23,7 @@ import { StickySummary } from "@/components/analysis/sticky-summary";
 import { WhyThisVerdict } from "@/components/analysis/why-this-verdict";
 import { AppShell } from "@/components/shell/app-shell";
 import { TickerSearchForm } from "@/components/ticker/ticker-search-form";
-import { DEFAULT_EXCHANGE_CODE, toYahooTicker } from "@/lib/finance/exchanges";
+import { DEFAULT_EXCHANGE_CODE, inferExchangeFromTicker, toYahooTicker } from "@/lib/finance/exchanges";
 import { useTranslation } from "@/lib/i18n/locale-context";
 import { Card, CardContent } from "@/components/ui/card";
 import type { HistoryResponse } from "@/types/api";
@@ -88,8 +88,14 @@ export function HomeView({
   }
 
   async function handleAnalyze() {
+    // A ticker suffix (e.g. .PA) names its own market; otherwise use the picked
+    // exchange. This keeps the security identity right even for a raw, suffixed
+    // entry typed without choosing a suggestion (P3-1/P3-2).
+    const effectiveExchange = ticker.trim().includes(".")
+      ? inferExchangeFromTicker(ticker).code
+      : exchange;
     // Market + symbol is the identity; resolve to the ticker the provider needs.
-    const normalizedTicker = toYahooTicker(exchange, ticker);
+    const normalizedTicker = toYahooTicker(effectiveExchange, ticker);
 
     if (!normalizedTicker) {
       return;
@@ -105,7 +111,7 @@ export function HomeView({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ticker: normalizedTicker, exchange }),
+        body: JSON.stringify({ ticker: normalizedTicker, exchange: effectiveExchange }),
       });
 
       if (!response.ok) {
@@ -120,7 +126,7 @@ export function HomeView({
         setAnalysis(payload.analysis);
         await refreshHistory();
         router.replace(
-          `/value?analysis=${payload.id}&exchange=${encodeURIComponent(exchange)}&ticker=${encodeURIComponent(normalizedTicker)}`,
+          `/value?analysis=${payload.id}&exchange=${encodeURIComponent(effectiveExchange)}&ticker=${encodeURIComponent(normalizedTicker)}`,
         );
         return;
       }
@@ -132,7 +138,7 @@ export function HomeView({
           setAnalysis(event.analysis);
           await refreshHistory();
           router.replace(
-            `/value?analysis=${event.id}&exchange=${encodeURIComponent(exchange)}&ticker=${encodeURIComponent(normalizedTicker)}`,
+            `/value?analysis=${event.id}&exchange=${encodeURIComponent(effectiveExchange)}&ticker=${encodeURIComponent(normalizedTicker)}`,
           );
           return;
         } else if (event.type === "error") {

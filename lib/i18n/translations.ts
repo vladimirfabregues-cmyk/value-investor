@@ -813,15 +813,19 @@ const en: Dict = {
   form: {
     marketLabel: "Market or exchange",
     marketHint: "Choose the market first — the same ticker can exist on several exchanges.",
-    tickerLabel: "Ticker or company",
+    tickerLabel: "Company or ticker",
     tickerPlaceholderMarket: "Search {market} by ticker or name",
     tickerPlaceholder: "Search",
+    tickerPlaceholderAll: "Search any company or ticker — all markets",
     submit: "Analyse stock",
     examples: "Examples",
     searchingMarket: "Searching {market} only.",
+    searchAll: "Searching all covered markets by company name or ticker.",
     searching: "Searching…",
     noResults:
       "No companies found on {market}. Check the market, or try the company's full name.",
+    noResultsAll: "No matching company across the covered markets. Try the full company name.",
+    primaryListing: "Primary listing",
     willAnalyseAs: "Will be analysed as {ticker} on {market}.",
   },
   history: {
@@ -2077,15 +2081,19 @@ const fr: Dict = {
     marketLabel: "Marché ou place de cotation",
     marketHint:
       "Choisissez d'abord le marché — un même symbole peut exister sur plusieurs places de cotation.",
-    tickerLabel: "Symbole ou société",
+    tickerLabel: "Société ou symbole",
     tickerPlaceholderMarket: "Rechercher sur {market} par symbole ou nom",
     tickerPlaceholder: "Rechercher",
+    tickerPlaceholderAll: "Rechercher une société ou un symbole — tous les marchés",
     submit: "Analyser l'action",
     examples: "Exemples",
     searchingMarket: "Recherche sur {market} uniquement.",
+    searchAll: "Recherche sur tous les marchés couverts par nom de société ou symbole.",
     searching: "Recherche…",
     noResults:
       "Aucune société trouvée sur {market}. Vérifiez le marché ou essayez le nom complet de la société.",
+    noResultsAll: "Aucune société correspondante sur les marchés couverts. Essayez le nom complet.",
+    primaryListing: "Cotation principale",
     willAnalyseAs: "Sera analysé comme {ticker} sur {market}.",
   },
   history: {

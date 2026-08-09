@@ -4,37 +4,38 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Loader2, Search } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
-import { describeResultMarket, type SecuritySearchResult } from "@/lib/finance/security-search";
-import { exchangeByCode } from "@/lib/finance/exchanges";
+import {
+  describeResultMarket,
+  formatMarketCap,
+  type SecuritySearchResult,
+} from "@/lib/finance/security-search";
 import { useTranslation } from "@/lib/i18n/locale-context";
 
 interface SecuritySearchProps {
   value: string;
-  exchange: string;
   isLoading?: boolean;
   error?: string | null;
   onValueChange: (value: string) => void;
-  /** Fired when a suggestion is chosen — carries the market so the wrong
-   *  listing can never be selected silently. */
+  /** Fired when a suggestion is chosen — carries the market so the resolved
+   *  listing is unambiguous. */
   onSelect: (result: SecuritySearchResult) => void;
 }
 
 /**
- * Combobox over the supported securities, scoped to the selected market.
- *
- * Implements the WAI-ARIA combobox pattern: the input keeps focus while the
- * listbox is navigated with the arrow keys, and `aria-activedescendant` tells
- * assistive technology which option is current.
+ * Ticker-first combobox over the supported securities, searching ALL covered
+ * markets at once (P3-1). Each row shows company · ticker · exchange · currency
+ * · market cap, so a same-ticker collision across markets (e.g. GLE the
+ * micro-cap vs Société Générale) is obvious, and the largest-cap listing is
+ * flagged as primary. Implements the WAI-ARIA combobox pattern.
  */
 export function SecuritySearch({
   value,
-  exchange,
   isLoading = false,
   error = null,
   onValueChange,
   onSelect,
 }: SecuritySearchProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const id = useId();
   const listboxId = `${id}-listbox`;
   const errorId = `${id}-error`;
@@ -50,14 +51,10 @@ export function SecuritySearch({
   /** Value written by an explicit pick — must not retrigger the search. */
   const justSelectedRef = useRef<string | null>(null);
 
-  const selectedExchange = exchangeByCode(exchange);
-
-  // Debounced lookup, scoped to the chosen market.
+  // Debounced lookup across all markets.
   useEffect(() => {
     const query = value.trim();
 
-    // Choosing a suggestion sets the input; without this the list would
-    // immediately reopen on top of the user's completed selection.
     if (justSelectedRef.current !== null && justSelectedRef.current === query) {
       justSelectedRef.current = null;
       return;
@@ -76,7 +73,7 @@ export function SecuritySearch({
       setSearching(true);
       try {
         const response = await fetch(
-          `/api/securities/search?q=${encodeURIComponent(query)}&exchange=${encodeURIComponent(exchange)}`,
+          `/api/securities/search?q=${encodeURIComponent(query)}`,
           { signal: controller.signal },
         );
         if (!response.ok) throw new Error("search failed");
@@ -92,7 +89,7 @@ export function SecuritySearch({
     }, 250);
 
     return () => clearTimeout(timer);
-  }, [value, exchange, touched]);
+  }, [value, touched]);
 
   // Close when focus or a click leaves the component.
   useEffect(() => {
@@ -166,11 +163,7 @@ export function SecuritySearch({
           aria-invalid={error ? true : undefined}
           autoComplete="off"
           spellCheck={false}
-          placeholder={
-            selectedExchange
-              ? t("form.tickerPlaceholderMarket", { market: selectedExchange.shortCode })
-              : t("form.tickerPlaceholder")
-          }
+          placeholder={t("form.tickerPlaceholderAll")}
           className="h-12 pl-11 pr-10"
           onChange={(event) => {
             setTouched(true);
@@ -190,47 +183,52 @@ export function SecuritySearch({
           <ul
             id={listboxId}
             role="listbox"
-            aria-label="Matching companies"
+            aria-label={t("form.tickerLabel")}
             className="absolute z-50 mt-1.5 max-h-72 w-full overflow-y-auto rounded-xl border border-white/10 bg-[#0b1220] p-1 shadow-panel"
           >
-            {results.map((result, index) => (
-              <li
-                key={`${result.exchange}:${result.ticker}`}
-                id={`${id}-option-${index}`}
-                role="option"
-                aria-selected={index === activeIndex}
-                onMouseEnter={() => setActiveIndex(index)}
-                onMouseDown={(event) => {
-                  event.preventDefault(); // keep focus in the input
-                  choose(result);
-                }}
-                className={`cursor-pointer rounded-lg px-3 py-2 ${
-                  index === activeIndex ? "bg-primary/15" : "hover:bg-white/[0.04]"
-                }`}
-              >
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="truncate text-sm text-foreground">{result.name}</span>
-                  <span className="shrink-0 font-mono text-xs text-primary">{result.ticker}</span>
-                </div>
-                <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                  {describeResultMarket(result)}
-                  {result.sector ? ` · ${result.sector}` : ""}
-                </div>
-              </li>
-            ))}
+            {results.map((result, index) => {
+              const cap = formatMarketCap(result.marketCap, result.currency, locale);
+              return (
+                <li
+                  key={`${result.exchange}:${result.ticker}`}
+                  id={`${id}-option-${index}`}
+                  role="option"
+                  aria-selected={index === activeIndex}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  onMouseDown={(event) => {
+                    event.preventDefault(); // keep focus in the input
+                    choose(result);
+                  }}
+                  className={`cursor-pointer rounded-lg px-3 py-2 ${
+                    index === activeIndex ? "bg-primary/15" : "hover:bg-white/[0.04]"
+                  }`}
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="truncate text-sm text-foreground">{result.name}</span>
+                    <span className="shrink-0 font-mono text-xs text-primary">{result.ticker}</span>
+                  </div>
+                  <div className="mt-0.5 flex items-center justify-between gap-3">
+                    <span className="truncate text-[11px] text-muted-foreground">
+                      {describeResultMarket(result)}
+                      {result.currency ? ` · ${result.currency}` : ""}
+                      {cap ? ` · ${cap}` : ""}
+                    </span>
+                    {result.isPrimary && (
+                      <span className="shrink-0 rounded-full border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-primary/90">
+                        {t("form.primaryListing")}
+                      </span>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
 
       {/* Status is announced politely rather than as an error */}
       <p id={statusId} role="status" aria-live="polite" className="mt-1.5 text-xs text-muted-foreground">
-        {searching
-          ? t("form.searching")
-          : showEmpty
-            ? t("form.noResults", { market: selectedExchange?.name ?? "" })
-            : selectedExchange
-              ? t("form.searchingMarket", { market: selectedExchange.name })
-              : ""}
+        {searching ? t("form.searching") : showEmpty ? t("form.noResultsAll") : t("form.searchAll")}
       </p>
 
       {error && (
