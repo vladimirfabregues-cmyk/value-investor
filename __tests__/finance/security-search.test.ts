@@ -122,16 +122,24 @@ describe("market-cap discriminator (P3-1)", () => {
     expect(results[0].name).toBe("Societe Generale");
   });
 
-  it("flags the largest-cap listing of a company as primary", () => {
+  it("flags exactly one primary when a company has multiple listings", () => {
     const results = rankResults(
       [
-        screened("SAN.MC", "Banco Santander", 6e10),
-        screened("SAN", "Banco Santander", 6e10), // US ADR, same cap tier
+        screened("SAN.MC", "Banco Santander", 7e10),
+        screened("SAN", "Banco Santander", 6e10), // US ADR, same company
       ],
       { query: "santander" },
     );
     const primaries = results.filter((r) => r.isPrimary);
-    expect(primaries).toHaveLength(1); // one primary per company name
+    expect(primaries).toHaveLength(1);
+    expect(primaries[0].ticker).toBe("SAN.MC"); // the larger-cap listing
+  });
+
+  it("does not flag a company that has only one listing (badge stays meaningful)", () => {
+    const results = rankResults([screened("GLE.PA", "Societe Generale", 3.5e10)], {
+      query: "societe",
+    });
+    expect(results.every((r) => !r.isPrimary)).toBe(true);
   });
 });
 

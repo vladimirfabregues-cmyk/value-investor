@@ -163,14 +163,21 @@ export function rankResults(
     if (out.length >= limit) break;
   }
 
-  // Flag the largest-cap listing per company as primary (results are already
-  // cap-sorted within a match tier, so the first sighting of a name wins).
-  const primaryName = new Set<string>();
+  // Flag a primary listing ONLY where a company has more than one listing in
+  // the results — the badge exists to disambiguate (e.g. SAN vs SAN.MC), not to
+  // decorate every single-listing row. Results are cap-sorted within a match
+  // tier, so the first sighting of a name is its largest-cap listing.
+  const nameCounts = new Map<string, number>();
   for (const result of out) {
     const key = nameKey(result.name);
-    if (!key) continue;
-    if (!primaryName.has(key)) {
-      primaryName.add(key);
+    if (key) nameCounts.set(key, (nameCounts.get(key) ?? 0) + 1);
+  }
+  const flagged = new Set<string>();
+  for (const result of out) {
+    const key = nameKey(result.name);
+    if (!key || (nameCounts.get(key) ?? 0) < 2) continue;
+    if (!flagged.has(key)) {
+      flagged.add(key);
       result.isPrimary = true;
     }
   }
