@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
-import { AlertTriangle, Clock, Play, RefreshCw, TrendingUp, TrendingDown, X } from "lucide-react";
+import { AlertTriangle, Clock, Download, Play, RefreshCw, TrendingUp, TrendingDown, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +13,7 @@ import { capLabel } from "@/lib/finance/verdict-explanation-prose";
 import { translateSector } from "@/lib/finance/prose";
 import { useTranslation } from "@/lib/i18n/locale-context";
 import { computeScreenFunnel } from "@/lib/screener/funnel";
+import { buildScreenCsv } from "@/lib/screener/csv";
 import { VERDICT_LABELS, verdictDefinition } from "@/lib/finance/verdict";
 import type { ScreenResultRecord, ScreenResultFilters } from "@/lib/db/screen-queries";
 
@@ -466,6 +467,36 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
 
   const activeMarket = MARKET_GROUPS.flatMap((g) => g.markets).find((m) => m.key === activeIndex);
 
+  // CSV export of exactly the rows on screen, with a self-describing header (P5-4).
+  const handleExport = useCallback(() => {
+    if (results.length === 0) return;
+    const parts: string[] = [];
+    if (candidatesOnly) parts.push(t("screen.filterSummary.candidates"));
+    if (filters.sector) parts.push(`${t("screen.sector")}: ${filters.sector}`);
+    if (filters.verdict) parts.push(`${t("screen.cols.verdict")}: ${verdictLabel(filters.verdict)}`);
+    if (filters.marketCapTier) parts.push(`${t("screen.marketCap")}: ${filters.marketCapTier}`);
+    const csv = buildScreenCsv(results, {
+      market: activeMarket?.label ?? activeIndex,
+      filters: parts.length ? parts.join("; ") : t("screen.filterSummary.none"),
+      runDate: lastRunLabel ?? "—",
+      exportedAt: new Date().toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }),
+      verdictDisplay: (label) => verdictLabel(label),
+    });
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `casebook-screener-${activeIndex.toLowerCase()}-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, [results, candidatesOnly, filters, activeMarket, activeIndex, lastRunLabel, locale, t, verdictLabel]);
+
   return (
     <div className="space-y-6">
       {/* ── Page header ── */}
@@ -705,6 +736,18 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
             }}
           >
             <X className="h-3 w-3" /> {t("screen.clearFilters")}
+          </Button>
+        )}
+
+        {results.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 text-muted-foreground hover:text-foreground"
+            onClick={handleExport}
+            title={t("screen.exportCsvHint")}
+          >
+            <Download className="h-3.5 w-3.5" aria-hidden="true" /> {t("screen.exportCsv")}
           </Button>
         )}
 
