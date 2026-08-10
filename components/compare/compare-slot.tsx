@@ -4,7 +4,6 @@ import { useId, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Loader2, X } from "lucide-react";
 
-import { MarketSelector } from "@/components/ticker/market-selector";
 import { SecuritySearch } from "@/components/ticker/security-search";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,7 @@ import { verdictClasses } from "@/lib/utils/format";
 import { useTranslation } from "@/lib/i18n/locale-context";
 import { renderVerdictReason } from "@/lib/history/verdict-reason";
 import { oneLineVerdictFrom } from "@/lib/finance/prose";
-import { DEFAULT_EXCHANGE_CODE, exchangeByCode } from "@/lib/finance/exchanges";
+import { exchangeByCode } from "@/lib/finance/exchanges";
 import { describeValuationGap } from "@/lib/finance/valuation-gap";
 import type { SecuritySearchResult } from "@/lib/finance/security-search";
 import type { SavedAnalysisSummary } from "@/types/analysis";
@@ -50,7 +49,6 @@ export function CompareSlot({
   const { t } = useTranslation();
   const id = useId();
   const [picking, setPicking] = useState(false);
-  const [exchange, setExchange] = useState(DEFAULT_EXCHANGE_CODE);
   const [query, setQuery] = useState("");
   const [looking, setLooking] = useState(false);
   const [unanalysed, setUnanalysed] = useState<UnanalysedResult | null>(null);
@@ -206,10 +204,8 @@ export function CompareSlot({
 
       <div className="space-y-3 border-t border-white/[0.06] pt-4">
         <p className="text-sm font-medium text-foreground">{t("compare.slot.orSearch")}</p>
-        <MarketSelector value={exchange} onChange={setExchange} />
         <SecuritySearch
           value={query}
-          exchange={exchange}
           isLoading={looking}
           error={error}
           onValueChange={setQuery}
