@@ -149,9 +149,10 @@ function CompanyPanel() {
 
       <Stage n={stages[4].n} title={stages[4].title}>
         <div className="flex flex-col gap-2.5">
+          {/* Band-only, to match the result page's single confidence
+              representation (P3-6 — no "High (83%)" vs "High" split). */}
           <Row label={t("caseAnatomy.labels.confidence")}>
-            {t(`confidence.${confidenceKey(s.confidencePct)}`)}{" "}
-            <span className="tabular-nums text-muted-foreground">({s.confidencePct}%)</span>
+            {t(`confidence.${confidenceKey(s.confidencePct)}`)}
           </Row>
           <p className="text-xs italic text-muted-foreground">{t("caseAnatomy.company.notice")}</p>
           <Link

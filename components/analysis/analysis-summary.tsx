@@ -125,14 +125,22 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
           />
         </dl>
 
-        <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Metric
-            label={t("analysis.decision.dataConfidence")}
-            value={t(`confidence.${confidence.key}`)}
-            tone={confidence.tone}
-            hint={t("analysis.decision.dataConfidenceHint")}
-          />
-          <div className="col-span-1 rounded-xl border border-white/[0.07] bg-gradient-to-b from-white/[0.05] to-white/[0.015] px-3.5 py-3 sm:col-span-3">
+        {/* What base value and range each mean, so the base sitting at a range
+            boundary reads as expected, not as a bug. (P3-5) */}
+        <p className="mt-2 text-xs leading-5 text-muted-foreground">
+          {t("analysis.decision.rangeExplainer")}{" "}
+          <a
+            href="/glossary#base-value"
+            className="text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+          >
+            {t("glossary.title")}
+          </a>
+        </p>
+
+        {/* Valuation model spans the row — data confidence is no longer grouped
+            with the scores; it is a caveat about inputs (below). (P3-6) */}
+        <dl className="mt-3">
+          <div className="rounded-xl border border-white/[0.07] bg-gradient-to-b from-white/[0.05] to-white/[0.015] px-3.5 py-3">
             <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               {t("analysis.decision.valuationModel")}
             </dt>
@@ -169,6 +177,15 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
             </p>
           </div>
         </div>
+
+        {/* Data confidence is a caveat about the inputs, not a score — kept out
+            of the score group and stated as a caveat. (P3-6) */}
+        <p className="mt-5 border-t border-white/[0.06] pt-4 text-xs leading-5 text-muted-foreground">
+          {t("analysis.decision.dataConfidence")}:{" "}
+          <span className={`font-medium ${confidence.tone}`}>{t(`confidence.${confidence.key}`)}</span>
+          {" · "}
+          {t("analysis.decision.dataConfidenceCaveat")}
+        </p>
       </div>
 
       {/* Only actions that genuinely do something */}

@@ -819,6 +819,7 @@ const en: Dict = {
     tickerPlaceholderAll: "Search any company or ticker — all markets",
     submit: "Analyse stock",
     examples: "Examples",
+    examplesNote: "Most large caps fail this value screen by design — a rejection is a valid, evidence-led result.",
     searchingMarket: "Searching {market} only.",
     searchAll: "Searching all covered markets by company name or ticker.",
     searching: "Searching…",
@@ -826,6 +827,7 @@ const en: Dict = {
       "No companies found on {market}. Check the market, or try the company's full name.",
     noResultsAll: "No matching company across the covered markets. Try the full company name.",
     primaryListing: "Primary listing",
+    autoSaves: "Data is fetched live at analysis time; the conclusion is saved to your history automatically.",
     willAnalyseAs: "Will be analysed as {ticker} on {market}.",
   },
   history: {
@@ -896,7 +898,10 @@ const en: Dict = {
       modelAgreement: "{level} model agreement",
       dataConfidence: "Data confidence",
       dataConfidenceHint: "Based on data completeness and model agreement",
+      dataConfidenceCaveat: "A caveat about the inputs, not a measure of the company.",
       valuationModel: "Valuation model",
+      rangeExplainer:
+        "Base value is the single blended estimate; the value range spans the individual models — so the base can sit at a range boundary when the models cluster.",
       why: "Why",
       mainRisk: "Main risk",
       marginOfSafetyLabel: "Margin of safety",
@@ -2087,6 +2092,7 @@ const fr: Dict = {
     tickerPlaceholderAll: "Rechercher une société ou un symbole — tous les marchés",
     submit: "Analyser l'action",
     examples: "Exemples",
+    examplesNote: "La plupart des grandes capitalisations échouent à ce filtre de valeur, par conception — un rejet est un résultat valide, fondé sur les faits.",
     searchingMarket: "Recherche sur {market} uniquement.",
     searchAll: "Recherche sur tous les marchés couverts par nom de société ou symbole.",
     searching: "Recherche…",
@@ -2094,6 +2100,7 @@ const fr: Dict = {
       "Aucune société trouvée sur {market}. Vérifiez le marché ou essayez le nom complet de la société.",
     noResultsAll: "Aucune société correspondante sur les marchés couverts. Essayez le nom complet.",
     primaryListing: "Cotation principale",
+    autoSaves: "Les données sont récupérées en direct au moment de l'analyse ; la conclusion est enregistrée automatiquement dans votre historique.",
     willAnalyseAs: "Sera analysé comme {ticker} sur {market}.",
   },
   history: {
@@ -2165,7 +2172,10 @@ const fr: Dict = {
       modelAgreement: "Concordance des modèles : {level}",
       dataConfidence: "Fiabilité des données",
       dataConfidenceHint: "Basée sur l'exhaustivité des données et la concordance des modèles",
+      dataConfidenceCaveat: "Une réserve sur les données d'entrée, non une mesure de la société.",
       valuationModel: "Modèle de valorisation",
+      rangeExplainer:
+        "La valeur de base est l'estimation mixte unique ; la fourchette de valeur couvre les modèles individuels — la base peut donc se situer à une borne lorsque les modèles convergent.",
       why: "Pourquoi",
       mainRisk: "Risque principal",
       marginOfSafetyLabel: "Marge de sécurité",

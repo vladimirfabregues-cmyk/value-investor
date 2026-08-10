@@ -283,9 +283,13 @@ export function HomeView({
               </div>
 
               {isLoading && progressStage ? (
-                <div className="mt-5 flex items-center gap-3" role="status" aria-live="polite">
-                  <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-                  <span className="text-sm text-muted-foreground">{progressStage}</span>
+                <div className="mt-5" role="status" aria-live="polite">
+                  <div className="flex items-center gap-3">
+                    <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
+                    <span className="text-sm text-muted-foreground">{progressStage}</span>
+                  </div>
+                  {/* Tell the user the data is live and the result is kept. (P3-4) */}
+                  <p className="mt-1.5 pl-4 text-xs text-muted-foreground/80">{t("form.autoSaves")}</p>
                 </div>
               ) : null}
             </section>

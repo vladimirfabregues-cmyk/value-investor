@@ -28,14 +28,14 @@ export async function analyzeTicker(
   ticker: string,
   onProgress?: AnalysisProgressCallback,
 ): Promise<ValueInvestingAnalysis> {
-  onProgress?.("Fetching financial data...");
+  onProgress?.("Fetching financial data and filings…");
   const provider = getFinanceProvider();
   const dataset = await provider.getCompanySnapshot(ticker);
 
-  onProgress?.("Calculating intrinsic value...");
+  onProgress?.("Running valuation models and applying gates…");
   const m = calculateValueMetrics(dataset, undefined, dataset.sector);
 
-  onProgress?.("Building analysis...");
+  onProgress?.("Building the conclusion…");
 
   const security = resolveSecurity(m.ticker);
   const prose = analysisProse(proseModelFromMetrics(m), enT);

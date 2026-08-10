@@ -85,21 +85,26 @@ export function TickerSearchForm({
         </Button>
       </form>
 
-      <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-        <span className="uppercase tracking-[0.16em] text-zinc-400">{t("form.examples")}</span>
-        {EXAMPLES.map((example) => (
-          <button
-            key={`${example.exchange}:${example.ticker}`}
-            type="button"
-            onClick={() => {
-              onExchangeChange(example.exchange);
-              onTickerChange(example.ticker);
-            }}
-            className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-zinc-200 transition hover:border-primary/30 hover:text-primary"
-          >
-            {example.label}
-          </button>
-        ))}
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <span className="uppercase tracking-[0.16em] text-zinc-400">{t("form.examples")}</span>
+          {EXAMPLES.map((example) => (
+            <button
+              key={`${example.exchange}:${example.ticker}`}
+              type="button"
+              onClick={() => {
+                onExchangeChange(example.exchange);
+                onTickerChange(example.ticker);
+              }}
+              className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-zinc-200 transition hover:border-primary/30 hover:text-primary"
+            >
+              {example.label}
+            </button>
+          ))}
+        </div>
+        {/* Frame the expected outcome so a first click that returns "Avoid"
+            reads as the screen working, not failing. (P3-3) */}
+        <p className="text-xs leading-5 text-muted-foreground">{t("form.examplesNote")}</p>
       </div>
     </div>
   );
