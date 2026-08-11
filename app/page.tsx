@@ -57,7 +57,10 @@ export default function HomePage() {
             </a>
           </div>
 
-          <p className="mt-5 text-xs leading-5 text-muted-foreground">{t("hero.microDisclaimer")}</p>
+          {/* Who it's for is in the eyebrow; state access plainly so no one has
+              to guess whether there's a paywall or sign-up wall (P9-3). */}
+          <p className="mt-6 text-sm leading-6 text-foreground/80">{t("hero.access")}</p>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">{t("hero.microDisclaimer")}</p>
         </div>
 
         {/* Case-file visual */}

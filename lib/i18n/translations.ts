@@ -48,6 +48,7 @@ const en: Dict = {
     lead: "Analyse companies. Compare ETFs. Inspect the assumptions, evidence and methodology behind every result.",
     ctaCompany: "Analyse a company",
     ctaEtf: "Compare UCITS ETFs",
+    access: "Free to use — no account or sign-up required.",
     microDisclaimer: "Informational research tools · No personal recommendations · Capital at risk",
     aboutLink: "About the author",
     caseFile: {
@@ -1332,6 +1333,7 @@ const fr: Dict = {
     lead: "Analysez des sociétés. Comparez des ETF. Inspectez les hypothèses, les preuves et la méthodologie derrière chaque résultat.",
     ctaCompany: "Analyser une société",
     ctaEtf: "Comparer des ETF UCITS",
+    access: "Gratuit — aucun compte ni inscription requis.",
     microDisclaimer: "Outils de recherche informatifs · Aucune recommandation personnalisée · Capital à risque",
     aboutLink: "À propos de l'auteur",
     caseFile: {
