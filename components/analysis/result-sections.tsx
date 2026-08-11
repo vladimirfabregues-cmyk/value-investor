@@ -6,6 +6,11 @@ export interface ResultSection {
   id: string;
   label: string;
   content: ReactNode;
+  /** Marks a section whose gate failed or is borderline, so the reader knows
+   *  where to look without opening every tab (P6-2). */
+  flag?: "warn" | "fail";
+  /** Localised accessible text for the flag (never colour-alone). */
+  flagLabel?: string;
 }
 
 interface ResultSectionsProps {
@@ -80,7 +85,16 @@ export function ResultSections({ sections }: ResultSectionsProps) {
                   : "border-white/[0.07] bg-white/[0.02] text-muted-foreground hover:border-white/15 hover:text-foreground"
               }`}
             >
+              {section.flag && (
+                <span
+                  className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle ${
+                    section.flag === "fail" ? "bg-red-400" : "bg-amber-400"
+                  }`}
+                  aria-hidden="true"
+                />
+              )}
               {section.label}
+              {section.flag && section.flagLabel && <span className="sr-only"> — {section.flagLabel}</span>}
             </button>
           );
         })}

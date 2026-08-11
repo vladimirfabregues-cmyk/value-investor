@@ -10,6 +10,7 @@ import { formatCurrency } from "@/lib/utils/format";
 import { formatIsoDate } from "@/lib/utils/dates";
 import { useTranslation } from "@/lib/i18n/locale-context";
 import { useAnalysisProse } from "@/components/analysis/use-analysis-prose";
+import { localizeVerdictExplanation } from "@/lib/finance/verdict-explanation-prose";
 import { translateSector } from "@/lib/finance/prose";
 import type { ValueInvestingAnalysis } from "@/types/analysis";
 
@@ -53,6 +54,8 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
   const range = buildValuationRange(analysis.intrinsic_value);
   const confidence = confidenceBand(analysis.final_verdict.confidence_pct);
   const currency = analysis.currency;
+  // Conclusion caps must be visible without opening a tab (P6-2).
+  const caps = localizeVerdictExplanation(analysis, t)?.hard_gates ?? [];
 
   // Drivers come from the computed thesis, regenerated in the viewer's language.
   const drivers = prose.bullCase.slice(0, 3);
@@ -101,6 +104,32 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
             {t(`verdict.${analysis.final_verdict.label}`)}
           </span>
         </div>
+
+        {/* Persistent conclusion-cap banner — the most consequential mechanic,
+            surfaced here rather than buried in the Overview tab (P6-2). */}
+        {caps.length > 0 && (
+          <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/[0.08] px-4 py-3">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" aria-hidden="true" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-amber-100">
+                  {t(caps.length === 1 ? "analysis.capBanner.one" : "analysis.capBanner.other", {
+                    n: caps.length,
+                  })}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-amber-200/80">
+                  {caps.map((g) => g.name).join(" · ")}
+                </p>
+                <a
+                  href="/glossary#conclusion-cap"
+                  className="mt-1.5 inline-block text-xs font-medium text-amber-200 underline underline-offset-4 hover:text-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 rounded"
+                >
+                  {t("glossary.whatIsCap")}
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* The four decision numbers */}
         <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">

@@ -891,6 +891,10 @@ const en: Dict = {
       sources: "Sources and methodology",
     },
     sectionsLabel: "Analysis sections",
+    capBanner: {
+      one: "A conclusion cap holds this back, regardless of the score.",
+      other: "{n} conclusion caps hold this back, regardless of the score.",
+    },
     decision: {
       currentPrice: "Current price",
       baseValue: "Base value",
@@ -2168,6 +2172,10 @@ const fr: Dict = {
       sources: "Sources et méthodologie",
     },
     sectionsLabel: "Sections de l'analyse",
+    capBanner: {
+      one: "Un plafond de conclusion retient ce résultat, quel que soit le score.",
+      other: "{n} plafonds de conclusion retiennent ce résultat, quel que soit le score.",
+    },
     decision: {
       currentPrice: "Cours actuel",
       baseValue: "Valeur de base",

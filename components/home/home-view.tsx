@@ -157,6 +157,13 @@ export function HomeView({
     }
   }
 
+  // Section-header markers: a gate below the pass band (P6-2). Same bands as
+  // the scoring engine (≥70 pass · ≥55 borderline · else fail).
+  const gateFlag = (score: number): "warn" | "fail" | undefined =>
+    score >= 70 ? undefined : score >= 55 ? "warn" : "fail";
+  const flagLabel = (f: "warn" | "fail" | undefined): string | undefined =>
+    f === "fail" ? t("analysis.whyVerdict.failed") : f === "warn" ? t("analysis.whyVerdict.borderline") : undefined;
+
   return (
     <AppShell history={history}>
       <div className="space-y-6">
@@ -192,6 +199,8 @@ export function HomeView({
                 {
                   id: "valuation",
                   label: t("analysis.tabs.valuation"),
+                  flag: gateFlag(analysis.valuation.valuation_score),
+                  flagLabel: flagLabel(gateFlag(analysis.valuation.valuation_score)),
                   content: (
                     <>
                       <IntrinsicValueCard analysis={analysis} />
@@ -214,11 +223,15 @@ export function HomeView({
                 {
                   id: "health",
                   label: t("analysis.tabs.health"),
+                  flag: gateFlag(analysis.financial_health.health_score),
+                  flagLabel: flagLabel(gateFlag(analysis.financial_health.health_score)),
                   content: <FinancialHealthCard analysis={analysis} />,
                 },
                 {
                   id: "quality",
                   label: t("analysis.tabs.quality"),
+                  flag: gateFlag(analysis.business_quality.quality_score),
+                  flagLabel: flagLabel(gateFlag(analysis.business_quality.quality_score)),
                   content: <BusinessQualityCard analysis={analysis} />,
                 },
                 {
@@ -241,23 +254,17 @@ export function HomeView({
               ]}
             />
 
-            {/* Search stays available, but no longer dominates */}
-            <details className="rounded-2xl border border-white/[0.07] bg-white/[0.02]">
-              <summary className="cursor-pointer list-none px-5 py-3.5 text-sm font-medium text-foreground/90 [&::-webkit-details-marker]:hidden">
-                {t("home.analyseAnother")}
-              </summary>
-              <div className="border-t border-white/[0.06] p-5">
-                <TickerSearchForm
-                  ticker={ticker}
-                  exchange={exchange}
-                  isLoading={isLoading}
-                  error={error}
-                  onTickerChange={setTicker}
-                  onExchangeChange={setExchange}
-                  onSubmit={handleAnalyze}
-                />
-              </div>
-            </details>
+            {/* The analyse control lives in the header (Analyse stock); the
+                result page just links back to a fresh search rather than
+                embedding a second copy of the form below every result. (P6-1) */}
+            <div className="pt-1">
+              <Link
+                href="/value"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+              >
+                {t("home.analyseAnother")} →
+              </Link>
+            </div>
           </>
         ) : (
           /* ── No analysis: the search is the page ── */
