@@ -26,12 +26,20 @@ function mapSummary(row: {
   fullJson: Prisma.JsonValue;
   createdAt: Date;
 }): SavedAnalysisSummary {
+  // Sector lives only in the stored JSON; read it defensively so a malformed
+  // or missing value simply leaves the entry sector-less rather than throwing.
+  const sector =
+    row.fullJson && typeof row.fullJson === "object" && !Array.isArray(row.fullJson)
+      ? (row.fullJson as Record<string, unknown>).sector
+      : undefined;
+
   return {
     id: row.id,
     ticker: row.ticker,
     // Older rows predate the column; infer so identity is never ambiguous.
     exchange: row.exchange ?? inferExchangeFromTicker(row.ticker).code,
     companyName: row.companyName,
+    sector: typeof sector === "string" && sector.length > 0 ? sector : undefined,
     analysisDate: row.analysisDate.toISOString(),
     finalVerdictLabel: savedAnalysisSummarySchema.shape.finalVerdictLabel.parse(
       row.finalVerdictLabel,

@@ -195,15 +195,17 @@ export function CompareView({
   const router = useRouter();
   const [history] = useState(initialHistory);
 
-  // Seeded from the two most recent analyses only when the URL says nothing —
-  // a starting point, not a commitment: either slot can be cleared.
-  const seeded = Boolean(!initialLeftId && !initialRightId && history.length >= 2);
-  const [leftId, setLeftId] = useState<string | null>(
-    initialLeftId ?? (history.length >= 2 ? history[0].id : null),
-  );
-  const [rightId, setRightId] = useState<string | null>(
-    initialRightId ?? (history.length >= 2 ? history[1].id : null),
-  );
+  // Auto-seed the two most recent analyses ONLY when they are the same sector,
+  // so the default pair is actually comparable — recency alone is not (P7-2).
+  // Otherwise open empty and let the user pick; a silent arbitrary pair reads
+  // as a meaningful comparison when it isn't.
+  const sameSectorSeed =
+    history.length >= 2 &&
+    !!history[0].sector &&
+    history[0].sector === history[1].sector;
+  const seeded = Boolean(!initialLeftId && !initialRightId && sameSectorSeed);
+  const [leftId, setLeftId] = useState<string | null>(initialLeftId ?? (seeded ? history[0].id : null));
+  const [rightId, setRightId] = useState<string | null>(initialRightId ?? (seeded ? history[1].id : null));
   const [fromSeed, setFromSeed] = useState(seeded);
 
   const [items, setItems] = useState<SavedAnalysisRecord[]>([]);

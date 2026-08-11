@@ -862,6 +862,10 @@ const en: Dict = {
       month: "Previous 30 days",
       older: "Earlier",
     },
+    earlierRuns: {
+      one: "1 earlier run",
+      other: "{n} earlier runs",
+    },
     item: {
       analyseAgain: "Analyse {ticker} again",
       compareWith: "Compare {ticker} with another company",
@@ -1216,7 +1220,7 @@ const en: Dict = {
     strongerOn: " — stronger on this metric: {name}",
     noWinner:
       "Individual metrics are marked where one company is stronger. No overall winner is declared: businesses in different sectors, valued by different models, are not reducible to a single score.",
-    fromSeed: "Started from your two most recent conclusions. Change or remove either one.",
+    fromSeed: "Started from your two most recent conclusions — they share a sector, so they're comparable. Change or remove either one.",
     slot: {
       savedAnalyses: "Saved conclusions",
       chooseSaved: "Choose a saved analysis…",
@@ -2143,6 +2147,10 @@ const fr: Dict = {
       month: "30 derniers jours",
       older: "Plus tôt",
     },
+    earlierRuns: {
+      one: "1 analyse antérieure",
+      other: "{n} analyses antérieures",
+    },
     item: {
       analyseAgain: "Analyser à nouveau {ticker}",
       compareWith: "Comparer {ticker} avec une autre société",
@@ -2498,7 +2506,7 @@ const fr: Dict = {
     strongerOn: " — plus solide sur cet indicateur : {name}",
     noWinner:
       "Les indicateurs individuels signalent où une société est plus solide. Aucun gagnant global n'est déclaré : des entreprises de secteurs différents, valorisées par des modèles différents, ne se réduisent pas à un score unique.",
-    fromSeed: "Démarré à partir de vos deux conclusions les plus récentes. Modifiez ou retirez l'une ou l'autre.",
+    fromSeed: "Démarré à partir de vos deux conclusions les plus récentes — même secteur, donc comparables. Modifiez ou retirez l'une ou l'autre.",
     slot: {
       savedAnalyses: "Conclusions enregistrées",
       chooseSaved: "Choisir une conclusion enregistrée…",

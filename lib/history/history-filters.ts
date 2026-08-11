@@ -166,3 +166,44 @@ export function groupHistoryByDate(
     .map((id) => groups.get(id))
     .filter((group): group is HistoryGroup => group !== undefined);
 }
+
+// ── Company grouping ─────────────────────────────────────────────────────────
+
+export interface CompanyHistoryGroup {
+  /** Full security identity, e.g. "XLON:DPLM.L"; stable React key */
+  key: string;
+  /** Most recent run of this security — the head of the card */
+  latest: SavedAnalysisSummary;
+  /** Earlier runs of the same security, newest first; empty for one-off analyses */
+  older: SavedAnalysisSummary[];
+}
+
+/**
+ * Collapse a flat list into one group per security, so a company analysed five
+ * times reads as a single entry with a run timeline rather than five cards
+ * scattered across date buckets.
+ *
+ * Companies keep the order their latest run appears in the input (newest first
+ * upstream), so the most recently revisited company sits at the top. Within a
+ * group the runs are sorted newest first, matching `buildChangeIndex`, so the
+ * head is always the latest run regardless of input order.
+ */
+export function groupHistoryByCompany(
+  items: SavedAnalysisSummary[],
+): CompanyHistoryGroup[] {
+  const bySecurity = new Map<string, SavedAnalysisSummary[]>();
+  for (const item of items) {
+    const key = entrySecurityKey(item);
+    const series = bySecurity.get(key);
+    if (series) series.push(item);
+    else bySecurity.set(key, [item]);
+  }
+
+  return [...bySecurity.entries()].map(([key, series]) => {
+    const ordered = [...series].sort((a, b) => {
+      const delta = Date.parse(b.createdAt) - Date.parse(a.createdAt);
+      return delta !== 0 ? delta : a.id.localeCompare(b.id);
+    });
+    return { key, latest: ordered[0], older: ordered.slice(1) };
+  });
+}

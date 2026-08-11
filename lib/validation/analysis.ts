@@ -192,6 +192,7 @@ export const savedAnalysisSummarySchema = z
     ticker: z.string().min(1),
     exchange: z.string().min(1).max(12),
     companyName: z.string().min(1),
+    sector: z.string().min(1).optional(),
     analysisDate: z.string().min(1),
     finalVerdictLabel: z.enum(["STRONG_BUY", "BUY", "WATCH", "HOLD", "AVOID"]),
     confidencePct: z.number().finite().min(0).max(100),

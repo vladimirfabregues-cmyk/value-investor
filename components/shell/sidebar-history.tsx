@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
+  ChevronRight,
   History,
   PanelLeftClose,
   Pin,
@@ -15,14 +17,17 @@ import { RecentSearchItem } from "@/components/ticker/recent-search-item";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils/cn";
+import { formatIsoDate } from "@/lib/utils/dates";
+import { verdictClasses } from "@/lib/utils/format";
 import {
   EMPTY_FILTERS,
   entrySecurityKey,
   exchangeFacets,
   filterHistory,
-  groupHistoryByDate,
+  groupHistoryByCompany,
   hasActiveFilters,
   verdictFacets,
+  type CompanyHistoryGroup,
   type HistoryFilters,
 } from "@/lib/history/history-filters";
 import {
@@ -82,6 +87,13 @@ function FacetChip({
   );
 }
 
+/** Change-line colour; the wording always carries the meaning on its own. */
+const TONE_TEXT: Record<"positive" | "negative" | "neutral", string> = {
+  positive: "text-emerald-300",
+  negative: "text-red-300",
+  neutral: "text-muted-foreground",
+};
+
 export function SidebarHistory({
   history,
   onCollapse,
@@ -122,12 +134,14 @@ export function SidebarHistory({
     return filterHistory(withArchivePolicy, filters);
   }, [history, prefs, showArchived, filters]);
 
-  const pinnedItems = useMemo(
-    () => visible.filter((item) => isPinned(prefs, entrySecurityKey(item))),
+  // One entry per company, most-recently-revisited first, with earlier runs
+  // folded into an expandable timeline (P7-1).
+  const pinnedGroups = useMemo(
+    () => groupHistoryByCompany(visible.filter((item) => isPinned(prefs, entrySecurityKey(item)))),
     [visible, prefs],
   );
   const unpinnedGroups = useMemo(
-    () => groupHistoryByDate(visible.filter((item) => !isPinned(prefs, entrySecurityKey(item)))),
+    () => groupHistoryByCompany(visible.filter((item) => !isPinned(prefs, entrySecurityKey(item)))),
     [visible, prefs],
   );
 
@@ -153,24 +167,71 @@ export function SidebarHistory({
     }));
   }
 
-  /** Renders one entry with everything the panel knows about it. */
-  function renderItem(item: SavedAnalysisSummary) {
-    const key = entrySecurityKey(item);
-    const change = changes.get(item.id);
+  /** Earlier runs of one company, newest first — a compact changelog under the
+   *  head card. Each row opens that specific run and states how it moved. */
+  function renderTimeline(runs: SavedAnalysisSummary[]) {
     return (
-      <RecentSearchItem
-        key={item.id}
-        item={item}
-        active={pathname === "/" && activeAnalysisId === item.id}
-        verdictChange={describeVerdictChange(item.finalVerdictLabel, change)}
-        marginShift={describeMarginShift(change)}
-        pinned={isPinned(prefs, key)}
-        archived={isArchived(prefs, item.id)}
-        note={noteFor(prefs, key)}
-        onTogglePin={() => updatePrefs(togglePinned(prefs, key))}
-        onToggleArchive={() => updatePrefs(toggleArchived(prefs, item.id))}
-        onNoteChange={(note) => updatePrefs(setNote(prefs, key, note))}
-      />
+      <details className="group/timeline ml-2 border-l border-white/8 pl-3">
+        <summary className="flex cursor-pointer list-none items-center gap-1 rounded text-[11px] text-muted-foreground transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 [&::-webkit-details-marker]:hidden">
+          <ChevronRight
+            className="h-3 w-3 shrink-0 transition-transform group-open/timeline:rotate-90"
+            aria-hidden="true"
+          />
+          {t(runs.length === 1 ? "history.earlierRuns.one" : "history.earlierRuns.other", {
+            n: runs.length,
+          })}
+        </summary>
+        <ol className="mt-2 space-y-2">
+          {runs.map((run) => {
+            const change = changes.get(run.id);
+            const verdictChange = describeVerdictChange(run.finalVerdictLabel, change);
+            const marginShift = describeMarginShift(change);
+            return (
+              <li key={run.id}>
+                <Link
+                  href={`/value?analysis=${run.id}&exchange=${encodeURIComponent(run.exchange)}&ticker=${encodeURIComponent(run.ticker)}`}
+                  className="flex items-center justify-between gap-2 rounded-lg px-1 py-1 text-xs text-muted-foreground transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                >
+                  <span className="tabular-nums">{formatIsoDate(run.analysisDate)}</span>
+                  <Badge className={cn("shrink-0", verdictClasses(run.finalVerdictLabel))}>
+                    {t(`verdict.${run.finalVerdictLabel}`)}
+                  </Badge>
+                </Link>
+                {(verdictChange || marginShift) && (
+                  <div className="mt-0.5 pl-1 text-[11px] leading-4">
+                    {verdictChange && <p className={TONE_TEXT[verdictChange.tone]}>{verdictChange.text}</p>}
+                    {marginShift && <p className={TONE_TEXT[marginShift.tone]}>{marginShift.text}</p>}
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </details>
+    );
+  }
+
+  /** Renders one company: the latest run as the head card, older runs folded
+   *  into an expandable timeline beneath it (P7-1). */
+  function renderCompany(group: CompanyHistoryGroup) {
+    const { key, latest, older } = group;
+    const change = changes.get(latest.id);
+    return (
+      <div key={key} className="space-y-2">
+        <RecentSearchItem
+          item={latest}
+          active={pathname === "/" && activeAnalysisId === latest.id}
+          verdictChange={describeVerdictChange(latest.finalVerdictLabel, change)}
+          marginShift={describeMarginShift(change)}
+          pinned={isPinned(prefs, key)}
+          archived={isArchived(prefs, latest.id)}
+          note={noteFor(prefs, key)}
+          onTogglePin={() => updatePrefs(togglePinned(prefs, key))}
+          onToggleArchive={() => updatePrefs(toggleArchived(prefs, latest.id))}
+          onNoteChange={(note) => updatePrefs(setNote(prefs, key, note))}
+        />
+        {older.length > 0 && renderTimeline(older)}
+      </div>
     );
   }
 
@@ -308,7 +369,7 @@ export function SidebarHistory({
           </div>
         ) : (
           <>
-            {pinnedItems.length > 0 && (
+            {pinnedGroups.length > 0 && (
               <section aria-labelledby="history-pinned">
                 <h3
                   id="history-pinned"
@@ -317,21 +378,13 @@ export function SidebarHistory({
                   <Pin className="h-3 w-3" aria-hidden="true" />
                   {t("history.pinned")}
                 </h3>
-                <div className="space-y-3">{pinnedItems.map(renderItem)}</div>
+                <div className="space-y-3">{pinnedGroups.map(renderCompany)}</div>
               </section>
             )}
 
-            {unpinnedGroups.map((group) => (
-              <section key={group.id} aria-labelledby={`history-group-${group.id}`}>
-                <h3
-                  id={`history-group-${group.id}`}
-                  className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground"
-                >
-                  {t(`history.groups.${group.id}`)}
-                </h3>
-                <div className="space-y-3">{group.items.map(renderItem)}</div>
-              </section>
-            ))}
+            {unpinnedGroups.length > 0 && (
+              <div className="space-y-3">{unpinnedGroups.map(renderCompany)}</div>
+            )}
           </>
         )}
       </div>

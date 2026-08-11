@@ -190,6 +190,10 @@ export interface SavedAnalysisSummary {
   /** Exchange code; inferred from the ticker suffix for older rows */
   exchange: string;
   companyName: string;
+  /** GICS sector, read from the stored analysis. Absent on older rows and on
+   *  analyses that never captured one; used to judge whether two entries are
+   *  comparable (P7-2). */
+  sector?: string;
   analysisDate: string;
   finalVerdictLabel: VerdictLabel;
   confidencePct: number;

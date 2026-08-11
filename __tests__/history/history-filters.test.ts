@@ -5,6 +5,7 @@ import {
   entrySecurityKey,
   exchangeFacets,
   filterHistory,
+  groupHistoryByCompany,
   groupHistoryByDate,
   hasActiveFilters,
   verdictFacets,
@@ -172,6 +173,55 @@ describe("groupHistoryByDate", () => {
     const groups = groupHistoryByDate([summary({ id: "broken", createdAt: "not-a-date" })], now);
     expect(groups[0].id).toBe("older");
     expect(groups[0].items).toHaveLength(1);
+  });
+});
+
+describe("groupHistoryByCompany", () => {
+  it("returns one group per security with the latest run as the head", () => {
+    const older = summary({
+      id: "a-old",
+      ticker: "AAPL",
+      exchange: "US",
+      createdAt: "2026-06-01T00:00:00.000Z",
+    });
+    const newer = summary({
+      id: "a-new",
+      ticker: "AAPL",
+      exchange: "US",
+      createdAt: "2026-07-01T00:00:00.000Z",
+    });
+
+    const groups = groupHistoryByCompany([newer, older]);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].key).toBe("US:AAPL");
+    expect(groups[0].latest.id).toBe("a-new");
+    expect(groups[0].older.map((run) => run.id)).toEqual(["a-old"]);
+  });
+
+  it("picks the latest as head even when runs arrive oldest-first", () => {
+    const older = summary({ id: "a-old", createdAt: "2026-06-01T00:00:00.000Z" });
+    const newer = summary({ id: "a-new", createdAt: "2026-07-01T00:00:00.000Z" });
+
+    const groups = groupHistoryByCompany([older, newer]);
+    expect(groups[0].latest.id).toBe("a-new");
+    expect(groups[0].older.map((run) => run.id)).toEqual(["a-old"]);
+  });
+
+  it("keeps companies in most-recently-revisited order and leaves one-offs without a timeline", () => {
+    const groups = groupHistoryByCompany(all);
+    expect(groups.map((group) => group.key)).toEqual([
+      "US:AAPL",
+      "XLON:DPLM.L",
+      "XPAR:AIR.PA",
+    ]);
+    expect(groups.every((group) => group.older.length === 0)).toBe(true);
+  });
+
+  it("distinguishes the same ticker on two markets", () => {
+    const us = summary({ id: "us", ticker: "ABC", exchange: "US" });
+    const paris = summary({ id: "pa", ticker: "ABC", exchange: "XPAR" });
+    const groups = groupHistoryByCompany([us, paris]);
+    expect(groups).toHaveLength(2);
   });
 });
 
