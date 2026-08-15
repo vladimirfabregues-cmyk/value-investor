@@ -20,7 +20,7 @@ Next.js **Multi-Zones**:
 | App | Repo (local path) | GitHub | Serves | Vercel |
 |---|---|---|---|---|
 | **Value Investor** (company analysis) — the *hub* | `~/Desktop/Value Investor` | `vladimirfabregues-cmyk/value-investor` | `/`, `/about`, `/value/*`, `/api/*` | `value-investor-…vercel.app` |
-| **ETF Compass** (ETF research) — the *zone* | `~/Documents/ETF comparateur` | `vladimirfabregues-cmyk/ETF-Compass` | `/etf/*` (basePath `/etf`) | `etf-comparateur.vercel.app` |
+| **ETF Compass** (ETF research) — the *zone* | `~/Projects/ETF comparateur` | `vladimirfabregues-cmyk/ETF-Compass` | `/etf/*` (basePath `/etf`) | `etf-comparateur.vercel.app` |
 
 - The hub's `next.config.ts` **rewrites** `/etf` and `/etf/:path*` to `ETF_ZONE_URL`
   (default `https://etf-comparateur.vercel.app`). The ETF app sets `basePath: "/etf"`.
