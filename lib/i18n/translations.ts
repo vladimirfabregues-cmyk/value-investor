@@ -207,6 +207,7 @@ const en: Dict = {
   methodologyHub: {
     title: "Methodology",
     intro: "One research standard, applied through two specialised methods.",
+    principlesTitle: "Research principles",
     company: {
       title: "Company Analysis",
       body: "Model selection depends on the company's economics—operating businesses, banks, insurers, property trusts and utilities are each valued the way that fits them, then tested for balance-sheet, earnings-quality and cyclicality risk.",
@@ -1504,6 +1505,7 @@ const fr: Dict = {
   methodologyHub: {
     title: "Méthodologie",
     intro: "Une seule norme de recherche, appliquée par deux méthodes spécialisées.",
+    principlesTitle: "Principes de recherche",
     company: {
       title: "Analyse de sociétés",
       body: "Le choix du modèle dépend de l'économie de la société : sociétés opérationnelles, banques, assureurs, foncières et services aux collectivités sont valorisés chacun selon la méthode qui leur convient, puis testés sur le bilan, la qualité des résultats et la cyclicité.",

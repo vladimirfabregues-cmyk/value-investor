@@ -8,6 +8,9 @@ import { WorkspacesLink } from "@/components/about/workspaces-link";
 import { VALUATION_MODEL_VERSION } from "@/lib/finance/model-version";
 
 const DISCLOSURE_KEYS = ["sourceDates", "missingData", "changes", "gates", "forecasts"] as const;
+// The full research principles live here (the homepage keeps only a teaser),
+// so the standard sits with the methodology rather than in marketing copy.
+const PRINCIPLE_KEYS = ["p1", "p2", "p3", "p4", "p5", "p6"] as const;
 
 /**
  * Unified methodology hub (/methodology): one research standard, two methods.
@@ -85,6 +88,26 @@ export function MethodologyHub() {
           </a>
         </section>
       </div>
+
+      {/* Research principles — the standard the platform holds itself to.
+          Relocated from the homepage, which now carries only a teaser. */}
+      <section aria-labelledby="method-principles" className="mt-10">
+        <h2 id="method-principles" className="font-display text-2xl text-foreground">
+          {t("methodologyHub.principlesTitle")}
+        </h2>
+        <dl className="mt-4 divide-y divide-white/[0.07] border-y border-white/[0.07]">
+          {PRINCIPLE_KEYS.map((k) => (
+            <div key={k} className="grid gap-1 py-4 sm:grid-cols-[minmax(0,14rem)_1fr] sm:gap-6">
+              <dt className="text-sm font-semibold text-foreground/90">
+                {t(`methodologyPrinciples.${k}.title`)}
+              </dt>
+              <dd className="text-sm leading-6 text-muted-foreground">
+                {t(`methodologyPrinciples.${k}.body`)}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
 
       {/* How to read every case */}
       <section aria-labelledby="method-disclosures" className="mt-10">
