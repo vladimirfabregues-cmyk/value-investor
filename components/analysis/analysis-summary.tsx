@@ -3,10 +3,11 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { useSearchParams } from "next/navigation";
-import { AlertTriangle, FileDown, GitCompareArrows, RefreshCw } from "lucide-react";
+import { AlertTriangle, FileDown, GitCompareArrows, Layers, RefreshCw } from "lucide-react";
 
 import { exchangeByCode } from "@/lib/finance/exchanges";
 import { describeValuationGap } from "@/lib/finance/valuation-gap";
+import { etfExposureForSector } from "@/lib/finance/sector-etf";
 import { buildValuationRange } from "@/lib/finance/valuation-range";
 import { formatCurrency } from "@/lib/utils/format";
 import { formatIsoDate } from "@/lib/utils/dates";
@@ -62,6 +63,9 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
   const currency = analysis.currency;
   // Conclusion caps must be visible without opening a tab (P6-2).
   const caps = localizeVerdictExplanation(analysis, t)?.hard_gates ?? [];
+  // Bridge to the fund side: link to the matching ETF exposure where one
+  // exists, else the whole screener (P9-1).
+  const etfLink = etfExposureForSector(analysis.sector);
 
   // Drivers come from the computed thesis, regenerated in the viewer's language.
   const drivers = prose.bullCase.slice(0, 3);
@@ -256,6 +260,16 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
             {t("common.export")}
           </Link>
         )}
+        {/* Cross-zone: /etf is a separate build behind a rewrite → plain <a>. */}
+        <a
+          href={etfLink.href}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-foreground/85 transition hover:border-primary/30 hover:text-primary"
+        >
+          <Layers className="h-3 w-3" aria-hidden="true" />
+          {etfLink.specific && analysis.sector
+            ? t("analysis.exploreEtfsSector", { sector: translateSector(analysis.sector, t) })
+            : t("analysis.exploreEtfs")}
+        </a>
       </div>
     </section>
   );
