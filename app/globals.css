@@ -146,3 +146,23 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+/* Print / "Save as PDF": drop app chrome and on-screen controls, and reproduce
+   the brand surfaces faithfully so the exported conclusion matches what was
+   reviewed rather than dropping to bare black-on-white (P9-2). */
+@media print {
+  [data-no-print] {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: #0a101c !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  @page {
+    margin: 14mm;
+  }
+}

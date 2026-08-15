@@ -31,6 +31,7 @@ export function LanguageToggle() {
 
   return (
     <div
+      data-no-print
       role="group"
       aria-label={t("language.change")}
       className="fixed bottom-4 right-4 z-50 flex items-center gap-1 rounded-full border border-white/12 bg-[rgba(6,11,20,0.9)] p-1 shadow-panel backdrop-blur"

@@ -64,7 +64,7 @@ export function SiteFooter() {
   const tagline = locale === "fr" ? BRAND.tagline.fr : BRAND.tagline.en;
 
   return (
-    <footer aria-labelledby="site-footer-heading" className="mt-8 border-t border-white/[0.08]">
+    <footer data-no-print aria-labelledby="site-footer-heading" className="mt-8 border-t border-white/[0.08]">
       <h2 id="site-footer-heading" className="sr-only">
         {t("siteFooter.label")}
       </h2>

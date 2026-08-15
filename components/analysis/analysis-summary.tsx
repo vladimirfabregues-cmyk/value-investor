@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, GitCompareArrows, RefreshCw } from "lucide-react";
+import type { Route } from "next";
+import { useSearchParams } from "next/navigation";
+import { AlertTriangle, FileDown, GitCompareArrows, RefreshCw } from "lucide-react";
 
 import { exchangeByCode } from "@/lib/finance/exchanges";
 import { describeValuationGap } from "@/lib/finance/valuation-gap";
@@ -39,6 +41,10 @@ function confidenceBand(pct: number): { key: string; tone: string } {
 
 export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: AnalysisSummaryProps) {
   const { t } = useTranslation();
+  // The saved-analysis id lives in the URL; it's what the print/PDF view needs.
+  // Absent for an unsaved preview, so the export action only shows when there
+  // is a persisted conclusion to export (P9-2).
+  const analysisId = useSearchParams().get("analysis");
   const prose = useAnalysisProse(analysis);
   const verdict = VERDICT_STYLE[analysis.final_verdict.label] ?? VERDICT_STYLE.HOLD;
   const exchange = exchangeByCode(analysis.exchange);
@@ -217,8 +223,12 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
         </p>
       </div>
 
-      {/* Only actions that genuinely do something */}
-      <div className="flex flex-wrap items-center gap-2 border-t border-white/[0.06] bg-white/[0.02] px-5 py-3 sm:px-7">
+      {/* Only actions that genuinely do something. Screen-only: the printed
+          conclusion carries no controls (P9-2). */}
+      <div
+        data-no-print
+        className="flex flex-wrap items-center gap-2 border-t border-white/[0.06] bg-white/[0.02] px-5 py-3 sm:px-7"
+      >
         {onReanalyse && (
           <button
             type="button"
@@ -237,6 +247,15 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
           <GitCompareArrows className="h-3 w-3" aria-hidden="true" />
           {t("common.compare")}
         </Link>
+        {analysisId && (
+          <Link
+            href={`/value/print?analysis=${encodeURIComponent(analysisId)}` as Route}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-foreground/85 transition hover:border-primary/30 hover:text-primary"
+          >
+            <FileDown className="h-3 w-3" aria-hidden="true" />
+            {t("common.export")}
+          </Link>
+        )}
       </div>
     </section>
   );

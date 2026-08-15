@@ -93,7 +93,7 @@ export function SiteHeader() {
     );
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/[0.08] bg-[rgba(6,11,20,0.85)] backdrop-blur">
+    <header data-no-print className="sticky top-0 z-40 border-b border-white/[0.08] bg-[rgba(6,11,20,0.85)] backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
         <Link href="/" aria-label={t("siteNav.home")} className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
           <CasebookLogo size="md" />
