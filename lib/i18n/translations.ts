@@ -395,12 +395,6 @@ const en: Dict = {
       },
     },
   },
-  finalCta: {
-    h2: "Start with a question. Leave with a case.",
-    body: "Analyse a listed company or compare UCITS ETFs using transparent, inspectable research.",
-    ctaCompany: "Analyse a company",
-    ctaEtf: "Compare ETFs",
-  },
   siteFooter: {
     description: "Transparent company and ETF research for self-directed investors.",
     label: "Site footer",
@@ -1692,12 +1686,6 @@ const fr: Dict = {
         body: "Avant toute décision d'investissement, vérifiez les faits importants auprès des sources primaires : rapports annuels et intermédiaires des sociétés, dépôts réglementaires, et la documentation du fonds de l'émetteur (DIC/DICI et prospectus) pour les ETF. Ces outils sont des aides à la recherche, non un substitut au dossier primaire.",
       },
     },
-  },
-  finalCta: {
-    h2: "Commencez par une question. Repartez avec un dossier.",
-    body: "Analysez une société cotée ou comparez des ETF UCITS grâce à une recherche transparente et inspectable.",
-    ctaCompany: "Analyser une société",
-    ctaEtf: "Comparer des ETF",
   },
   siteFooter: {
     description: "Recherche transparente sur les sociétés et les ETF pour les investisseurs autonomes.",
