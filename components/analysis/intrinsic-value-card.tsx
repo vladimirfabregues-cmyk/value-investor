@@ -14,7 +14,7 @@ export function IntrinsicValueCard({
 }: {
   analysis: ValueInvestingAnalysis;
 }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const prose = useAnalysisProse(analysis);
   const iv = analysis.intrinsic_value;
   const currency = analysis.currency;
@@ -45,14 +45,14 @@ export function IntrinsicValueCard({
             </span>
           </div>
           <div className="mt-1 font-display text-4xl leading-none tabular-nums text-foreground">
-            {formatCurrency(iv.blended_intrinsic_value_per_share, currency)}
+            {formatCurrency(iv.blended_intrinsic_value_per_share, currency, locale)}
           </div>
         </div>
 
         <MetricTable
           entries={[
-            { label: t("analysis.evidence.metrics.dcfValue"), value: formatCurrency(iv.dcf_value_per_share, currency) },
-            { label: t("analysis.evidence.metrics.grahamValue"), value: formatCurrency(iv.graham_value_per_share, currency) },
+            { label: t("analysis.evidence.metrics.dcfValue"), value: formatCurrency(iv.dcf_value_per_share, currency, locale) },
+            { label: t("analysis.evidence.metrics.grahamValue"), value: formatCurrency(iv.graham_value_per_share, currency, locale) },
           ]}
         />
 

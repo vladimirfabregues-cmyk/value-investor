@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { VerdictModal } from "@/components/screen/verdict-modal";
 import { describeValuationGap, formatDiscountPremium } from "@/lib/finance/valuation-gap";
+import { formatCurrency } from "@/lib/utils/format";
 import { inferExchangeFromTicker } from "@/lib/finance/exchanges";
 import { capLabel } from "@/lib/finance/verdict-explanation-prose";
 import { translateSector } from "@/lib/finance/prose";
@@ -888,11 +889,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                       <div>
                         <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("screen.mobile.price")}</dt>
                         <dd className="mt-0.5 tabular-nums text-foreground/85">
-                          <span className="text-muted-foreground">{row.currency}</span>{" "}
-                          {row.price.toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          {formatCurrency(row.price, row.currency, locale)}
                         </dd>
                       </div>
                       <div>
@@ -996,11 +993,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                           <PeVsSectorBadge pe={row.pe} sectorMedian={sectorMedianPe} />
                         </td>
                         <td className="whitespace-nowrap px-4 py-2.5 text-right tabular-nums text-xs text-foreground/85">
-                          <span className="text-muted-foreground">{row.currency}</span>{" "}
-                          {row.price.toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          {formatCurrency(row.price, row.currency, locale)}
                         </td>
                       </tr>
                     );

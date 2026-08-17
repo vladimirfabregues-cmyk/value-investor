@@ -9,7 +9,7 @@ import { exchangeByCode } from "@/lib/finance/exchanges";
 import { describeValuationGap } from "@/lib/finance/valuation-gap";
 import { etfExposureForSector } from "@/lib/finance/sector-etf";
 import { buildValuationRange } from "@/lib/finance/valuation-range";
-import { formatCurrency } from "@/lib/utils/format";
+import { formatCurrency, formatCurrencyRange } from "@/lib/utils/format";
 import { formatIsoDate } from "@/lib/utils/dates";
 import { useTranslation } from "@/lib/i18n/locale-context";
 import { useAnalysisProse } from "@/components/analysis/use-analysis-prose";
@@ -41,7 +41,7 @@ function confidenceBand(pct: number): { key: string; tone: string } {
 }
 
 export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: AnalysisSummaryProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   // The saved-analysis id lives in the URL; it's what the print/PDF view needs.
   // Absent for an unsaved preview, so the export action only shows when there
   // is a persisted conclusion to export (P9-2).
@@ -143,16 +143,16 @@ export function AnalysisSummary({ analysis, onReanalyse, isReanalysing }: Analys
 
         {/* The four decision numbers */}
         <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Metric label={t("analysis.decision.currentPrice")} value={formatCurrency(analysis.current_price, currency)} />
+          <Metric label={t("analysis.decision.currentPrice")} value={formatCurrency(analysis.current_price, currency, locale)} />
           <Metric
             label={t("analysis.decision.baseValue")}
-            value={formatCurrency(analysis.intrinsic_value.blended_intrinsic_value_per_share, currency)}
+            value={formatCurrency(analysis.intrinsic_value.blended_intrinsic_value_per_share, currency, locale)}
           />
           <Metric
             label={t("analysis.decision.valueRange")}
             value={
               range.low !== null && range.high !== null
-                ? `${formatCurrency(range.low, currency)}–${formatCurrency(range.high, currency)}`
+                ? formatCurrencyRange(range.low, range.high, currency, locale)
                 : "—"
             }
             hint={range.agreement ? t("analysis.decision.modelAgreement", { level: t(`confidence.${range.agreement.toLowerCase()}`) }) : undefined}

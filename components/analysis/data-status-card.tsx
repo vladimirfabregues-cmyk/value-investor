@@ -61,7 +61,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 export function DataStatusCard({ analysis }: { analysis: ValueInvestingAnalysis }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const status = analysis.data_status;
   if (!status) return null;
 
@@ -81,7 +81,7 @@ export function DataStatusCard({ analysis }: { analysis: ValueInvestingAnalysis 
         <dl className="divide-y divide-white/[0.05] overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.02]">
           <Row label={t("analysis.dataStatus.marketPrice")}>
             <span className="tabular-nums">
-              {formatCurrency(analysis.current_price, status.currency)}
+              {formatCurrency(analysis.current_price, status.currency, locale)}
             </span>
             <span className="text-muted-foreground">
               {" · "}

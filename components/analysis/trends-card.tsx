@@ -15,7 +15,7 @@ import type { ValueInvestingAnalysis } from "@/types/analysis";
  * provider had no history for) rather than showing empty axes.
  */
 export function TrendsCard({ analysis }: { analysis: ValueInvestingAnalysis }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const series = analysis.series;
   if (!series) return null;
 
@@ -27,19 +27,19 @@ export function TrendsCard({ analysis }: { analysis: ValueInvestingAnalysis }) {
       title: t("analysis.trends.revenue"),
       question: t("analysis.trends.revenueQ"),
       values: series.revenue,
-      format: (v: number) => formatCompactCurrency(v, currency),
+      format: (v: number) => formatCompactCurrency(v, currency, locale),
     },
     {
       title: t("analysis.trends.eps"),
       question: t("analysis.trends.epsQ"),
       values: series.diluted_eps,
-      format: (v: number) => formatCurrency(v, currency),
+      format: (v: number) => formatCurrency(v, currency, locale),
     },
     {
       title: t("analysis.trends.fcf"),
       question: t("analysis.trends.fcfQ"),
       values: series.free_cash_flow,
-      format: (v: number) => formatCompactCurrency(v, currency),
+      format: (v: number) => formatCompactCurrency(v, currency, locale),
     },
     {
       title: t("analysis.trends.opMargin"),

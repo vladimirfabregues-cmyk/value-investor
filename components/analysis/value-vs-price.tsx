@@ -13,7 +13,7 @@ import type { ValueInvestingAnalysis } from "@/types/analysis";
  * tone only reinforces meaning that text already carries.
  */
 export function ValueVsPrice({ analysis }: { analysis: ValueInvestingAnalysis }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const currency = analysis.currency;
   const price = analysis.current_price;
   const iv = analysis.intrinsic_value;
@@ -88,7 +88,7 @@ export function ValueVsPrice({ analysis }: { analysis: ValueInvestingAnalysis })
                     />
                   </div>
                   <span className="w-40 shrink-0 text-right text-xs tabular-nums text-foreground">
-                    {formatCurrency(row.value, currency)}
+                    {formatCurrency(row.value, currency, locale)}
                     {deltaPct !== null && (
                       <span className="ml-1 text-muted-foreground">
                         ({above ? "+" : ""}

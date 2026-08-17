@@ -36,7 +36,7 @@ export function StickySummary({
   onReanalyse,
   isReanalysing,
 }: StickySummaryProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [visible, setVisible] = useState(false);
   const reducedMotion = useRef(false);
 
@@ -80,7 +80,7 @@ export function StickySummary({
 
         <div className="flex shrink-0 items-center gap-2.5">
           <span className="tabular-nums text-sm text-foreground/85">
-            {formatCurrency(analysis.current_price, analysis.currency)}
+            {formatCurrency(analysis.current_price, analysis.currency, locale)}
           </span>
           <span
             className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${verdict.chip}`}
