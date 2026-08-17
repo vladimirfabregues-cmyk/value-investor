@@ -58,7 +58,6 @@ const en: Dict = {
       checks: { title: "Checks", sub: "Quality and resilience" },
       limitations: { title: "Limitations", sub: "Gaps and sensitivities" },
       conclusion: { title: "Conclusion", sub: "Assessment and confidence" },
-      caption: "A conclusion is the final page—not the first.",
     },
   },
   trust: {
@@ -126,7 +125,7 @@ const en: Dict = {
   caseAnatomy: {
     eyebrow: "Anatomy of a case",
     h2: "See the case behind the conclusion.",
-    body: "A conclusion is the final page—not the first. Each case begins with source-dated evidence, applies a stated method, tests material weaknesses and shows what remains uncertain.",
+    body: "Each case begins with source-dated evidence, applies a stated method, tests material weaknesses and shows what remains uncertain.",
     stagesLabel: "Case stages",
     stages: {
       evidence: { n: "01", title: "Evidence", question: "What data is being used, from where and as of when?" },
@@ -1350,7 +1349,6 @@ const fr: Dict = {
       checks: { title: "Vérifications", sub: "Qualité et résilience" },
       limitations: { title: "Limites", sub: "Lacunes et sensibilités" },
       conclusion: { title: "Conclusion", sub: "Évaluation et confiance" },
-      caption: "Une conclusion est la dernière page — pas la première.",
     },
   },
   trust: {
@@ -1418,7 +1416,7 @@ const fr: Dict = {
   caseAnatomy: {
     eyebrow: "Anatomie d'un dossier",
     h2: "Voir le dossier derrière la conclusion.",
-    body: "Une conclusion est la dernière page, pas la première. Chaque dossier commence par des preuves datées à la source, applique une méthode explicite, teste les faiblesses matérielles et montre ce qui reste incertain.",
+    body: "Chaque dossier commence par des preuves datées à la source, applique une méthode explicite, teste les faiblesses matérielles et montre ce qui reste incertain.",
     stagesLabel: "Étapes du dossier",
     stages: {
       evidence: { n: "01", title: "Preuves", question: "Quelles données sont utilisées, de quelle source et à quelle date ?" },

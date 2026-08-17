@@ -57,10 +57,6 @@ export function CaseFilePreview() {
           </li>
         ))}
       </ol>
-
-      <figcaption className="mt-4 border-t border-white/[0.08] pt-3 font-display text-sm italic leading-snug text-foreground/70">
-        {t("hero.caseFile.caption")}
-      </figcaption>
     </figure>
   );
 }
