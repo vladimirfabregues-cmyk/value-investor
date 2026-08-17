@@ -57,8 +57,12 @@ describe("global site header", () => {
   });
 
   it("carries a labelled EN/FR control (not colour-alone, not flags)", () => {
-    expect(src).toContain("aria-pressed={active}");
-    expect(src).toContain('t("language.change")');
-    expect(src).not.toMatch(/🇬🇧|🇫🇷/);
+    // The control is the shared LangSwitch, rendered by the header and reused
+    // by the /value workspace topbar (no separate floating toggle any more).
+    expect(src).toContain("<LangSwitch");
+    const langSrc = readFileSync(join(process.cwd(), "components/i18n/lang-switch.tsx"), "utf8");
+    expect(langSrc).toContain("aria-pressed={active}");
+    expect(langSrc).toContain('t("language.change")');
+    expect(langSrc).not.toMatch(/🇬🇧|🇫🇷/);
   });
 });

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Database, LayoutGrid, Menu } from "lucide-react";
 
 import { CasebookLogo } from "@/components/brand/casebook-logo";
+import { LangSwitch } from "@/components/i18n/lang-switch";
 import { SidebarHistory } from "@/components/shell/sidebar-history";
 import { HistorySkeleton } from "@/components/shell/shell-layout";
 import { Button } from "@/components/ui/button";
@@ -101,11 +102,14 @@ export function Topbar({ history }: TopbarProps) {
           })}
         </nav>
 
-        {/* Honest source attribution — no "live"/real-time claim (the Yahoo
-            feed is delayed; per-analysis timing lives in the Data status panel) */}
-        <div className="hidden items-center gap-1.5 text-xs text-muted-foreground md:flex">
-          <Database className="h-3.5 w-3.5" aria-hidden="true" />
-          {t("nav.dataSources")}
+        <div className="flex items-center gap-3">
+          {/* Honest source attribution — no "live"/real-time claim (the Yahoo
+              feed is delayed; per-analysis timing lives in the Data status panel) */}
+          <div className="hidden items-center gap-1.5 text-xs text-muted-foreground md:flex">
+            <Database className="h-3.5 w-3.5" aria-hidden="true" />
+            {t("nav.dataSources")}
+          </div>
+          <LangSwitch />
         </div>
       </div>
     </div>

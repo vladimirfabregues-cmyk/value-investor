@@ -7,8 +7,8 @@ import type { Route } from "next";
 import { Menu, X } from "lucide-react";
 
 import { useTranslation } from "@/lib/i18n/locale-context";
-import type { Locale } from "@/lib/i18n/translations";
 import { CasebookLogo } from "@/components/brand/casebook-logo";
+import { LangSwitch } from "@/components/i18n/lang-switch";
 import { cn } from "@/lib/utils/cn";
 
 type NavItem = { key: string; href: string; crossZone?: boolean };
@@ -22,37 +22,6 @@ const NAV: NavItem[] = [
 
 const NAV_LINK =
   "text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded";
-
-/** Inline EN / FR switch — labelled text, never colour-alone (mirrors the fixed one). */
-function LangSwitch() {
-  const { locale, setLocale, t } = useTranslation();
-  const langs: { code: Locale; short: string; label: string }[] = [
-    { code: "en", short: "EN", label: t("language.english") },
-    { code: "fr", short: "FR", label: t("language.french") },
-  ];
-  return (
-    <div role="group" aria-label={t("language.change")} className="flex items-center gap-1 rounded-full border border-white/12 p-0.5">
-      {langs.map(({ code, short, label }) => {
-        const active = locale === code;
-        return (
-          <button
-            key={code}
-            type="button"
-            onClick={() => setLocale(code)}
-            aria-pressed={active}
-            aria-label={label}
-            className={cn(
-              "flex h-7 min-w-8 items-center justify-center rounded-full px-2 text-xs tracking-wide transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
-              active ? "bg-primary/20 font-semibold text-primary-bright ring-1 ring-primary/50" : "font-medium text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {short}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 /**
  * One global header for the front-of-site (home + standards/legal pages). It is
