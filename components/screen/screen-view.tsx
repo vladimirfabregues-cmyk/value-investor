@@ -451,7 +451,11 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
   }, [filters.verdict, handleFilterChange]);
 
   const lastRunLabel = meta.lastRunAt
-    ? new Date(meta.lastRunAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })
+    ? new Date(meta.lastRunAt).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
     : null;
 
   // Sourced from the index-wide totals in meta, not the (possibly
@@ -885,7 +889,10 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                         <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("screen.mobile.price")}</dt>
                         <dd className="mt-0.5 tabular-nums text-foreground/85">
                           <span className="text-muted-foreground">{row.currency}</span>{" "}
-                          {row.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {row.price.toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </dd>
                       </div>
                       <div>
@@ -990,7 +997,10 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
                         </td>
                         <td className="whitespace-nowrap px-4 py-2.5 text-right tabular-nums text-xs text-foreground/85">
                           <span className="text-muted-foreground">{row.currency}</span>{" "}
-                          {row.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {row.price.toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </td>
                       </tr>
                     );
