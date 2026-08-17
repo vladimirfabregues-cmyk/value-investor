@@ -81,16 +81,22 @@ export function SiteHeader() {
   // The app workspace has its own topbar; don't double up there.
   if (pathname?.startsWith("/value")) return null;
 
-  const renderLink = (item: NavItem, className: string) =>
-    item.crossZone ? (
-      <a key={item.key} href={item.href} className={className}>
+  // Highlight the current area so the shared bar shows where you are — the ETF
+  // zone mirrors this so crossing zones keeps one consistent nav (header unify).
+  const isActive = (href: string) => href !== "/" && !!pathname?.startsWith(href);
+
+  const renderLink = (item: NavItem, className: string) => {
+    const cls = cn(className, isActive(item.href) && "text-foreground");
+    return item.crossZone ? (
+      <a key={item.key} href={item.href} aria-current={isActive(item.href) ? "page" : undefined} className={cls}>
         {t(`siteNav.${item.key}`)}
       </a>
     ) : (
-      <Link key={item.key} href={item.href as Route} className={className}>
+      <Link key={item.key} href={item.href as Route} aria-current={isActive(item.href) ? "page" : undefined} className={cls}>
         {t(`siteNav.${item.key}`)}
       </Link>
     );
+  };
 
   return (
     <header data-no-print className="sticky top-0 z-40 border-b border-white/[0.08] bg-[rgba(6,11,20,0.85)] backdrop-blur">
