@@ -25,6 +25,7 @@ const NAV = [
   { href: "/value", key: "nav.analyse" },
   { href: "/value/screen", key: "nav.screener" },
   { href: "/value/compare", key: "nav.compare" },
+  { href: "/value/portfolio", key: "nav.portfolio" },
 ] as const;
 
 export function Topbar({ history }: TopbarProps) {
