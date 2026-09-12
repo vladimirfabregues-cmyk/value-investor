@@ -47,7 +47,10 @@ export async function buildPortfolios(now: Date = new Date()): Promise<{ incepti
   const today = isoDay(now);
   const inception = signals.inceptionDate;
 
-  const tickers = [...signals.securities.keys()];
+  // Only names that were ever Strong Buy are ever traded, so only they need
+  // price history — fetching the whole screened universe is wasteful and
+  // invites rate-limiting. (Metadata for every ticker still lives in signals.)
+  const tickers = [...new Set([...signals.strongBuysByDate.values()].flat())];
   const histories = await fetchHistories(tickers, inception, today);
   const benchHistory = await fetchTickerHistory(BENCHMARK_TICKER, inception, today);
   const all = benchHistory ? [...histories, benchHistory] : histories;
