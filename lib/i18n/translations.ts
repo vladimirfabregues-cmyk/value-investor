@@ -1068,9 +1068,7 @@ const en: Dict = {
     title: "Market Screener",
     subtitle:
       "Graham-style gates: normalized earnings, sector-aware intrinsic value, corroborated margins of safety.",
-    run: "Run {market} Screen",
-    running: "Screening {market}…",
-    screeningTicker: "Screening",
+    autoRefreshNote: "Screens refresh automatically in the background — no run needed.",
     error: "Error",
     regions: {
       "United States": "United States",
@@ -1158,7 +1156,7 @@ const en: Dict = {
       noData: "No data yet for {market}",
       noMatch: "No companies match the current filters",
       noDataHint:
-        "Run the screen to fetch fundamentals and score every constituent through the valuation pipeline.",
+        "This market's screen is refreshed automatically in the background; results will appear here after the next run.",
       noMatchHint: "Relax or clear the filters above to see more of the screened universe.",
     },
     warnings: {
@@ -2361,9 +2359,7 @@ const fr: Dict = {
     title: "Screener de marché",
     subtitle:
       "Filtres façon Graham : bénéfices normalisés, valeur intrinsèque sectorielle, marges de sécurité corroborées.",
-    run: "Lancer le screening {market}",
-    running: "Screening {market}…",
-    screeningTicker: "Analyse de",
+    autoRefreshNote: "Les screenings se rafraîchissent automatiquement en arrière-plan — aucun lancement requis.",
     error: "Erreur",
     regions: {
       "United States": "États-Unis",
@@ -2451,7 +2447,7 @@ const fr: Dict = {
       noData: "Aucune donnée pour {market}",
       noMatch: "Aucune société ne correspond aux filtres actuels",
       noDataHint:
-        "Lancez le screening pour récupérer les fondamentaux et noter chaque constituant via le pipeline de valorisation.",
+        "Le screening de ce marché est rafraîchi automatiquement en arrière-plan ; les résultats apparaîtront ici après le prochain lancement.",
       noMatchHint: "Assouplissez ou effacez les filtres ci-dessus pour voir davantage de l'univers analysé.",
     },
     warnings: {

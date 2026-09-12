@@ -33,6 +33,14 @@ const UNIVERSES: Record<string, ScreenableCompany[]> = {
 };
 
 export async function POST(req: Request): Promise<Response> {
+  // Screens are refreshed by the scheduled background job, not by visitors.
+  // Require a shared secret so the expensive walk can't be triggered from the
+  // open web; the run token is set on the server and held by the scheduler.
+  const token = process.env.SCREEN_RUN_TOKEN;
+  if (!token || req.headers.get("x-screen-token") !== token) {
+    return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(req.url);
   const index = searchParams.get("index") ?? "SP500";
   const companies = UNIVERSES[index] ?? SP500_COMPANIES;

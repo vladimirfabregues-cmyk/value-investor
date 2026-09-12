@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
-import { AlertTriangle, Clock, Download, Play, RefreshCw, TrendingUp, TrendingDown, X } from "lucide-react";
+import { AlertTriangle, Clock, Download, TrendingUp, TrendingDown, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,18 +17,6 @@ import { computeScreenFunnel } from "@/lib/screener/funnel";
 import { buildScreenCsv } from "@/lib/screener/csv";
 import { VERDICT_LABELS, verdictDefinition } from "@/lib/finance/verdict";
 import type { ScreenResultRecord, ScreenResultFilters } from "@/lib/db/screen-queries";
-
-/** One chunk's response from POST /api/screen/run. */
-interface ChunkResponse {
-  ok: boolean;
-  total: number;
-  processed: number;
-  errors: number;
-  lastTicker: string;
-  nextOffset: number;
-  done: boolean;
-  error?: string;
-}
 
 interface ScreenMeta {
   lastRunAt: Date | string | null;
@@ -321,14 +309,11 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
   const [results, setResults] = useState<ScreenResultRecord[]>(initialResults);
   const [allResults, setAllResults] = useState<ScreenResultRecord[]>(initialResults);
   const [meta, setMeta] = useState<ScreenMeta>(initialMeta);
-  const [isRunning, setIsRunning] = useState(false);
-  const [progress, setProgress] = useState<{ processed: number; total: number; lastTicker: string } | null>(null);
   const [filters, setFilters] = useState<ScreenResultFilters>({});
   // Actionable candidates are shown first; seeing every rejected company is a
   // deliberate choice, not the default.
   const [candidatesOnly, setCandidatesOnly] = useState(true);
   const [isFiltering, setIsFiltering] = useState(false);
-  const runAbortRef = useRef<AbortController | null>(null);
   const didInit = useRef(false);
 
   const ACTIONABLE = ["STRONG_BUY", "BUY", "WATCH"];
@@ -382,61 +367,11 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
 
   const handleIndexChange = useCallback((index: ActiveIndex) => {
     if (index === activeIndex) return;
-    // Switching markets abandons any in-flight run so the UI can never get
-    // stuck in a "running" state that locks every control.
-    runAbortRef.current?.abort();
-    setIsRunning(false);
-    setProgress(null);
     setActiveIndex(index);
     const cleared: ScreenResultFilters = candidatesOnly ? { verdicts: ACTIONABLE } : {};
     setFilters(cleared);
     void fetchResults(cleared, index, true);
   }, [activeIndex, fetchResults, candidatesOnly]);
-
-  const handleRun = useCallback(async () => {
-    runAbortRef.current?.abort();
-    const abort = new AbortController();
-    runAbortRef.current = abort;
-    setIsRunning(true);
-    setProgress({ processed: 0, total: 0, lastTicker: "" });
-
-    // One run timestamp shared by every chunk, so all rows read as a single run.
-    const at = new Date().toISOString();
-    let offset = 0;
-    let chunk = 0;
-
-    try {
-      // The universe is walked in short chunks until the server reports done,
-      // so no single request risks the serverless time limit.
-      for (;;) {
-        const res = await fetch(
-          `/api/screen/run?index=${activeIndex}&offset=${offset}&at=${encodeURIComponent(at)}`,
-          { method: "POST", signal: abort.signal },
-        );
-        if (!res.ok) throw new Error("Failed to run screen");
-        const data = (await res.json()) as ChunkResponse;
-        if (!data.ok) throw new Error(data.error ?? "Screen run failed");
-
-        offset = data.nextOffset;
-        chunk += 1;
-        setProgress({ processed: data.nextOffset, total: data.total, lastTicker: data.lastTicker });
-
-        // Surface partial results as the run fills in, without hammering the DB.
-        if (!data.done && chunk % 4 === 0) await fetchResults(filters, activeIndex, true);
-        if (data.done) break;
-      }
-
-      setProgress(null);
-      setIsRunning(false);
-      await fetchResults(filters, activeIndex, true);
-    } catch (err) {
-      // A user-triggered abort (re-run / navigation) is expected — stop quietly.
-      if (!(err instanceof DOMException && err.name === "AbortError")) {
-        setProgress(null);
-        setIsRunning(false);
-      }
-    }
-  }, [filters, fetchResults, activeIndex]);
 
   // Apply the candidate default once on mount.
   useEffect(() => {
@@ -513,18 +448,12 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
             {t("screen.subtitle")}
           </p>
         </div>
-        <Button
-          onClick={() => void handleRun()}
-          disabled={isRunning}
-          size="lg"
-          className="shrink-0 gap-2 px-6 shadow-[0_10px_30px_rgba(181,148,88,0.22)]"
-        >
-          {isRunning ? (
-            <><RefreshCw className="h-4 w-4 animate-spin" /> {t("screen.running", { market: activeMarket?.label ?? "" })}</>
-          ) : (
-            <><Play className="h-4 w-4" /> {t("screen.run", { market: activeMarket?.label ?? "" })}</>
-          )}
-        </Button>
+        {/* Screens are precomputed on a schedule; users read the cached result
+            rather than triggering a long on-demand run. */}
+        <p className="flex max-w-xs shrink-0 items-center gap-1.5 text-xs leading-5 text-muted-foreground sm:text-right">
+          <Clock className="h-3.5 w-3.5 shrink-0 text-primary/70" aria-hidden="true" />
+          {t("screen.autoRefreshNote")}
+        </p>
       </div>
 
       {/* ── Market picker, grouped by region ── */}
@@ -560,27 +489,6 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
           ))}
         </div>
       </div>
-
-      {/* ── Run progress ── */}
-      {isRunning && progress && (
-        <div className="overflow-hidden rounded-2xl border border-primary/20 bg-primary/[0.06] p-4">
-          <div className="mb-2.5 flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 text-foreground/90">
-              <RefreshCw className="h-3.5 w-3.5 animate-spin text-primary" />
-              {t("screen.screeningTicker")} <span className="font-mono text-primary">{progress.lastTicker || "…"}</span>
-            </span>
-            <span className="tabular-nums text-muted-foreground">
-              {progress.processed} / {progress.total || "…"}
-            </span>
-          </div>
-          <div className="h-1 w-full overflow-hidden rounded-full bg-white/[0.07]">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-primary/70 to-primary transition-all duration-300"
-              style={{ width: progress.total > 0 ? `${(progress.processed / progress.total) * 100}%` : "4%" }}
-            />
-          </div>
-        </div>
-      )}
 
       {/* ── Screening funnel: one source of truth for every count (P1-3) ── */}
       {meta.totalScreened > 0 && (
@@ -834,7 +742,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
       {results.length === 0 ? (
         <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] py-24 text-center shadow-panel">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10">
-            <Play className="h-5 w-5 text-primary" />
+            <Clock className="h-5 w-5 text-primary" />
           </div>
           <p className="mt-4 font-display text-xl text-foreground">
             {meta.totalScreened === 0
