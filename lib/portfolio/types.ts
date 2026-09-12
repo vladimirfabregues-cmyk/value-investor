@@ -12,7 +12,7 @@ export const BASE_CURRENCY = "GBP" as const;
 
 export type Currency = string; // ISO-4217 code, e.g. "USD", "GBP", "EUR", "JPY"
 
-export type StrategyId = "BUY_HOLD" | "REBALANCED";
+export type StrategyId = "BUY_HOLD" | "REBALANCED" | "BENCHMARK";
 
 export interface Security {
   ticker: string;

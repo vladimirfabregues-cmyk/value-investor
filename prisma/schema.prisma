@@ -93,3 +93,26 @@ model ScreenSnapshot {
   @@index([ticker, screenerAt])
   @@index([verdictLabel])
 }
+
+/// Latest computed state of a simulated "Strong Buy" portfolio — one row per
+/// strategy (BUY_HOLD, REBALANCED, BENCHMARK). The result is fully regenerable
+/// from ScreenSnapshot + market history, so it is stored as JSON snapshots
+/// rather than normalised tables; the page just reads and renders it.
+model SimPortfolio {
+  id            String   @id @default(cuid())
+  /// BUY_HOLD | REBALANCED | BENCHMARK
+  strategy      String   @unique
+  inceptionDate String
+  capitalGbp    Float
+  /// Value curve: [{ date, holdingsGbp, cashGbp, totalGbp }]
+  valuations    Json
+  /// Final open positions
+  holdings      Json
+  /// Transaction ledger
+  transactions  Json
+  /// Computed PortfolioMetrics
+  metrics       Json
+  /// When this build ran
+  builtAt       DateTime
+  updatedAt     DateTime @updatedAt
+}
