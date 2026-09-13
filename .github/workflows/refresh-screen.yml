@@ -1,0 +1,66 @@
+name: Weekly refresh
+
+# Two jobs that must happen in order, once a week:
+#   1. precompute the Market Screener so visitors read a cached result instead
+#      of triggering a minutes-long on-demand run;
+#   2. rebuild the simulated Strong-Buy portfolios, which read the screener's
+#      snapshot history — so they must run after it, not before.
+#
+# Both talk to the deployed app over HTTP with the same shared secret, so this
+# workflow never needs a database credential.
+
+on:
+  schedule:
+    # 06:00 UTC every Monday.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      indices:
+        description: "Comma-separated indices to refresh (blank = all)"
+        required: false
+        default: ""
+      skip_screener:
+        description: "Skip the screener and only rebuild the portfolio"
+        required: false
+        default: "false"
+
+# Never run two refreshes at once.
+concurrency:
+  group: refresh-screener
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Refresh screens
+        if: ${{ github.event.inputs.skip_screener != 'true' }}
+        env:
+          SCREEN_RUN_URL: ${{ secrets.SCREEN_RUN_URL }}
+          SCREEN_RUN_TOKEN: ${{ secrets.SCREEN_RUN_TOKEN }}
+          SCREEN_INDICES: ${{ github.event.inputs.indices }}
+        run: node scripts/refresh-screen.mjs
+
+      # Reads the snapshot history the step above just extended.
+      - name: Rebuild simulated portfolios
+        env:
+          SCREEN_RUN_URL: ${{ secrets.SCREEN_RUN_URL }}
+          SCREEN_RUN_TOKEN: ${{ secrets.SCREEN_RUN_TOKEN }}
+        run: |
+          set -euo pipefail
+          # SCREEN_RUN_URL is the full screener endpoint; derive the sibling one.
+          BUILD_URL="${SCREEN_RUN_URL%/api/screen/run}/api/portfolio/build"
+          echo "POST ${BUILD_URL}"
+          code=$(curl -sS --max-time 120 -o /tmp/portfolio.json -w '%{http_code}' \
+            -X POST -H "x-screen-token: ${SCREEN_RUN_TOKEN}" "${BUILD_URL}")
+          cat /tmp/portfolio.json; echo
+          if [ "$code" != "200" ]; then
+            echo "Portfolio build failed with HTTP ${code}"
+            exit 1
+          fi
