@@ -41,13 +41,13 @@ function EvidencePoint({ children }: { children: React.ReactNode }) {
 }
 
 /** Shared card chrome: restrained surface, hairline border, ≤2px hover lift. */
-const CARD_CLASS =
+export const CARD_CLASS =
   "flex flex-col gap-5 rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.05] to-white/[0.015] p-6 shadow-[0_1px_0_rgba(255,255,255,0.03)] transition duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_10px_30px_rgba(0,0,0,0.25)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-7";
 
-const PREVIEW_CLASS =
+export const PREVIEW_CLASS =
   "rounded-xl border border-white/[0.07] bg-[linear-gradient(180deg,rgba(18,28,45,0.6),rgba(8,14,25,0.65))] p-4";
 
-const PRIMARY_CTA_CLASS =
+export const PRIMARY_CTA_CLASS =
   "group inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-[0_8px_22px_rgba(181,148,88,0.25)] transition hover:bg-primary-bright focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60";
 
 const METHOD_LINK_CLASS =

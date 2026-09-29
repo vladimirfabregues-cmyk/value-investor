@@ -49,6 +49,7 @@ const en: Dict = {
     lead: "Analyse companies. Compare ETFs. Inspect the assumptions, evidence and methodology behind every result.",
     ctaCompany: "Analyse a company",
     ctaEtf: "Compare UCITS ETFs",
+    ctaPortfolios: "See the paper portfolios",
     access: "Free to use — no account or sign-up required.",
     microDisclaimer: "Informational research tools · No personal recommendations · Capital at risk",
     aboutLink: "About the author",
@@ -122,6 +123,27 @@ const en: Dict = {
         warning: "Data warning state",
       },
     },
+  },
+  paperPortfolios: {
+    eyebrow: "Paper portfolios",
+    h2: "See how the research would have invested.",
+    lead: "Two hypothetical £10,000 portfolios built from each tool's own output and tracked on real prices, currency moves and dealing costs. Refreshed automatically every week.",
+    stocks: {
+      label: "Stock portfolio",
+      heading: "Strong Buy paper portfolio",
+      description:
+        "Buys every company the screener rates Strong Buy, then compares buy-and-hold with a weekly rebalance against a FTSE All-World benchmark.",
+      cta: "View stock portfolio",
+    },
+    etfs: {
+      label: "ETF portfolio",
+      heading: "Best-ranked ETF portfolio",
+      description:
+        "Holds the top-scoring fund in each of five exposure groups, then compares buy-and-hold with a quarterly rebalance against a global-equity benchmark.",
+      cta: "View ETF portfolio",
+    },
+    disclaimer:
+      "Simulations only — not a track record and not investment advice. Past performance is not a reliable indicator of future results; capital is at risk.",
   },
   caseAnatomy: {
     eyebrow: "Anatomy of a case",
@@ -1393,6 +1415,7 @@ const fr: Dict = {
     lead: "Analysez des sociétés. Comparez des ETF. Inspectez les hypothèses, les preuves et la méthodologie derrière chaque résultat.",
     ctaCompany: "Analyser une société",
     ctaEtf: "Comparer des ETF UCITS",
+    ctaPortfolios: "Voir les portefeuilles simulés",
     access: "Gratuit — aucun compte ni inscription requis.",
     microDisclaimer: "Outils de recherche informatifs · Aucune recommandation personnalisée · Capital à risque",
     aboutLink: "À propos de l'auteur",
@@ -1466,6 +1489,27 @@ const fr: Dict = {
         warning: "État d'avertissement des données",
       },
     },
+  },
+  paperPortfolios: {
+    eyebrow: "Portefeuilles simulés",
+    h2: "Voyez comment la recherche aurait investi.",
+    lead: "Deux portefeuilles hypothétiques de 10 000 £ construits à partir des résultats de chaque outil, suivis sur les prix réels, les variations de change et les frais de transaction. Mis à jour automatiquement chaque semaine.",
+    stocks: {
+      label: "Portefeuille actions",
+      heading: "Portefeuille fictif Strong Buy",
+      description:
+        "Achète chaque société classée Strong Buy par le screener, puis compare l'achat-conservation à un rééquilibrage hebdomadaire, face à un indice de référence FTSE All-World.",
+      cta: "Voir le portefeuille actions",
+    },
+    etfs: {
+      label: "Portefeuille ETF",
+      heading: "Portefeuille des ETF les mieux classés",
+      description:
+        "Détient le fonds le mieux noté de chacun de cinq groupes d'exposition, puis compare l'achat-conservation à un rééquilibrage trimestriel, face à un indice actions mondiales.",
+      cta: "Voir le portefeuille ETF",
+    },
+    disclaimer:
+      "Simulations uniquement — ni historique de performance réel, ni conseil en investissement. Les performances passées ne préjugent pas des résultats futurs ; capital à risque.",
   },
   caseAnatomy: {
     eyebrow: "Anatomie d'un dossier",

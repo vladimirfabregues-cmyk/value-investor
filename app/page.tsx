@@ -7,6 +7,7 @@ import { useTranslation } from "@/lib/i18n/locale-context";
 import { CaseFilePreview } from "@/components/home/case-file-preview";
 import { TrustStrip } from "@/components/home/trust-strip";
 import { ResearchTools } from "@/components/home/research-tools";
+import { PaperPortfolios } from "@/components/home/paper-portfolios";
 import { CaseAnatomy } from "@/components/home/case-anatomy";
 import { MethodologyPrinciples } from "@/components/home/methodology-principles";
 import { DataCoverage } from "@/components/home/data-coverage";
@@ -55,6 +56,13 @@ export default function HomePage() {
               {t("hero.ctaEtf")}
             </a>
           </div>
+          <a
+            href="#paper-portfolios"
+            className="group mt-4 inline-flex items-center gap-1.5 rounded text-sm font-medium text-primary/90 underline-offset-4 transition-colors hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+          >
+            {t("hero.ctaPortfolios")}
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+          </a>
 
           {/* Who it's for is in the eyebrow; state access plainly so no one has
               to guess whether there's a paywall or sign-up wall (P9-3). */}
@@ -72,6 +80,8 @@ export default function HomePage() {
       <TrustStrip />
 
       <ResearchTools />
+
+      <PaperPortfolios />
 
       <CaseAnatomy />
 
