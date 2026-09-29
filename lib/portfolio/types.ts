@@ -8,11 +8,14 @@
  * be unit-tested without any network or database.
  */
 
+import type { LabStrategyId } from "@/lib/portfolio/lab";
+
 export const BASE_CURRENCY = "GBP" as const;
 
 export type Currency = string; // ISO-4217 code, e.g. "USD", "GBP", "EUR", "JPY"
 
-export type StrategyId = "BUY_HOLD" | "REBALANCED" | "BENCHMARK";
+export type CoreStrategyId = "BUY_HOLD" | "REBALANCED" | "BENCHMARK";
+export type StrategyId = CoreStrategyId | LabStrategyId;
 
 export interface Security {
   ticker: string;

@@ -470,6 +470,48 @@ const en: Dict = {
       DIVIDEND: "Dividend",
       FEE: "Fee",
     },
+    lab: {
+      title: "Strategy lab",
+      intro:
+        "Alternative rulebooks run on the same weekly ratings, prices and costs as the books above. The rules were fixed on {date} (version {version}), before any of their results were known, so the comparison a year from now is a fair one.",
+      notBuilt: "The lab books appear after the next weekly build.",
+      pts: "pts",
+      col: {
+        book: "Strategy",
+        holdings: "Holdings",
+        value: "Value",
+        sinceFixed: "Since {date}",
+        sinceInception: "Since {date} (back-test)",
+        worstFall: "Worst fall",
+        costs: "Costs",
+        trades: "Trades",
+        fx: "Currency effect",
+      },
+      tag: {
+        current: "current rule",
+        reference: "reference",
+      },
+      books: {
+        REBALANCED: { name: "Strong Buy only", rule: "Every Strong Buy, equal-weighted with no cap; rebalanced weekly." },
+        LAB_TOP20: { name: "Top 20, capped", rule: "The 20 best-scored Buy or Strong Buy names, at most 10% each; weekly." },
+        LAB_STICKY: { name: "Top 20, slow selling", rule: "As Top 20, but a name is only sold once it is rated Hold or Avoid." },
+        LAB_MONTHLY: { name: "Top 20, monthly", rule: "As Top 20, but rebalanced once a month." },
+        LAB_US: { name: "US only", rule: "Top 20 rule, US-listed shares only." },
+        LAB_UK: { name: "UK only", rule: "Top 20 rule, London-listed shares only." },
+        LAB_EU: { name: "Europe only", rule: "Top 20 rule, continental European listings only." },
+        LAB_JP: { name: "Japan only", rule: "Top 20 rule, Tokyo-listed shares only." },
+        BUY_HOLD: { name: "Buy and hold", rule: "The first week's Strong Buys, bought once and held." },
+        BENCHMARK: { name: "Benchmark", rule: "£10,000 in a FTSE All-World index tracker." },
+      },
+      notes: {
+        honesty:
+          "Only the “Since {date}” column is an honest test. Everything before it is a back-test, and the rules were chosen after seeing it: the weekly Strong Buy book's losses from July to September are why the capped and slow-selling rules exist.",
+        costs:
+          "Costs include commission, currency conversion and UK stamp duty. Bid-ask spreads are not modelled, which flatters books that trade small companies often.",
+        cash: "Money a rule cannot invest (for example when fewer than ten names qualify under the 10% cap) stays in cash and earns nothing. Fractional shares are assumed.",
+        fx: "Currency effect: how much of the return came from exchange-rate moves — the book's actual return minus what it would have made had rates stayed at their starting levels.",
+      },
+    },
   },
   siteFooter: {
     description: "Transparent company and ETF research for self-directed investors.",
@@ -1835,6 +1877,48 @@ const fr: Dict = {
       SELL: "Vente",
       DIVIDEND: "Dividende",
       FEE: "Frais",
+    },
+    lab: {
+      title: "Laboratoire de stratégies",
+      intro:
+        "Des règles alternatives, appliquées aux mêmes notations hebdomadaires, prix et frais que les portefeuilles ci-dessus. Elles ont été fixées le {date} (version {version}), avant que leurs résultats ne soient connus : dans un an, la comparaison sera équitable.",
+      notBuilt: "Les portefeuilles du laboratoire apparaîtront après la prochaine mise à jour hebdomadaire.",
+      pts: "pts",
+      col: {
+        book: "Stratégie",
+        holdings: "Positions",
+        value: "Valeur",
+        sinceFixed: "Depuis le {date}",
+        sinceInception: "Depuis le {date} (rétro-test)",
+        worstFall: "Pire baisse",
+        costs: "Frais",
+        trades: "Transactions",
+        fx: "Effet de change",
+      },
+      tag: {
+        current: "règle actuelle",
+        reference: "référence",
+      },
+      books: {
+        REBALANCED: { name: "« Achat fort » uniquement", rule: "Tous les « Achat fort », à parts égales et sans plafond ; rééquilibré chaque semaine." },
+        LAB_TOP20: { name: "Top 20 plafonné", rule: "Les 20 titres « Achat » ou « Achat fort » les mieux notés, 10 % maximum chacun ; hebdomadaire." },
+        LAB_STICKY: { name: "Top 20, vente lente", rule: "Comme le Top 20, mais un titre n'est vendu qu'une fois noté « Conserver » ou « Éviter »." },
+        LAB_MONTHLY: { name: "Top 20 mensuel", rule: "Comme le Top 20, mais rééquilibré une fois par mois." },
+        LAB_US: { name: "États-Unis", rule: "Règle Top 20, actions cotées aux États-Unis uniquement." },
+        LAB_UK: { name: "Royaume-Uni", rule: "Règle Top 20, actions cotées à Londres uniquement." },
+        LAB_EU: { name: "Europe", rule: "Règle Top 20, cotations d'Europe continentale uniquement." },
+        LAB_JP: { name: "Japon", rule: "Règle Top 20, actions cotées à Tokyo uniquement." },
+        BUY_HOLD: { name: "Achat-conservation", rule: "Les « Achat fort » de la première semaine, achetés une fois et conservés." },
+        BENCHMARK: { name: "Indice de référence", rule: "10 000 £ dans un tracker FTSE All-World." },
+      },
+      notes: {
+        honesty:
+          "Seule la colonne « Depuis le {date} » constitue un test honnête. Tout ce qui précède est un rétro-test, et les règles ont été choisies après l'avoir vu : les pertes du portefeuille « Achat fort » hebdomadaire entre juillet et septembre expliquent l'existence des règles plafonnées et à vente lente.",
+        costs:
+          "Les frais incluent la commission, la conversion de devises et le droit de timbre britannique. Les écarts achat-vente ne sont pas modélisés, ce qui avantage les portefeuilles qui négocient souvent de petites sociétés.",
+        cash: "L'argent qu'une règle ne peut pas investir (par exemple quand moins de dix titres sont éligibles avec le plafond de 10 %) reste en liquidités, sans rémunération. Les fractions d'actions sont supposées possibles.",
+        fx: "Effet de change : la part du rendement due aux variations de change — le rendement réel du portefeuille moins celui qu'il aurait obtenu si les taux étaient restés à leur niveau de départ.",
+      },
     },
   },
   siteFooter: {

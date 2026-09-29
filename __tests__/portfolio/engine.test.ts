@@ -184,10 +184,60 @@ describe("computeMetrics", () => {
         market: mockMarket({ securities: { BENCH: { currency: "GBP" } }, prices: { BENCH: { "2025-01-01": 100, "2025-02-01": 110 } } }),
       }),
     ); // +10%
-    const m = computeMetrics(portfolio, benchmark);
+    const m = computeMetrics(portfolio, { benchmark });
     expect(m.currentValueGbp).toBeCloseTo(12000, 6);
     expect(m.totalReturnPct).toBeCloseTo(0.2, 6);
     expect(m.unrealisedGbp).toBeCloseTo(2000, 6); // 12000 mkt − 10000 basis
     expect(m.benchmarkReturnPct).toBeCloseTo(0.1, 6);
+  });
+
+  it("measures the worst fall, trading activity and the return since a fixed date", () => {
+    const r = simulate(
+      buyHoldInput({
+        markDates: ["2025-01-01", "2025-02-01", "2025-03-01", "2025-04-01"],
+        market: mockMarket({
+          securities: { AAA: { currency: "GBP" } },
+          prices: { AAA: { "2025-01-01": 100, "2025-02-01": 120, "2025-03-01": 90, "2025-04-01": 108 } },
+        }),
+      }),
+    );
+    const m = computeMetrics(r, { fixedOn: "2025-03-15" });
+    expect(m.maxDrawdownPct).toBeCloseTo(0.25, 6); // 12000 → 9000
+    expect(m.trades).toBe(1);
+    expect(m.turnover).toBeCloseTo(1, 6); // capital bought once
+    expect(m.sinceFixedPct).toBeCloseTo(108 / 90 - 1, 6); // from the 1 Mar mark
+    expect(computeMetrics(r, { fixedOn: "2024-12-01" }).sinceFixedPct).toBeNull(); // book started later
+  });
+
+  it("isolates the currency effect against a frozen-FX re-run", () => {
+    const input = (fx: Record<string, number>) =>
+      buyHoldInput({
+        market: mockMarket({
+          securities: { AAA: { currency: "USD" } },
+          prices: { AAA: { "2025-01-01": 100, "2025-02-01": 100 } },
+          fx: { USD: fx },
+        }),
+      });
+    const actual = simulate(input({ "2025-01-01": 0.8, "2025-02-01": 0.88 })); // dollar +10%
+    const frozen = simulate(input({ "2025-01-01": 0.8 }));
+    const m = computeMetrics(actual, { fxFrozen: frozen });
+    expect(m.fxEffectPct).toBeCloseTo(0.1, 6); // flat stock: the whole return is currency
+  });
+});
+
+describe("simulate — weight cap", () => {
+  it("never puts more than maxWeight in one name and leaves the rest in cash", () => {
+    const r = simulate(
+      buyHoldInput({
+        strongBuysByDate: new Map([["2025-01-01", ["AAA", "BBB"]]]),
+        maxWeight: 0.1,
+        market: mockMarket({
+          securities: { AAA: { currency: "GBP" }, BBB: { currency: "GBP" } },
+          prices: { AAA: { "2025-01-01": 100 }, BBB: { "2025-01-01": 50 } },
+        }),
+      }),
+    );
+    expect(r.holdings.map((h) => h.costBasisGbp)).toEqual([1000, 1000]);
+    expect(r.valuations[0].cashGbp).toBeCloseTo(8000, 6);
   });
 });

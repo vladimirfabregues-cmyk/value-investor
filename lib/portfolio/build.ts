@@ -1,80 +1,80 @@
 /**
  * I/O wrapper that builds and persists the simulated portfolios. The weekly job
- * runs this: read the screener snapshot history, fetch market history, compute
- * (via the pure compose.ts), and upsert one `SimPortfolio` row per strategy.
+ * runs this: read the screener snapshot history, load market history, compute
+ * (via the pure compose.ts), and upsert one `SimPortfolio` row per book.
  */
 
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db/client";
-import { buildMarketData, fetchFxSeries, fetchTickerHistory, type FxPoint, type TickerHistory } from "@/lib/portfolio/market-history";
+import { buildMarketData, fetchFxSeries, type FxPoint } from "@/lib/portfolio/market-history";
 import { buildSignalHistory, type SnapshotRow } from "@/lib/portfolio/signals";
-import { computePortfolios } from "@/lib/portfolio/compose";
+import { computePortfolios, planBooks, priceNeeds } from "@/lib/portfolio/compose";
 import { BENCHMARK_TICKER } from "@/lib/portfolio/config";
+import { loadHistories } from "@/lib/portfolio/price-cache";
 
 const isoDay = (d: Date): string => d.toISOString().slice(0, 10);
 
-/** Fetch histories for many tickers with a small concurrency pool. */
-async function fetchHistories(tickers: string[], from: string, to: string): Promise<TickerHistory[]> {
-  const out: TickerHistory[] = [];
-  const queue = [...tickers];
-  const workers = Array.from({ length: 4 }, async () => {
-    for (;;) {
-      const ticker = queue.shift();
-      if (!ticker) break;
-      const h = await fetchTickerHistory(ticker, from, to);
-      if (h) out.push(h);
-    }
-  });
-  await Promise.all(workers);
-  return out;
+/** Stop starting downloads after this long, leaving time to compute and save. */
+const DOWNLOAD_BUDGET_MS = 30_000;
+
+/** Market data is incomplete for now; nothing was saved and a later run can finish the job. */
+export class BuildPendingError extends Error {}
+
+export interface BuildSummary {
+  inception: string;
+  today: string;
+  books: number;
+  tickers: number;
+  downloaded: number;
+  failed: string[];
+  stale: string[];
 }
 
-/** Full build: read snapshots → fetch market history → compute → persist. */
-export async function buildPortfolios(
-  now: Date = new Date(),
-): Promise<{ inception: string; today: string; tickers: number; priced: number }> {
-  const rows = await prisma.screenSnapshot.findMany({
-    select: { ticker: true, currency: true, screenerIndex: true, screenerAt: true, verdictLabel: true },
+/** Full build: read snapshots → load market history → compute → persist. */
+export async function buildPortfolios(now: Date = new Date()): Promise<BuildSummary> {
+  const started = Date.now();
+
+  // Only names ever rated Buy or better can be bought by any book, so only
+  // their rating history is needed (not the whole ~6,000-name universe).
+  const eligible = await prisma.screenSnapshot.findMany({
+    where: { verdictLabel: { in: ["STRONG_BUY", "BUY"] } },
+    select: { ticker: true },
+    distinct: ["ticker"],
   });
-  const snapshotRows: SnapshotRow[] = rows.map((r) => ({
-    ticker: r.ticker,
-    currency: r.currency,
-    screenerIndex: r.screenerIndex,
-    screenerAt: r.screenerAt.toISOString(),
-    verdictLabel: r.verdictLabel,
-  }));
+  const rows = await prisma.screenSnapshot.findMany({
+    where: { ticker: { in: eligible.map((e) => e.ticker) } },
+    select: { ticker: true, currency: true, screenerIndex: true, screenerAt: true, verdictLabel: true, compositeScore: true },
+  });
+  const snapshotRows: SnapshotRow[] = rows.map((r) => ({ ...r, screenerAt: r.screenerAt.toISOString() }));
 
   const signals = buildSignalHistory(snapshotRows);
   const today = isoDay(now);
   const inception = signals.inceptionDate;
 
-  // Only names that were ever Strong Buy are ever traded, so only they need
-  // price history — fetching the whole screened universe is wasteful and
-  // invites rate-limiting. (Metadata for every ticker still lives in signals.)
-  const tickers = [...new Set([...signals.strongBuysByDate.values()].flat())];
-  // Start a week early so a name whose market was shut on a rebalance day still
-  // has a prior close to trade at.
-  const from = isoDay(new Date(Date.parse(inception) - 7 * 24 * 60 * 60 * 1000));
-  const histories = await fetchHistories(tickers, from, today);
-  const benchHistory = await fetchTickerHistory(BENCHMARK_TICKER, from, today);
+  const needs = priceNeeds(planBooks(signals), today);
+  const loaded = await loadHistories(needs, today, started + DOWNLOAD_BUDGET_MS);
 
-  // A failed market-data fetch would otherwise simulate as an all-cash book and
-  // overwrite the last good build with zeros — refuse to persist instead.
-  const priced = histories.filter((h) => h.prices.length > 0).length;
-  if (!benchHistory || benchHistory.prices.length === 0) {
-    throw new Error(`Benchmark ${BENCHMARK_TICKER} price history unavailable; nothing persisted`);
+  // A missing download must not be simulated as "never bought" and saved over
+  // the last good build, so any shortfall aborts without persisting.
+  if (loaded.pending.length > 0) {
+    throw new BuildPendingError(`${loaded.pending.length} of ${needs.size} price histories still to download; run again`);
   }
-  if (tickers.length > 0 && priced < Math.ceil(tickers.length / 2)) {
-    throw new Error(`Only ${priced}/${tickers.length} Strong-Buy price histories fetched; nothing persisted`);
+  if (loaded.failed.includes(BENCHMARK_TICKER)) {
+    throw new BuildPendingError(`Benchmark ${BENCHMARK_TICKER} price history unavailable; nothing persisted`);
   }
-  const all = [...histories, benchHistory];
+  if (loaded.failed.length > Math.max(3, needs.size * 0.2)) {
+    throw new BuildPendingError(
+      `${loaded.failed.length} of ${needs.size} price downloads failed (Yahoo may be throttling); nothing persisted`,
+    );
+  }
 
-  const currencies = new Set(all.map((h) => h.currency).filter((c) => c !== "GBP"));
+  const earliest = [...needs.values()].reduce((m, n) => (n.from < m ? n.from : m), today);
+  const currencies = new Set(loaded.histories.map((h) => h.currency).filter((c) => c !== "GBP"));
   const fx = new Map<string, FxPoint[]>();
   for (const c of currencies) {
-    const series = await fetchFxSeries(c, from, today);
-    if (series.length === 0) throw new Error(`FX series ${c}GBP unavailable; nothing persisted`);
+    const series = await fetchFxSeries(c, earliest, today);
+    if (series.length === 0) throw new BuildPendingError(`FX series ${c}GBP unavailable; nothing persisted`);
     fx.set(c, series);
   }
 
@@ -82,7 +82,7 @@ export async function buildPortfolios(
   for (const [ticker, meta] of signals.securities) stampDuty.set(ticker, meta.stampDutyApplies);
   stampDuty.set(BENCHMARK_TICKER, false); // ETFs are stamp-duty exempt
 
-  const market = buildMarketData({ histories: all, fx, stampDuty });
+  const market = buildMarketData({ histories: loaded.histories, fx, stampDuty });
   const computed = computePortfolios(signals, market, today);
 
   const json = (v: unknown): Prisma.InputJsonValue => v as Prisma.InputJsonValue;
@@ -104,5 +104,13 @@ export async function buildPortfolios(
     });
   }
 
-  return { inception, today, tickers: tickers.length, priced };
+  return {
+    inception,
+    today,
+    books: computed.results.length,
+    tickers: needs.size,
+    downloaded: loaded.downloaded,
+    failed: loaded.failed,
+    stale: loaded.stale,
+  };
 }

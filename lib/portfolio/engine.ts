@@ -57,6 +57,8 @@ export interface SimulationInput {
   costs?: CostModel;
   /** Skip rebalancing trades whose GBP notional is below this, to avoid churn. */
   minTradeGbp?: number;
+  /** Cap on any one name's share of the book; what the cap leaves over stays in cash. */
+  maxWeight?: number;
 }
 
 interface Position {
@@ -270,7 +272,7 @@ export function simulate(input: SimulationInput): SimulationResult {
 
     if (priced.length === 0) return; // no targets → sit in cash
 
-    const targetGbp = total / priced.length;
+    const targetGbp = total * Math.min(1 / priced.length, input.maxWeight ?? 1);
 
     // Trim overweight names first (more cash for the underweight ones).
     const buys: { ticker: string; shares: number; notional: number }[] = [];

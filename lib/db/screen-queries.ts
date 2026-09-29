@@ -99,6 +99,14 @@ export async function appendScreenSnapshot(data: {
   currency: string;
   sector: string | null;
   verdictCaps: string | null;
+  valuationScore: number;
+  healthScore: number;
+  qualityScore: number;
+  moatScore: number;
+  fairValue: number | null;
+  valuationMethod: string;
+  marketCap: number | null;
+  modelVersion: string;
 }): Promise<void> {
   await prisma.screenSnapshot.create({ data });
 }

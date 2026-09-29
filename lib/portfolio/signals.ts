@@ -3,10 +3,10 @@
  * timeline the engine consumes.
  *
  * Each weekly refresh stamps one snapshot batch per index, so a "run" is a
- * cluster of timestamps within a few days. We bucket snapshots by ISO week and,
- * for each week, take the union of Strong Buys across every market — that is the
- * Strong-Buy list as of that rebalance. The execution date is the latest
- * snapshot date in the week (when the run actually finished).
+ * cluster of timestamps within a few days. We bucket snapshots by ISO week; the
+ * week's execution date is the latest snapshot date in it (when the run
+ * actually finished). Every book shares this one calendar, so their value
+ * curves are marked on the same days and compare directly.
  */
 
 export interface SnapshotRow {
@@ -16,6 +16,7 @@ export interface SnapshotRow {
   /** ISO datetime the snapshot was taken. */
   screenerAt: string;
   verdictLabel: string;
+  compositeScore: number;
 }
 
 export interface SecurityMetaLite {
@@ -24,19 +25,24 @@ export interface SecurityMetaLite {
   stampDutyApplies: boolean;
 }
 
+export interface Rating {
+  verdict: string;
+  score: number;
+}
+
 export interface SignalHistory {
   inceptionDate: string;
-  /** Rebalance (execution) dates, oldest → newest. */
+  /** Execution date of every weekly run, oldest → newest. */
+  calendar: string[];
+  /** Calendar dates of the weeks that had at least one Strong Buy. */
   rebalanceDates: string[];
-  /** Strong-Buy tickers as of each rebalance date. */
+  /** Strong-Buy tickers as of each rebalance date (union across markets). */
   strongBuysByDate: Map<string, string[]>;
+  /** Every rating taken in each calendar week: date → ticker → latest rating. */
+  ratingsByDate: Map<string, Map<string, Rating>>;
   /** Per-ticker metadata for costing and FX. */
   securities: Map<string, SecurityMetaLite>;
 }
-
-// LSE main-market indices attract 0.5% stamp duty on purchases; AIM is exempt,
-// as are the non-UK markets.
-const STAMP_DUTY_INDICES = new Set(["FTSE100", "FTSE250"]);
 
 const isoDate = (iso: string) => iso.slice(0, 10);
 
@@ -53,43 +59,64 @@ function isoWeekKey(iso: string): string {
   return `${target.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
 }
 
+interface WeekBucket {
+  date: string;
+  strongBuys: Set<string>;
+  /** ticker → latest row seen this week (a ticker can sit in several indices). */
+  latest: Map<string, SnapshotRow>;
+}
+
 /**
- * @param rows every ScreenSnapshot row (any order). Only STRONG_BUY rows drive
- *             purchases, but all rows contribute security metadata.
+ * @param rows snapshot rows (any order). STRONG_BUY rows drive the original
+ *             books; every row feeds the weekly ratings and security metadata.
  */
 export function buildSignalHistory(rows: SnapshotRow[]): SignalHistory {
+  const aim = new Set(rows.filter((r) => r.screenerIndex === "AIM").map((r) => r.ticker));
   const securities = new Map<string, SecurityMetaLite>();
   for (const r of rows) {
-    const existing = securities.get(r.ticker);
-    const stampDutyApplies = (existing?.stampDutyApplies ?? false) || STAMP_DUTY_INDICES.has(r.screenerIndex);
-    securities.set(r.ticker, { currency: r.currency, stampDutyApplies });
+    // Stamp duty is charged on UK main-market shares; AIM is exempt. Keyed off
+    // the listing (".L") rather than the index, because MSCI Europe Small Cap
+    // also holds London main-market names.
+    securities.set(r.ticker, { currency: r.currency, stampDutyApplies: r.ticker.endsWith(".L") && !aim.has(r.ticker) });
   }
 
-  // Bucket Strong Buys by ISO week; track the week's latest date + ticker set.
-  const byWeek = new Map<string, { date: string; tickers: Set<string> }>();
+  const byWeek = new Map<string, WeekBucket>();
   for (const r of rows) {
-    if (r.verdictLabel !== "STRONG_BUY") continue;
     const key = isoWeekKey(r.screenerAt);
     const date = isoDate(r.screenerAt);
-    const bucket = byWeek.get(key);
-    if (bucket) {
-      if (date > bucket.date) bucket.date = date;
-      bucket.tickers.add(r.ticker);
-    } else {
-      byWeek.set(key, { date, tickers: new Set([r.ticker]) });
+    let bucket = byWeek.get(key);
+    if (!bucket) {
+      bucket = { date, strongBuys: new Set(), latest: new Map() };
+      byWeek.set(key, bucket);
+    }
+    if (date > bucket.date) bucket.date = date;
+    if (r.verdictLabel === "STRONG_BUY") bucket.strongBuys.add(r.ticker);
+    const seen = bucket.latest.get(r.ticker);
+    if (
+      !seen ||
+      r.screenerAt > seen.screenerAt ||
+      (r.screenerAt === seen.screenerAt && r.compositeScore > seen.compositeScore)
+    ) {
+      bucket.latest.set(r.ticker, r);
     }
   }
 
   const buckets = [...byWeek.values()].sort((a, b) => a.date.localeCompare(b.date));
-  const rebalanceDates = buckets.map((b) => b.date);
-  const strongBuysByDate = new Map<string, string[]>(
-    buckets.map((b) => [b.date, [...b.tickers].sort()]),
+  const calendar = buckets.map((b) => b.date);
+  const withStrongBuys = buckets.filter((b) => b.strongBuys.size > 0);
+  const ratingsByDate = new Map(
+    buckets.map((b) => [
+      b.date,
+      new Map([...b.latest].map(([ticker, r]) => [ticker, { verdict: r.verdictLabel, score: r.compositeScore }])),
+    ]),
   );
 
   return {
-    inceptionDate: rebalanceDates[0] ?? isoDate(new Date().toISOString()),
-    rebalanceDates,
-    strongBuysByDate,
+    inceptionDate: withStrongBuys[0]?.date ?? isoDate(new Date().toISOString()),
+    calendar,
+    rebalanceDates: withStrongBuys.map((b) => b.date),
+    strongBuysByDate: new Map(withStrongBuys.map((b) => [b.date, [...b.strongBuys].sort()])),
+    ratingsByDate,
     securities,
   };
 }

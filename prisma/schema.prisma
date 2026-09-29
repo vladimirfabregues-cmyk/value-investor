@@ -87,11 +87,39 @@ model ScreenSnapshot {
   currency       String
   sector         String?
   verdictCaps    String?
+  /// Point-in-time inputs a later review needs and that cannot be rebuilt
+  /// afterwards (accounts get restated, the model changes). Null on rows
+  /// written before they were captured.
+  valuationScore  Float?
+  healthScore     Float?
+  qualityScore    Float?
+  moatScore       Float?
+  /// Modelled value per share (local currency) the margin of safety is taken against
+  fairValue       Float?
+  /// dcf | nav | ddm | pbroe
+  valuationMethod String?
+  marketCap       Float?
+  modelVersion    String?
   createdAt      DateTime @default(now())
 
   @@index([screenerIndex, screenerAt])
   @@index([ticker, screenerAt])
   @@index([verdictLabel])
+}
+
+/// Cached daily price history for one ticker, so the weekly portfolio build
+/// only re-downloads names still held (their split adjustments can change).
+model PriceSeries {
+  ticker    String   @id
+  currency  String
+  /// Requested window (ISO dates); `toDate` is the day it was fetched up to
+  fromDate  String
+  toDate    String
+  /// [{ date, price }] closes, split-adjusted, in `currency`
+  prices    Json
+  /// [{ date, amountLocal }] cash dividends, split-adjusted
+  dividends Json
+  fetchedAt DateTime @default(now())
 }
 
 /// Latest computed state of a simulated "Strong Buy" portfolio — one row per

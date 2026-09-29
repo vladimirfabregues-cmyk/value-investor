@@ -57,15 +57,16 @@ jobs:
           # SCREEN_RUN_URL is the full screener endpoint; derive the sibling one.
           BUILD_URL="${SCREEN_RUN_URL%/api/screen/run}/api/portfolio/build"
           echo "POST ${BUILD_URL}"
-          # Yahoo may still be throttling right after the screener's long walk;
-          # the build refuses to persist on missing prices, so wait and retry.
-          for attempt in 1 2 3 4; do
+          # 503 = prices still downloading (resumed from the cache next call) or
+          # Yahoo throttling after the screener's long walk; nothing is saved
+          # until every history is in, so wait and call again.
+          for attempt in 1 2 3 4 5 6; do
             code=$(curl -sS --max-time 120 -o /tmp/portfolio.json -w '%{http_code}' \
               -X POST -H "x-screen-token: ${SCREEN_RUN_TOKEN}" "${BUILD_URL}" || echo 000)
             cat /tmp/portfolio.json 2>/dev/null; echo
             if [ "$code" = "200" ]; then exit 0; fi
             echo "Attempt ${attempt}: portfolio build failed with HTTP ${code}"
             if [ "$code" = "401" ]; then exit 1; fi
-            [ "$attempt" -lt 4 ] && sleep 300
+            [ "$attempt" -lt 6 ] && sleep 180
           done
           exit 1

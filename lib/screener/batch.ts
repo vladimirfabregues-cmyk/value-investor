@@ -1,5 +1,6 @@
 import { getFinanceProvider } from "@/lib/finance/mock-provider";
 import { calculateValueMetrics } from "@/lib/finance/scoring";
+import { VALUATION_MODEL_VERSION } from "@/lib/finance/model-version";
 import { appendScreenSnapshot, upsertScreenResult } from "@/lib/db/screen-queries";
 import type { ScreenableCompany } from "@/lib/screener/cac40";
 
@@ -92,6 +93,14 @@ async function screenCompany(
           metrics.diagnostics.verdict_caps.length > 0
             ? metrics.diagnostics.verdict_caps.join(",")
             : null,
+        valuationScore: metrics.valuation.valuation_score,
+        healthScore: metrics.financial_health.health_score,
+        qualityScore: metrics.business_quality.quality_score,
+        moatScore: metrics.business_quality.moat_score,
+        fairValue: metrics.intrinsic_value.blended_intrinsic_value_per_share,
+        valuationMethod: metrics.intrinsic_value.intrinsic_method,
+        marketCap: dataset.market_cap > 0 ? dataset.market_cap : null,
+        modelVersion: VALUATION_MODEL_VERSION,
       }),
     ]);
     return true;

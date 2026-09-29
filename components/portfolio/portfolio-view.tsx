@@ -5,10 +5,11 @@ import { AlertTriangle, Clock } from "lucide-react";
 
 import { AppShell } from "@/components/shell/app-shell";
 import { ValueChart, type ValueSeries } from "@/components/portfolio/value-chart";
+import { StrategyLab } from "@/components/portfolio/strategy-lab";
 import { formatCurrency } from "@/lib/utils/format";
 import { formatIsoDate } from "@/lib/utils/dates";
 import { useTranslation } from "@/lib/i18n/locale-context";
-import type { StoredPortfolio } from "@/lib/db/portfolio-queries";
+import type { LabRow, StoredPortfolio } from "@/lib/db/portfolio-queries";
 import type { PortfolioMetrics } from "@/lib/portfolio/metrics";
 import type { SavedAnalysisSummary } from "@/types/analysis";
 
@@ -21,9 +22,10 @@ const COLORS: Record<string, { stroke: string; dashed?: boolean }> = {
 interface PortfolioViewProps {
   history: SavedAnalysisSummary[];
   results: StoredPortfolio[];
+  labRows: LabRow[];
 }
 
-export function PortfolioView({ history, results }: PortfolioViewProps) {
+export function PortfolioView({ history, results, labRows }: PortfolioViewProps) {
   const { t, locale } = useTranslation();
   const [showTx, setShowTx] = useState(false);
   const [txStrategy, setTxStrategy] = useState<"BUY_HOLD" | "REBALANCED">("REBALANCED");
@@ -116,6 +118,8 @@ export function PortfolioView({ history, results }: PortfolioViewProps) {
                 accent={COLORS.REBALANCED.stroke}
               />
             </div>
+
+            <StrategyLab rows={labRows} inception={buyHold.inceptionDate} />
 
             {/* Transactions */}
             <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 shadow-panel">
