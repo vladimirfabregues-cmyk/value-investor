@@ -35,6 +35,24 @@ export interface FxPoint {
 
 const iso = (d: Date | string): string => new Date(d).toISOString().slice(0, 10);
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// Yahoo throttles bursts (the build runs straight after the screener's long
+// walk), so a single failed call must not be read as "no data".
+async function chartWithRetry(symbol: string, from: string, to: string, attempts = 3) {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await yf.chart(symbol, { period1: from, period2: to, interval: "1d" });
+    } catch (err) {
+      if (attempt >= attempts) {
+        console.warn(`[portfolio] chart ${symbol} failed: ${err instanceof Error ? err.message : err}`);
+        throw err;
+      }
+      await sleep(1500 * attempt);
+    }
+  }
+}
+
 /** LSE quotes in pence ("GBp"); scale to pounds and report the currency as GBP. */
 function normalizeCurrency(metaCurrency?: string): { currency: string; scale: number } {
   if (metaCurrency === "GBp") return { currency: "GBP", scale: 0.01 };
@@ -48,7 +66,7 @@ export async function fetchTickerHistory(
   to: string,
 ): Promise<TickerHistory | null> {
   try {
-    const chart = await yf.chart(ticker, { period1: from, period2: to, interval: "1d" });
+    const chart = await chartWithRetry(ticker, from, to);
     const { currency, scale } = normalizeCurrency(chart.meta?.currency);
     const prices = (chart.quotes ?? [])
       .filter((q) => q.close != null && Number.isFinite(q.close))
@@ -70,7 +88,7 @@ export async function fetchTickerHistory(
 export async function fetchFxSeries(currency: string, from: string, to: string): Promise<FxPoint[]> {
   if (currency === "GBP") return [];
   try {
-    const chart = await yf.chart(`${currency}GBP=X`, { period1: from, period2: to, interval: "1d" });
+    const chart = await chartWithRetry(`${currency}GBP=X`, from, to);
     return (chart.quotes ?? [])
       .filter((q) => q.close != null && Number.isFinite(q.close))
       .map((q) => ({ date: iso(q.date), gbpPerUnit: q.close as number }))

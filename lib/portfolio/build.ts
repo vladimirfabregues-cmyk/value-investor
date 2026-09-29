@@ -31,7 +31,9 @@ async function fetchHistories(tickers: string[], from: string, to: string): Prom
 }
 
 /** Full build: read snapshots → fetch market history → compute → persist. */
-export async function buildPortfolios(now: Date = new Date()): Promise<{ inception: string; today: string; tickers: number }> {
+export async function buildPortfolios(
+  now: Date = new Date(),
+): Promise<{ inception: string; today: string; tickers: number; priced: number }> {
   const rows = await prisma.screenSnapshot.findMany({
     select: { ticker: true, currency: true, screenerIndex: true, screenerAt: true, verdictLabel: true },
   });
@@ -51,13 +53,30 @@ export async function buildPortfolios(now: Date = new Date()): Promise<{ incepti
   // price history — fetching the whole screened universe is wasteful and
   // invites rate-limiting. (Metadata for every ticker still lives in signals.)
   const tickers = [...new Set([...signals.strongBuysByDate.values()].flat())];
-  const histories = await fetchHistories(tickers, inception, today);
-  const benchHistory = await fetchTickerHistory(BENCHMARK_TICKER, inception, today);
-  const all = benchHistory ? [...histories, benchHistory] : histories;
+  // Start a week early so a name whose market was shut on a rebalance day still
+  // has a prior close to trade at.
+  const from = isoDay(new Date(Date.parse(inception) - 7 * 24 * 60 * 60 * 1000));
+  const histories = await fetchHistories(tickers, from, today);
+  const benchHistory = await fetchTickerHistory(BENCHMARK_TICKER, from, today);
+
+  // A failed market-data fetch would otherwise simulate as an all-cash book and
+  // overwrite the last good build with zeros — refuse to persist instead.
+  const priced = histories.filter((h) => h.prices.length > 0).length;
+  if (!benchHistory || benchHistory.prices.length === 0) {
+    throw new Error(`Benchmark ${BENCHMARK_TICKER} price history unavailable; nothing persisted`);
+  }
+  if (tickers.length > 0 && priced < Math.ceil(tickers.length / 2)) {
+    throw new Error(`Only ${priced}/${tickers.length} Strong-Buy price histories fetched; nothing persisted`);
+  }
+  const all = [...histories, benchHistory];
 
   const currencies = new Set(all.map((h) => h.currency).filter((c) => c !== "GBP"));
   const fx = new Map<string, FxPoint[]>();
-  for (const c of currencies) fx.set(c, await fetchFxSeries(c, inception, today));
+  for (const c of currencies) {
+    const series = await fetchFxSeries(c, from, today);
+    if (series.length === 0) throw new Error(`FX series ${c}GBP unavailable; nothing persisted`);
+    fx.set(c, series);
+  }
 
   const stampDuty = new Map<string, boolean>();
   for (const [ticker, meta] of signals.securities) stampDuty.set(ticker, meta.stampDutyApplies);
@@ -85,5 +104,5 @@ export async function buildPortfolios(now: Date = new Date()): Promise<{ incepti
     });
   }
 
-  return { inception, today, tickers: tickers.length };
+  return { inception, today, tickers: tickers.length, priced };
 }

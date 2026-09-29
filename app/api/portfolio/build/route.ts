@@ -20,8 +20,8 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   try {
-    const { inception, today, tickers } = await buildPortfolios();
-    return Response.json({ ok: true, inception, today, tickers });
+    const result = await buildPortfolios();
+    return Response.json({ ok: true, ...result });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Portfolio build failed";
     return Response.json({ ok: false, error: message }, { status: 500 });
