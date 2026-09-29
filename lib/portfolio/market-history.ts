@@ -75,10 +75,9 @@ export async function fetchTickerHistory(
     const dividends = Object.values(chart.events?.dividends ?? {})
       .map((d) => ({ date: iso(d.date), amountLocal: d.amount * scale }))
       .filter((d) => d.amountLocal > 0);
-    const splits = Object.values(chart.events?.splits ?? {})
-      .map((s) => ({ date: iso(s.date), ratio: s.denominator ? s.numerator / s.denominator : 1 }))
-      .filter((s) => s.ratio > 0 && s.ratio !== 1);
-    return { ticker, currency, prices, dividends, splits };
+    // Yahoo back-adjusts closes and dividends for every split (NVDA's pre-split
+    // close reads ~$115, not ~$1,150), so share counts must not be split again.
+    return { ticker, currency, prices, dividends, splits: [] };
   } catch {
     return null;
   }
