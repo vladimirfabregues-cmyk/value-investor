@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { labRebalanceDates, labTargets, regionOf, type LabStrategy } from "@/lib/portfolio/lab";
+import { fullRunDates, labRebalanceDates, labTargets, regionOf, type LabStrategy } from "@/lib/portfolio/lab";
 import type { Rating, SignalHistory } from "@/lib/portfolio/signals";
 
 type Week = Record<string, [verdict: string, score: number]>;
@@ -98,5 +98,19 @@ describe("labTargets — slow selling", () => {
   it("only trades on its own rebalance dates, while still tracking every week's ratings", () => {
     const monthly = labTargets({ ...sticky, frequency: "MONTHLY" }, h, ["2026-06-01"]);
     expect([...monthly.keys()]).toEqual(["2026-06-01"]);
+  });
+});
+
+describe("fullRunDates", () => {
+  it("skips weeks that rated far fewer names than a normal run", () => {
+    const h = history({
+      "2026-06-01": { A: ["BUY", 90], B: ["BUY", 80], C: ["BUY", 70], D: ["HOLD", 50] },
+      "2026-06-08": { A: ["BUY", 90] }, // one market screened ad hoc
+      "2026-06-15": { A: ["BUY", 90], B: ["BUY", 80], C: ["HOLD", 60] },
+    });
+    const full = fullRunDates(h);
+    expect([...full]).toEqual(["2026-06-01", "2026-06-15"]);
+    expect(labRebalanceDates(h.calendar, "2026-06-01", "MONTHLY", full)).toEqual(["2026-06-01"]);
+    expect(labRebalanceDates(h.calendar, "2026-06-01", "WEEKLY", full)).toEqual(["2026-06-01", "2026-06-15"]);
   });
 });

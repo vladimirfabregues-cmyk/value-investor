@@ -12,7 +12,8 @@
 
 import type { Rating, SignalHistory } from "@/lib/portfolio/signals";
 
-export const LAB_RULES = { version: 1, fixedOn: "2026-09-29" } as const;
+// v2 (30 Sept, before any out-of-sample week): trade only on full screener runs.
+export const LAB_RULES = { version: 2, fixedOn: "2026-09-29" } as const;
 
 export type Region = "US" | "UK" | "EU" | "JP";
 
@@ -64,9 +65,26 @@ export function regionOf(ticker: string): Region {
   return "EU";
 }
 
-/** Calendar dates the strategy trades on, from inception onwards. */
-export function labRebalanceDates(calendar: string[], inception: string, frequency: LabStrategy["frequency"]): string[] {
-  const dates = calendar.filter((d) => d >= inception);
+/**
+ * Weeks where the screener rated at least half as many names as its best
+ * week. Before the weekly automation, indices were screened ad hoc, so many
+ * weeks rated a single market; trading on those would sell everything whose
+ * rating had gone stale and fill the book from one market.
+ */
+export function fullRunDates(signals: SignalHistory): Set<string> {
+  const counts = signals.calendar.map((d) => signals.ratingsByDate.get(d)?.size ?? 0);
+  const max = Math.max(0, ...counts);
+  return new Set(signals.calendar.filter((_, i) => counts[i] >= max * 0.5));
+}
+
+/** Calendar dates the strategy trades on, from inception onwards (full runs only). */
+export function labRebalanceDates(
+  calendar: string[],
+  inception: string,
+  frequency: LabStrategy["frequency"],
+  full?: Set<string>,
+): string[] {
+  const dates = calendar.filter((d) => d >= inception && (!full || full.has(d)));
   if (frequency === "WEEKLY") return dates;
   // First run of each calendar month.
   return dates.filter((d, i) => i === 0 || d.slice(0, 7) !== dates[i - 1].slice(0, 7));

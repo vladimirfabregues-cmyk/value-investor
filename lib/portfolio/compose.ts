@@ -7,7 +7,7 @@
 import { simulate, type MarketData } from "@/lib/portfolio/engine";
 import { computeMetrics, type PortfolioMetrics } from "@/lib/portfolio/metrics";
 import type { SignalHistory } from "@/lib/portfolio/signals";
-import { LAB_RULES, LAB_STRATEGIES, labRebalanceDates, labTargets } from "@/lib/portfolio/lab";
+import { LAB_RULES, LAB_STRATEGIES, fullRunDates, labRebalanceDates, labTargets } from "@/lib/portfolio/lab";
 import { BENCHMARK_TICKER, MIN_TRADE_GBP, PORTFOLIO_CAPITAL_GBP, PORTFOLIO_COSTS } from "@/lib/portfolio/config";
 import type { SimulationResult, StrategyId } from "@/lib/portfolio/types";
 
@@ -46,8 +46,9 @@ export function planBooks(signals: SignalHistory): BookPlan[] {
     { strategy: "REBALANCED", rebalanceDates: signals.rebalanceDates, targets: signals.strongBuysByDate },
     { strategy: "BENCHMARK", rebalanceDates: [inception], targets: new Map([[inception, [BENCHMARK_TICKER]]]) },
   ];
+  const full = fullRunDates(signals);
   const lab = LAB_STRATEGIES.map((s): BookPlan => {
-    const rebalanceDates = labRebalanceDates(signals.calendar, inception, s.frequency);
+    const rebalanceDates = labRebalanceDates(signals.calendar, inception, s.frequency, full);
     return { strategy: s.id, rebalanceDates, targets: labTargets(s, signals, rebalanceDates), maxWeight: s.maxWeight };
   });
   return [...core, ...lab];
