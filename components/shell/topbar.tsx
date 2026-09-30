@@ -26,6 +26,7 @@ const NAV = [
   { href: "/value/screen", key: "nav.screener" },
   { href: "/value/compare", key: "nav.compare" },
   { href: "/value/portfolio", key: "nav.portfolio" },
+  { href: "/value/scorecard", key: "nav.scorecard" },
 ] as const;
 
 export function Topbar({ history }: TopbarProps) {
@@ -68,21 +69,21 @@ export function Topbar({ history }: TopbarProps) {
             className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/[0.07] bg-white/[0.03] px-3 py-1.5 text-sm text-muted-foreground transition hover:border-primary/25 hover:text-foreground"
           >
             <LayoutGrid className="h-4 w-4" aria-hidden="true" />
-            <span className="hidden sm:inline">{t("nav.workspaces")}</span>
+            <span className="hidden 2xl:inline">{t("nav.workspaces")}</span>
           </Link>
 
           {/* Master-brand seal + wordmark (shared CasebookLogo). Returns to this
               tool's home; the section label ("Companies") distinguishes it from
               the Funds zone. Seal-only below sm to save width. */}
           <Link href="/value" className="group flex items-center">
-            <CasebookLogo size="md" sublabel={t("nav.tagline")} wordmarkClassName="hidden sm:block" />
+            <CasebookLogo size="md" sublabel={t("nav.tagline")} wordmarkClassName="hidden 2xl:block" />
           </Link>
         </div>
 
         {/* Own full-width row on mobile so the items never force horizontal page scroll */}
         <nav
           aria-label={t("nav.primaryLabel")}
-          className="order-3 flex w-full items-center gap-1 overflow-x-auto rounded-full border border-white/[0.07] bg-white/[0.03] p-1 sm:order-none sm:w-auto sm:overflow-visible"
+          className="order-3 flex w-full items-center gap-1 overflow-x-auto rounded-full border border-white/[0.07] bg-white/[0.03] p-1 sm:order-none sm:w-auto sm:min-w-0 sm:shrink"
         >
           {NAV.map(({ href, key }) => {
             const active = href === "/value" ? pathname === "/value" : pathname.startsWith(href);
@@ -91,7 +92,7 @@ export function Topbar({ history }: TopbarProps) {
                 key={href}
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors sm:px-4 ${
+                className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors sm:px-3 2xl:px-4 ${
                   active
                     ? "bg-primary/15 text-primary shadow-[inset_0_0_0_1px_rgba(181,148,88,0.35)]"
                     : "text-muted-foreground hover:bg-white/[0.04] hover:text-foreground"
@@ -106,7 +107,7 @@ export function Topbar({ history }: TopbarProps) {
         <div className="flex items-center gap-3">
           {/* Honest source attribution — no "live"/real-time claim (the Yahoo
               feed is delayed; per-analysis timing lives in the Data status panel) */}
-          <div className="hidden items-center gap-1.5 text-xs text-muted-foreground md:flex">
+          <div className="hidden items-center gap-1.5 text-xs text-muted-foreground 2xl:flex">
             <Database className="h-3.5 w-3.5" aria-hidden="true" />
             {t("nav.dataSources")}
           </div>

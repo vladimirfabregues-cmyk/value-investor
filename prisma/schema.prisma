@@ -144,3 +144,10 @@ model SimPortfolio {
   builtAt       DateTime
   updatedAt     DateTime @updatedAt
 }
+
+/// Latest rating scorecard (one row, id "latest"), rebuilt weekly from ScreenSnapshot.
+model ScorecardResult {
+  id      String   @id
+  data    Json
+  builtAt DateTime
+}
