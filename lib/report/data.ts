@@ -333,10 +333,10 @@ export async function buildMonthlyReport(month: string, now: Date = new Date()):
               return { flag, weeks: s.n, weeklyMean: s.mean, t: s.t, strength: strength(s) };
             })
             .sort((a, b) => b.weeks - a.weeks),
-          best: sc.data.cases?.best.slice(0, 5) ?? [],
-          worst: sc.data.cases?.worst.slice(0, 5) ?? [],
-          missed: sc.data.cases?.missed.slice(0, 5) ?? [],
-          flaglessLosers: sc.data.cases?.flaglessLosers.slice(0, 5) ?? [],
+          best: sc.data.cases?.best?.slice(0, 5) ?? [],
+          worst: sc.data.cases?.worst?.slice(0, 5) ?? [],
+          missed: sc.data.cases?.missed?.slice(0, 5) ?? [],
+          flaglessLosers: sc.data.cases?.flaglessLosers?.slice(0, 5) ?? [],
           patterns: sc.data.cases?.patterns ?? { missed: null, flaglessLosers: null },
           outcomes: h(4)?.outcomes ?? null,
           caseWeeks: sc.data.cases?.weeks ?? null,
