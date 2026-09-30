@@ -6,6 +6,7 @@
  */
 
 import type { SimulationResult } from "@/lib/portfolio/types";
+import type { BookAnalytics } from "@/lib/portfolio/analytics";
 
 export interface PortfolioMetrics {
   initialGbp: number;
@@ -35,6 +36,8 @@ export interface PortfolioMetrics {
   fxEffectPct?: number | null;
   /** Return since the lab rules were fixed; null if the book started after that date. */
   sinceFixedPct?: number | null;
+  /** Return split, concentration, trade outcomes; absent on the benchmark. */
+  analytics?: BookAnalytics;
 }
 
 export interface MetricsOptions {

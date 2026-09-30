@@ -12,6 +12,9 @@ import { buildSignalHistory, type SnapshotRow } from "@/lib/portfolio/signals";
 import { computePortfolios, planBooks, priceNeeds } from "@/lib/portfolio/compose";
 import { BENCHMARK_TICKER } from "@/lib/portfolio/config";
 import { loadHistories } from "@/lib/portfolio/price-cache";
+import type { SnapshotPrices } from "@/lib/portfolio/analytics";
+import { getScorecard } from "@/lib/scorecard/build";
+import { weekOf } from "@/lib/scorecard/compute";
 
 const isoDay = (d: Date): string => d.toISOString().slice(0, 10);
 
@@ -31,6 +34,34 @@ export interface BuildSummary {
   stale: string[];
 }
 
+/** Most local index first: a London name in both FTSE 250 and MSCI Europe Small Cap is judged against the FTSE 250. */
+const HOME_ORDER = ["FTSE100", "FTSE250", "AIM", "SP500", "SP400", "RUSSELLMID", "RUSSELL2000", "CAC40", "EUSC", "TOPIXSMALL"];
+
+function snapshotPrices(
+  rows: { ticker: string; screenerIndex: string; screenerAt: Date; price: number; sector: string | null }[],
+): { snap: SnapshotPrices } {
+  const prices = new Map<string, Map<number, { at: number; price: number }>>();
+  const home = new Map<string, string>();
+  const sector = new Map<string, { at: number; sector: string }>();
+  for (const r of rows) {
+    const at = r.screenerAt.getTime();
+    const w = weekOf(r.screenerAt.toISOString());
+    const byWeek = prices.get(r.ticker) ?? new Map();
+    if (!byWeek.get(w) || byWeek.get(w)!.at < at) byWeek.set(w, { at, price: r.price });
+    prices.set(r.ticker, byWeek);
+    const h = home.get(r.ticker);
+    if (!h || HOME_ORDER.indexOf(r.screenerIndex) < HOME_ORDER.indexOf(h)) home.set(r.ticker, r.screenerIndex);
+    if (r.sector && (!sector.get(r.ticker) || sector.get(r.ticker)!.at < at)) sector.set(r.ticker, { at, sector: r.sector });
+  }
+  return {
+    snap: {
+      price: (t, w) => prices.get(t)?.get(w)?.price ?? null,
+      homeIndex: (t) => home.get(t) ?? null,
+      sector: (t) => sector.get(t)?.sector ?? null,
+    },
+  };
+}
+
 /** Full build: read snapshots → load market history → compute → persist. */
 export async function buildPortfolios(now: Date = new Date()): Promise<BuildSummary> {
   const started = Date.now();
@@ -44,7 +75,10 @@ export async function buildPortfolios(now: Date = new Date()): Promise<BuildSumm
   });
   const rows = await prisma.screenSnapshot.findMany({
     where: { ticker: { in: eligible.map((e) => e.ticker) } },
-    select: { ticker: true, currency: true, screenerIndex: true, screenerAt: true, verdictLabel: true, compositeScore: true },
+    select: {
+      ticker: true, currency: true, screenerIndex: true, screenerAt: true, verdictLabel: true, compositeScore: true,
+      price: true, sector: true,
+    },
   });
   const snapshotRows: SnapshotRow[] = rows.map((r) => ({ ...r, screenerAt: r.screenerAt.toISOString() }));
 
@@ -83,7 +117,9 @@ export async function buildPortfolios(now: Date = new Date()): Promise<BuildSumm
   stampDuty.set(BENCHMARK_TICKER, false); // ETFs are stamp-duty exempt
 
   const market = buildMarketData({ histories: loaded.histories, fx, stampDuty });
-  const computed = computePortfolios(signals, market, today);
+  const scorecard = await getScorecard();
+  const indexWeekly = new Map((scorecard?.data.indexWeekly ?? []).map((p) => [`${p.index}|${p.week}`, p.mean]));
+  const computed = computePortfolios(signals, market, today, { ...snapshotPrices(rows), indexWeekly, lastWeek: Math.max(...rows.map((r) => weekOf(r.screenerAt.toISOString()))) });
 
   const json = (v: unknown): Prisma.InputJsonValue => v as Prisma.InputJsonValue;
   const builtAt = now;

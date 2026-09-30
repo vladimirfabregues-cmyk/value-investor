@@ -10,6 +10,7 @@ import type { SignalHistory } from "@/lib/portfolio/signals";
 import { LAB_RULES, LAB_STRATEGIES, fullRunDates, labRebalanceDates, labTargets } from "@/lib/portfolio/lab";
 import { BENCHMARK_TICKER, MIN_TRADE_GBP, PORTFOLIO_CAPITAL_GBP, PORTFOLIO_COSTS } from "@/lib/portfolio/config";
 import type { SimulationResult, StrategyId } from "@/lib/portfolio/types";
+import { bookAnalytics, type IndexWeekly, type SnapshotPrices } from "@/lib/portfolio/analytics";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const isoDay = (d: Date): string => d.toISOString().slice(0, 10);
@@ -87,7 +88,20 @@ export interface ComputedPortfolios {
   metrics: Partial<Record<StrategyId, PortfolioMetrics>>;
 }
 
-export function computePortfolios(signals: SignalHistory, market: MarketData, today: string): ComputedPortfolios {
+/** Screener data the diagnostics need; omitted in tests that only check the books. */
+export interface AnalyticsInputs {
+  snap: SnapshotPrices;
+  indexWeekly: IndexWeekly;
+  /** Latest snapshot week, so later-return checks only use weeks that exist. */
+  lastWeek: number;
+}
+
+export function computePortfolios(
+  signals: SignalHistory,
+  market: MarketData,
+  today: string,
+  extras?: AnalyticsInputs,
+): ComputedPortfolios {
   const inception = signals.inceptionDate;
   const markDates = [...new Set([...weeklyGrid(inception, today), ...signals.calendar.filter((d) => d >= inception)])].sort();
   const frozenFx: MarketData = { ...market, fxToGbp: (currency) => market.fxToGbp(currency, inception) };
@@ -112,11 +126,17 @@ export function computePortfolios(signals: SignalHistory, market: MarketData, to
 
   const metrics: ComputedPortfolios["metrics"] = {};
   for (const { plan, result, frozen } of runs) {
-    metrics[plan.strategy] = computeMetrics(result, {
-      benchmark: plan.strategy === "BENCHMARK" ? undefined : benchmark,
-      fxFrozen: frozen,
-      fixedOn: LAB_RULES.fixedOn,
-    });
+    metrics[plan.strategy] = {
+      ...computeMetrics(result, {
+        benchmark: plan.strategy === "BENCHMARK" ? undefined : benchmark,
+        fxFrozen: frozen,
+        fixedOn: LAB_RULES.fixedOn,
+      }),
+      analytics:
+        extras && plan.strategy !== "BENCHMARK"
+          ? bookAnalytics(result, market, signals.calendar, extras.snap, extras.indexWeekly, today, extras.lastWeek)
+          : undefined,
+    };
   }
   return { results: runs.map((r) => r.result), metrics };
 }

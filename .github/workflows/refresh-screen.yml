@@ -47,8 +47,29 @@ jobs:
           SCREEN_INDICES: ${{ github.event.inputs.indices }}
         run: node scripts/refresh-screen.mjs
 
-      # Reads the snapshot history the step above just extended.
+      # Grades every past rating by what happened next; reads the same snapshots.
+      - name: Rebuild rating scorecard
+        if: ${{ !cancelled() }}
+        env:
+          SCREEN_RUN_URL: ${{ secrets.SCREEN_RUN_URL }}
+          SCREEN_RUN_TOKEN: ${{ secrets.SCREEN_RUN_TOKEN }}
+        run: |
+          set -euo pipefail
+          URL="${SCREEN_RUN_URL%/api/screen/run}/api/scorecard/build"
+          for attempt in 1 2 3; do
+            code=$(curl -sS --max-time 120 -o /tmp/scorecard.json -w '%{http_code}' \
+              -X POST -H "x-screen-token: ${SCREEN_RUN_TOKEN}" "${URL}" || echo 000)
+            cat /tmp/scorecard.json 2>/dev/null; echo
+            if [ "$code" = "200" ]; then exit 0; fi
+            echo "Attempt ${attempt}: scorecard build failed with HTTP ${code}"
+            [ "$attempt" -lt 3 ] && sleep 60
+          done
+          exit 1
+
+      # Reads the snapshot history the refresh extended, and the index averages
+      # the scorecard just saved (for each book's return split).
       - name: Rebuild simulated portfolios
+        if: ${{ !cancelled() }}
         env:
           SCREEN_RUN_URL: ${{ secrets.SCREEN_RUN_URL }}
           SCREEN_RUN_TOKEN: ${{ secrets.SCREEN_RUN_TOKEN }}
@@ -68,24 +89,5 @@ jobs:
             echo "Attempt ${attempt}: portfolio build failed with HTTP ${code}"
             if [ "$code" = "401" ]; then exit 1; fi
             [ "$attempt" -lt 6 ] && sleep 180
-          done
-          exit 1
-
-      # Grades every past rating by what happened next; reads the same snapshots.
-      - name: Rebuild rating scorecard
-        if: ${{ !cancelled() }}
-        env:
-          SCREEN_RUN_URL: ${{ secrets.SCREEN_RUN_URL }}
-          SCREEN_RUN_TOKEN: ${{ secrets.SCREEN_RUN_TOKEN }}
-        run: |
-          set -euo pipefail
-          URL="${SCREEN_RUN_URL%/api/screen/run}/api/scorecard/build"
-          for attempt in 1 2 3; do
-            code=$(curl -sS --max-time 120 -o /tmp/scorecard.json -w '%{http_code}' \
-              -X POST -H "x-screen-token: ${SCREEN_RUN_TOKEN}" "${URL}" || echo 000)
-            cat /tmp/scorecard.json 2>/dev/null; echo
-            if [ "$code" = "200" ]; then exit 0; fi
-            echo "Attempt ${attempt}: scorecard build failed with HTTP ${code}"
-            [ "$attempt" -lt 3 ] && sleep 60
           done
           exit 1
