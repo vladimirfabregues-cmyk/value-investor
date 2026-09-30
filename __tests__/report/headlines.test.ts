@@ -26,7 +26,7 @@ const report = (spreadWeeks: number): MonthlyReport => ({
   scorecard: {
     ratings: 50000, horizons: [], best: [], worst: [],
     spread: { points: [], summary: summarize(Array.from({ length: spreadWeeks }, (_, i) => 0.001 + (i % 2 ? 0.0002 : -0.0002))), strength: spreadWeeks < 12 ? "too early" : "strong" },
-    outcomes: { snapshot: 9000, gap: 10, trading: 3, takeover: 2, failure: 1, missing: 40, badPrice: 0 },
+    outcomes: { snapshot: 9000, gap: 10, trading: 3, takeover: 2, failure: 1, missing: 40, noRun: 0, badPrice: 0 },
   },
   strongBuys: { joined: [], left: [], current: [] },
   health: { runWeeks: 4, fullRunWeeks: 4, badPrices: 0 },
@@ -81,6 +81,13 @@ describe("claims", () => {
     expect(watching).toEqual([]);
     const rejected = proposals([{ ...claims[0], status: "rejected" }]);
     expect(rejected.proposed[0]).toContain("review the valuation model");
+  });
+
+  it("shows no annual figure before there are enough weeks", () => {
+    const [c1] = evaluateClaims({ scorecard: card(5), books: new Map(), etfForward: [] });
+    expect(c1.metric).toBe("5 weeks so far");
+    const [c1Later] = evaluateClaims({ scorecard: card(30), books: new Map(), etfForward: [] });
+    expect(c1Later.metric).toBe("+5.2 pts a year");
   });
 
   it("reads one return per week from a value curve", () => {

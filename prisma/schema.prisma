@@ -175,3 +175,12 @@ model TickerFate {
   closes    Json?
   checkedAt DateTime
 }
+
+/// Yahoo's split history for a company whose raw snapshot price jumped by a
+/// split-like factor, so its earlier prices can be restated in today's shares.
+model SplitCheck {
+  ticker    String   @id
+  /// [{ at, ratio }] — ratio = new shares per old share (1:4 reverse split → 0.25)
+  splits    Json
+  checkedAt DateTime
+}

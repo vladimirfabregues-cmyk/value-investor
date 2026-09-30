@@ -1,17 +1,19 @@
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db/client";
-import { computeScorecard, findVanished, type ScoreRow, type Scorecard } from "@/lib/scorecard/compute";
+import { adjustForSplits, computeScorecard, findVanished, splitCandidates, type ScoreRow, type Scorecard } from "@/lib/scorecard/compute";
 import { resolveFates } from "@/lib/scorecard/fates";
+import { resolveSplits } from "@/lib/scorecard/splits";
 
 const PAGE = 20_000;
-/** Stop Yahoo look-ups for vanished companies after this, leaving time to compute and save. */
-const FATE_BUDGET_MS = 20_000;
+/** Yahoo look-ups stop at these points (ms from start), leaving time to compute and save. */
+const SPLIT_BUDGET_MS = 18_000;
+const FATE_BUDGET_MS = 32_000;
 
 /** Load every snapshot rating, grade it, and store the result for the page. */
 export async function buildScorecard(
   now: Date = new Date(),
-): Promise<{ ratings: number; builtAt: string; vanished: number; fates: number }> {
+): Promise<{ ratings: number; builtAt: string; splits: number; vanished: number; fates: number }> {
   const started = Date.now();
   // Paged so memory stays flat as the history grows (~6,000 rows a week).
   const rows: ScoreRow[] = [];
@@ -39,15 +41,17 @@ export async function buildScorecard(
     cursor = page.at(-1)!.id;
   }
 
-  const vanished = findVanished(rows);
+  const splits = await resolveSplits(splitCandidates(rows), started + SPLIT_BUDGET_MS);
+  const adjusted = adjustForSplits(rows, splits);
+  const vanished = findVanished(adjusted);
   const fates = await resolveFates(vanished, started + FATE_BUDGET_MS);
-  const data = computeScorecard(rows, fates);
+  const data = computeScorecard(adjusted, fates);
   await prisma.scorecardResult.upsert({
     where: { id: "latest" },
     create: { id: "latest", data: data as unknown as Prisma.InputJsonValue, builtAt: now },
     update: { data: data as unknown as Prisma.InputJsonValue, builtAt: now },
   });
-  return { ratings: rows.length, builtAt: now.toISOString(), vanished: vanished.length, fates: fates.size };
+  return { ratings: rows.length, builtAt: now.toISOString(), splits: splits.size, vanished: vanished.length, fates: fates.size };
 }
 
 export async function getScorecard(): Promise<{ data: Scorecard; builtAt: string } | null> {

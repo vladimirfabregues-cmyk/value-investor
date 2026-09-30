@@ -23,6 +23,16 @@ jobs:
         with:
           node-version: "22"
 
+      # Fresh scorecard first, so the frozen report reflects the latest ratings.
+      - name: Rebuild the rating scorecard
+        env:
+          SCREEN_RUN_URL: ${{ secrets.SCREEN_RUN_URL }}
+          SCREEN_RUN_TOKEN: ${{ secrets.SCREEN_RUN_TOKEN }}
+        run: |
+          SITE="${SCREEN_RUN_URL%/api/screen/run}"
+          curl -sS --max-time 120 -X POST -H "x-screen-token: ${SCREEN_RUN_TOKEN}" "${SITE}/api/scorecard/build" || true
+          echo
+
       - name: Freeze the month's figures
         id: month
         env:

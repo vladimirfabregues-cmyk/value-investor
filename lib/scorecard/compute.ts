@@ -74,8 +74,10 @@ export interface OutcomeCounts {
   takeover: number;
   /** Delisted after a collapse: treated as a total loss. */
   failure: number;
-  /** Due but no outcome found yet. */
+  /** Due, the index was screened around then, but this company has no outcome yet. */
   missing: number;
+  /** The index itself was not fully screened around the target week (early, irregular runs). */
+  noRun: number;
   badPrice: number;
 }
 
@@ -197,6 +199,64 @@ export function spearman(a: number[], b: number[]): number | null {
   return da > 0 && db > 0 ? num / Math.sqrt(da * db) : null;
 }
 
+// ── Splits ──────────────────────────────────────────────────────────────────
+
+/** A share split: `ratio` new shares per old share (1:4 reverse split → 0.25). */
+export interface SplitEvent {
+  /** ISO datetime the split took effect. */
+  at: string;
+  ratio: number;
+}
+
+/**
+ * Snapshot prices are raw, so a 1-for-4 reverse split would read as a 300%
+ * gain. Express every price (and fair value) in today's share basis by
+ * dividing by each later split's ratio.
+ */
+export function adjustForSplits(rows: ScoreRow[], splits: Map<string, SplitEvent[]>): ScoreRow[] {
+  if (!splits.size) return rows;
+  return rows.map((r) => {
+    const factor = (splits.get(r.ticker) ?? []).filter((s) => s.at > r.at).reduce((f, s) => f * s.ratio, 1);
+    return factor === 1 ? r : { ...r, price: r.price / factor, fairValue: r.fairValue === null ? null : r.fairValue / factor };
+  });
+}
+
+export interface SplitCandidate {
+  ticker: string;
+  /** ISO date of its first rating. */
+  firstRated: string;
+  /** ISO datetime of the latest suspicious jump. */
+  lastJumpAt: string;
+  jump: number;
+}
+
+/** Companies whose price jumped by a split-like factor between two ratings, biggest first. */
+export function splitCandidates(rows: ScoreRow[], threshold = 1.4): SplitCandidate[] {
+  const byTicker = new Map<string, ScoreRow[]>();
+  for (const r of rows) {
+    if (!(r.price > 0)) continue;
+    const list = byTicker.get(r.ticker);
+    if (list) list.push(r);
+    else byTicker.set(r.ticker, [r]);
+  }
+  const out: SplitCandidate[] = [];
+  for (const [ticker, list] of byTicker) {
+    list.sort((a, b) => a.at.localeCompare(b.at));
+    let jump = 1;
+    let lastJumpAt = "";
+    for (let i = 1; i < list.length; i++) {
+      const ratio = list[i].price / list[i - 1].price;
+      const j = Math.max(ratio, 1 / ratio);
+      if (j >= threshold) {
+        jump = Math.max(jump, j);
+        lastJumpAt = list[i].at;
+      }
+    }
+    if (lastJumpAt) out.push({ ticker, firstRated: list[0].at.slice(0, 10), lastJumpAt, jump });
+  }
+  return out.sort((a, b) => b.jump - a.jump);
+}
+
 // ── History context ─────────────────────────────────────────────────────────
 
 interface Series {
@@ -212,6 +272,7 @@ interface Context {
   tickerLastWeek: Map<string, number>;
   /** Weeks each index had a full run (at least half its usual coverage). */
   fullWeeks: Map<string, number[]>;
+  fullWeekSet: Map<string, Set<number>>;
   /** Latest full-run week per index: outcomes after it are not due yet. */
   dueWeek: Map<string, number>;
   fates: Map<string, Fate>;
@@ -249,7 +310,8 @@ function buildContext(rows: ScoreRow[], fates: Map<string, Fate>): Context {
     fullWeeks.set(index, full);
     dueWeek.set(index, full.at(-1) ?? -Infinity);
   }
-  return { series, tickerLastWeek, fullWeeks, dueWeek, fates };
+  const fullWeekSet = new Map([...fullWeeks].map(([k, ws]) => [k, new Set(ws)]));
+  return { series, tickerLastWeek, fullWeeks, fullWeekSet, dueWeek, fates };
 }
 
 export interface Vanished {
@@ -287,7 +349,7 @@ interface Outcome {
   via: Via;
 }
 
-function outcome(ctx: Context, s: Series, row: ScoreRow, w: number, h: number): Outcome | "notDue" | "missing" | "bad" {
+function outcome(ctx: Context, s: Series, row: ScoreRow, w: number, h: number): Outcome | "notDue" | "noRun" | "missing" | "bad" {
   const target = w + h;
   if (target > (ctx.dueWeek.get(s.index) ?? -Infinity)) return "notDue";
   const y = row.dividendYield !== null && row.dividendYield >= 0 && row.dividendYield <= MAX_YIELD ? row.dividendYield : 0;
@@ -311,7 +373,9 @@ function outcome(ctx: Context, s: Series, row: ScoreRow, w: number, h: number): 
     const close = fate.closes?.find((c) => Math.abs(weekOf(c.date) - target) <= 1);
     if (close) return fromPrice(close.price, h, "trading");
   }
-  return "missing";
+  // Only a gap in a full run of its index says anything about the company.
+  const ran = tries.some(([d]) => target + d > w && ctx.fullWeekSet.get(s.index)?.has(target + d));
+  return ran ? "missing" : "noRun";
 }
 
 interface Obs {
@@ -324,14 +388,14 @@ interface Obs {
 }
 
 function observe(ctx: Context, h: number): { cohorts: Map<string, Obs[]>; counts: OutcomeCounts } {
-  const counts: OutcomeCounts = { snapshot: 0, gap: 0, trading: 0, takeover: 0, failure: 0, missing: 0, badPrice: 0 };
+  const counts: OutcomeCounts = { snapshot: 0, gap: 0, trading: 0, takeover: 0, failure: 0, missing: 0, noRun: 0, badPrice: 0 };
   const raw = new Map<string, Obs[]>();
   for (const s of ctx.series.values()) {
     for (const [w, row] of s.byWeek) {
       const o = outcome(ctx, s, row, w, h);
       if (o === "notDue") continue;
-      if (o === "missing") {
-        counts.missing++;
+      if (o === "missing" || o === "noRun") {
+        counts[o]++;
         continue;
       }
       if (o === "bad") {

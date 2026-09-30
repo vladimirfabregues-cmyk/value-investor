@@ -14,7 +14,8 @@ import { BENCHMARK_TICKER } from "@/lib/portfolio/config";
 import { loadHistories } from "@/lib/portfolio/price-cache";
 import type { SnapshotPrices } from "@/lib/portfolio/analytics";
 import { getScorecard } from "@/lib/scorecard/build";
-import { weekOf } from "@/lib/scorecard/compute";
+import { weekOf, type SplitEvent } from "@/lib/scorecard/compute";
+import { loadSplits } from "@/lib/scorecard/splits";
 
 const isoDay = (d: Date): string => d.toISOString().slice(0, 10);
 
@@ -39,15 +40,19 @@ const HOME_ORDER = ["FTSE100", "FTSE250", "AIM", "SP500", "SP400", "RUSSELLMID",
 
 function snapshotPrices(
   rows: { ticker: string; screenerIndex: string; screenerAt: Date; price: number; sector: string | null }[],
+  splits: Map<string, SplitEvent[]>,
 ): { snap: SnapshotPrices } {
   const prices = new Map<string, Map<number, { at: number; price: number }>>();
   const home = new Map<string, string>();
   const sector = new Map<string, { at: number; sector: string }>();
   for (const r of rows) {
     const at = r.screenerAt.getTime();
-    const w = weekOf(r.screenerAt.toISOString());
+    const iso = r.screenerAt.toISOString();
+    const w = weekOf(iso);
+    // Snapshot prices are raw: restate them in today's shares, as the scorecard does.
+    const factor = (splits.get(r.ticker) ?? []).filter((s) => s.at > iso).reduce((f, s) => f * s.ratio, 1);
     const byWeek = prices.get(r.ticker) ?? new Map();
-    if (!byWeek.get(w) || byWeek.get(w)!.at < at) byWeek.set(w, { at, price: r.price });
+    if (!byWeek.get(w) || byWeek.get(w)!.at < at) byWeek.set(w, { at, price: r.price / factor });
     prices.set(r.ticker, byWeek);
     const h = home.get(r.ticker);
     if (!h || HOME_ORDER.indexOf(r.screenerIndex) < HOME_ORDER.indexOf(h)) home.set(r.ticker, r.screenerIndex);
@@ -119,7 +124,8 @@ export async function buildPortfolios(now: Date = new Date()): Promise<BuildSumm
   const market = buildMarketData({ histories: loaded.histories, fx, stampDuty });
   const scorecard = await getScorecard();
   const indexWeekly = new Map((scorecard?.data.indexWeekly ?? []).map((p) => [`${p.index}|${p.week}`, p.mean]));
-  const computed = computePortfolios(signals, market, today, { ...snapshotPrices(rows), indexWeekly, lastWeek: Math.max(...rows.map((r) => weekOf(r.screenerAt.toISOString()))) });
+  const splits = await loadSplits([...new Set(rows.map((r) => r.ticker))]);
+  const computed = computePortfolios(signals, market, today, { ...snapshotPrices(rows, splits), indexWeekly, lastWeek: Math.max(...rows.map((r) => weekOf(r.screenerAt.toISOString()))) });
 
   const json = (v: unknown): Prisma.InputJsonValue => v as Prisma.InputJsonValue;
   const builtAt = now;

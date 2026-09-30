@@ -6,7 +6,7 @@ import { getArchivedReport, getMonthlyReport, previousMonth, type MonthlyReport 
 import { BOOK_NAMES, RULEBOOKS, fmtPct, fmtPts, headlines } from "@/lib/report/headlines";
 import { LAB_RULES } from "@/lib/portfolio/lab";
 import type { CaseRow, Pattern } from "@/lib/scorecard/compute";
-import type { ClaimStatus, SeriesPoint } from "@/lib/stats";
+import { MIN_WEEKS, type ClaimStatus, type SeriesPoint } from "@/lib/stats";
 import { translations, type Dict } from "@/lib/i18n/translations";
 
 export const metadata = { title: "Monthly report — The Investment Casebook", robots: { index: false } };
@@ -360,8 +360,15 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
                 <h3 className="text-[8.5px] font-semibold uppercase tracking-wider text-slate-500">Buy minus Avoid, cumulative (the rating system&apos;s track record)</h3>
                 <SpreadChart points={sc.spread.points} />
                 <p>
-                  {sc.spread.summary.n} week(s): average {fmtPts(sc.spread.summary.mean === null ? null : sc.spread.summary.mean * 52)} a year, positive in {pct0(sc.spread.summary.positiveShare)} of weeks. Evidence: <span className="font-semibold">{sc.spread.strength}</span>
-                  {sc.ic ? `. Score ranking: average weekly rank correlation ${sc.ic.summary.mean === null ? "—" : sc.ic.summary.mean.toFixed(3)} (${sc.ic.strength}).` : "."}
+                  {sc.spread.summary.n < MIN_WEEKS ? (
+                    `${sc.spread.summary.n} week(s) so far; the average and its evidence appear after ${MIN_WEEKS} weeks (scaling a few weeks up to a year is noise).`
+                  ) : (
+                    <>
+                      {sc.spread.summary.n} weeks: average {fmtPts(sc.spread.summary.mean! * 52)} a year, positive in {pct0(sc.spread.summary.positiveShare)} of weeks. Evidence:{" "}
+                      <span className="font-semibold">{sc.spread.strength}</span>
+                      {sc.ic ? `. Score ranking: average weekly rank correlation ${sc.ic.summary.mean === null ? "—" : sc.ic.summary.mean.toFixed(3)} (${sc.ic.strength}).` : "."}
+                    </>
+                  )}
                 </p>
               </div>
             )}
@@ -418,7 +425,7 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
                         <tr key={f.flag}>
                           <Td left>{flagName(f.flag)}</Td>
                           <Td>{f.weeks}</Td>
-                          <Td bold>{fmtPts(f.weeklyMean === null ? null : f.weeklyMean * 52)}</Td>
+                          <Td bold>{f.weeks < MIN_WEEKS || f.weeklyMean === null ? "—" : fmtPts(f.weeklyMean * 52)}</Td>
                           <Td left>{f.strength}</Td>
                           <Td left className={f.weeklyMean !== null && f.weeklyMean < 0 ? "text-emerald-700" : "text-amber-700"}>
                             {f.strength === "too early" ? "—" : f.weeklyMean !== null && f.weeklyMean < 0 ? "warning works" : "not warning"}
@@ -505,7 +512,8 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
                 4-week outcomes: {sc.outcomes.snapshot.toLocaleString("en-GB")} from later ratings, {sc.outcomes.gap} after a skipped run, {sc.outcomes.trading} from Yahoo (no longer rated), {sc.outcomes.takeover} takeovers, {sc.outcomes.failure} failures counted as total losses; {sc.outcomes.missing.toLocaleString("en-GB")} still missing.
               </p>
             )}
-            {r.integrity && (
+            {r.integrity && r.integrity.modelVersions.length === 0 && <p>Model version: no ratings this month yet.</p>}
+            {r.integrity && r.integrity.modelVersions.length > 0 && (
               <p>
                 Model version{r.integrity.modelVersions.length > 1 ? "s" : ""} this month:{" "}
                 {r.integrity.modelVersions.map((v) => `${v.version} (${v.ratings.toLocaleString("en-GB")} ratings, ${(v.buyShare * 100).toFixed(1)}% Buy or better)`).join("; ")}

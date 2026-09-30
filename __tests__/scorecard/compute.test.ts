@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { computeScorecard, findVanished, spearman, type Fate, type ScoreRow } from "@/lib/scorecard/compute";
+import { adjustForSplits, computeScorecard, findVanished, spearman, splitCandidates, type Fate, type ScoreRow } from "@/lib/scorecard/compute";
 
 const row = (over: Partial<ScoreRow>): ScoreRow => ({
   ticker: "T0", index: "SP500", at: "2026-06-01T10:00:00Z", verdict: "HOLD", score: 50, price: 100, caps: null,
@@ -164,5 +164,46 @@ describe("case lists", () => {
     expect(flaglessLosers.map((c) => c.ticker)).toEqual(["T1", "T2", "T3", "T4", "T5"]);
     expect(best.map((c) => c.ticker)).toEqual(["T5", "T4", "T3"]);
     expect(worst.map((c) => c.ticker)).toEqual(["T0", "T1", "T2"]);
+  });
+});
+
+describe("share splits", () => {
+  // MQ: a 1-for-4 reverse split on 1 July 2026 — raw price 3.88 → 15.52 with no real move.
+  const split = new Map([["MQ", [{ at: "2026-07-01T13:30:00.000Z", ratio: 0.25 }]]]);
+  const before = row({ ticker: "MQ", at: "2026-06-01T10:00:00Z", price: 3.88, fairValue: 5 });
+  const after = row({ ticker: "MQ", at: "2026-06-29T10:00:00Z", price: 3.9 });
+  const later = row({ ticker: "MQ", at: "2026-07-27T10:00:00Z", price: 15.6 });
+
+  it("restates earlier prices (and fair values) in today's shares", () => {
+    const [b, a, l] = adjustForSplits([before, after, later], split);
+    expect(b.price).toBeCloseTo(15.52, 9);
+    expect(b.fairValue).toBeCloseTo(20, 9);
+    expect(a.price).toBeCloseTo(15.6, 9);
+    expect(l.price).toBe(15.6);
+  });
+
+  it("flags split-like jumps for a Yahoo check, and ignores ordinary moves", () => {
+    const rows = [before, after, later, row({ ticker: "OK", price: 100 }), row({ ticker: "OK", at: "2026-06-29T10:00:00Z", price: 115 })];
+    expect(splitCandidates(rows)).toEqual([{ ticker: "MQ", firstRated: "2026-06-01", lastJumpAt: "2026-07-27T10:00:00Z", jump: 4 }]);
+  });
+
+  it("no longer books a reverse split as a gain", () => {
+    const cohort = (at: string, mqPrice: number) => [
+      ...Array.from({ length: 20 }, (_, i) => row({ ticker: `N${i}`, at })),
+      row({ ticker: "MQ", verdict: "AVOID", at, price: mqPrice }),
+    ];
+    const rows = [...cohort("2026-06-15T10:00:00Z", 3.88), ...cohort("2026-07-13T10:00:00Z", 15.52)];
+    const avoid = (r: ScoreRow[]) => computeScorecard(r).horizons[0].byVerdict.find((v) => v.verdict === "AVOID")!.meanExcess!;
+    expect(avoid(rows)).toBeGreaterThan(2); // the artefact: +300%
+    expect(avoid(adjustForSplits(rows, split))).toBeCloseTo(0, 9);
+  });
+});
+
+describe("missing outcomes", () => {
+  it("only counts a company as missing when its index was fully screened around the target week", () => {
+    const rows = [0, 8].flatMap((w) => Array.from({ length: 25 }, (_, i) => row({ ticker: `T${i}`, at: weekAt(w) })));
+    const four = computeScorecard(rows).horizons[0];
+    expect(four.outcomes.noRun).toBe(25); // nothing ran in weeks 2–6
+    expect(four.outcomes.missing).toBe(0);
   });
 });

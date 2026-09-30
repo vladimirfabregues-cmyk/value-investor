@@ -50,4 +50,10 @@ export const DECISION_LOG: DecisionEntry[] = [
     why: "Price-only returns understated high-yield Buys; delisted companies silently dropped out.",
     expected: "Buy ratings look slightly better (dividends) and failures now count as losses.",
   },
+  {
+    date: "2026-09-30",
+    change: "Scorecard restates prices for share splits.",
+    why: "Snapshot prices are raw: MQ's 1-for-4 and DuPont's 1-for-3 reverse splits read as +330% and +190% 'returns'.",
+    expected: "Those false winners disappear from the case lists; averages shift slightly.",
+  },
 ];
