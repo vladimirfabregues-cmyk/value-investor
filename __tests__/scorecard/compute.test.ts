@@ -58,3 +58,17 @@ describe("computeScorecard", () => {
     expect(glitch.badPrices).toBe(1);
   });
 });
+
+describe("computeScorecard — cases", () => {
+  it("never lists the same company as both a best and a worst outcome", () => {
+    const rows: ScoreRow[] = [];
+    for (let i = 0; i < 60; i++) {
+      const verdict = i < 3 ? "BUY" : "HOLD";
+      rows.push(row({ ticker: `T${i}`, verdict }));
+      rows.push(row({ ticker: `T${i}`, verdict, at: "2026-06-29T10:00:00Z", price: 100 + i }));
+    }
+    const { best, worst } = computeScorecard(rows).cases!;
+    expect(best.map((c) => c.ticker)).toEqual(["T2", "T1"]);
+    expect(worst.map((c) => c.ticker)).toEqual(["T0"]);
+  });
+});

@@ -271,10 +271,13 @@ export function computeScorecard(rows: ScoreRow[]): Scorecard {
     const bought = firstPerTicker(all.filter((o) => o.row.verdict === "STRONG_BUY" || o.row.verdict === "BUY"));
     const shunned = firstPerTicker(all.filter((o) => o.row.verdict === "HOLD" || o.row.verdict === "AVOID"));
     const byExcess = (a: Obs, b: Obs) => b.excess - a.excess;
+    // With few names the two lists would repeat each other, so split them.
+    const ranked = [...bought].sort(byExcess);
+    const top = Math.min(CASES, Math.ceil(ranked.length / 2));
     cases = {
       weeks: caseHorizon,
-      best: [...bought].sort(byExcess).slice(0, CASES).map(toCase),
-      worst: [...bought].sort(byExcess).reverse().slice(0, CASES).map(toCase),
+      best: ranked.slice(0, top).map(toCase),
+      worst: ranked.slice(top).reverse().slice(0, CASES).map(toCase),
       missed: [...shunned].sort(byExcess).slice(0, CASES).map(toCase),
     };
   }

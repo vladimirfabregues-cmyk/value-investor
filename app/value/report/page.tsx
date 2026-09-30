@@ -2,6 +2,10 @@ export const dynamic = "force-dynamic";
 
 import { getArchivedReport, getMonthlyReport, previousMonth, type BookLine } from "@/lib/report/data";
 import { BOOK_NAMES, fmtPct, headlines } from "@/lib/report/headlines";
+import { translations, type Dict } from "@/lib/i18n/translations";
+
+const CAPS = translations.en.caps as Dict;
+const flagName = (f: string) => ((CAPS[f] as Dict | undefined)?.label as string | undefined) ?? f.replaceAll("_", " ");
 
 export const metadata = { title: "Monthly report — The Investment Casebook", robots: { index: false } };
 
@@ -133,7 +137,7 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
                   <ul className="mt-1 space-y-0.5">
                     {r.scorecard.flags.map((f) => (
                       <li key={f.flag} className="flex justify-between gap-2">
-                        <span>{f.flag.replaceAll("_", " ")} ({f.n})</span>
+                        <span>{flagName(f.flag)} ({f.n})</span>
                         <span className="tabular-nums">{fmtPct(f.difference)}</span>
                       </li>
                     ))}
