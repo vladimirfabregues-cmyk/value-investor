@@ -151,3 +151,11 @@ model ScorecardResult {
   data    Json
   builtAt DateTime
 }
+
+/// Monthly report figures, frozen when the report is sent so later reports
+/// can compare against them. `month` is "YYYY-MM".
+model ReportArchive {
+  month   String   @id
+  data    Json
+  builtAt DateTime
+}

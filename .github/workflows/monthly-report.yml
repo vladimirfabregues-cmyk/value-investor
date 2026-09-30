@@ -1,0 +1,63 @@
+name: Monthly report
+
+# On the 1st of each month: freeze last month's figures, print the report page
+# to PDF, email it (Resend) and keep a copy as a run artifact.
+
+on:
+  schedule:
+    - cron: "0 8 1 * *"
+  workflow_dispatch:
+    inputs:
+      month:
+        description: "Month to report, YYYY-MM (blank = last month)"
+        required: false
+        default: ""
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Freeze the month's figures
+        id: month
+        env:
+          SCREEN_RUN_URL: ${{ secrets.SCREEN_RUN_URL }}
+          SCREEN_RUN_TOKEN: ${{ secrets.SCREEN_RUN_TOKEN }}
+          INPUT_MONTH: ${{ github.event.inputs.month }}
+        run: |
+          set -euo pipefail
+          MONTH="${INPUT_MONTH:-$(date -u -d "$(date -u +%Y-%m-01) -1 day" +%Y-%m)}"
+          SITE="${SCREEN_RUN_URL%/api/screen/run}"
+          echo "month=${MONTH}" >> "$GITHUB_OUTPUT"
+          echo "site=${SITE}" >> "$GITHUB_OUTPUT"
+          code=$(curl -sS --max-time 120 -o /tmp/archive.json -w '%{http_code}' \
+            -X POST -H "x-screen-token: ${SCREEN_RUN_TOKEN}" "${SITE}/api/report/archive?month=${MONTH}")
+          cat /tmp/archive.json; echo
+          [ "$code" = "200" ]
+
+      - name: Print the report to PDF
+        run: |
+          set -euo pipefail
+          google-chrome --headless=new --no-sandbox --disable-gpu --no-pdf-header-footer \
+            --virtual-time-budget=15000 --print-to-pdf=report.pdf \
+            "${{ steps.month.outputs.site }}/value/report?month=${{ steps.month.outputs.month }}"
+          ls -l report.pdf
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: casebook-report-${{ steps.month.outputs.month }}
+          path: report.pdf
+
+      - name: Email the report
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          REPORT_EMAIL_TO: ${{ secrets.REPORT_EMAIL_TO }}
+          REPORT_MONTH: ${{ steps.month.outputs.month }}
+          REPORT_PDF: report.pdf
+          REPORT_URL: ${{ steps.month.outputs.site }}/value/report?month=${{ steps.month.outputs.month }}
+        run: node scripts/send-report.mjs
