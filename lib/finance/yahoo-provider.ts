@@ -1,6 +1,7 @@
 import YahooFinance from "yahoo-finance2";
 
 import { FinanceProviderError, type FinanceProvider } from "@/lib/finance/provider";
+import { parseLastSplit } from "@/lib/finance/splits";
 import { normalizeTickerInput } from "@/lib/finance/normalize";
 import { fetchEdgarSupplement } from "@/lib/finance/edgar-supplement";
 import { getSectorProfile, isUSTicker, normalizeYahooSector } from "@/lib/finance/sector-profile";
@@ -45,6 +46,10 @@ interface YFKeyStats {
   bookValue?: number;
   enterpriseValue?: number;
   sharesOutstanding?: number;
+  /** "new:old", e.g. "2:1" or "1:4" */
+  lastSplitFactor?: string;
+  /** Epoch seconds (or Date/string when validated) */
+  lastSplitDate?: number | string | Date;
 }
 
 interface YFSummaryProfile {
@@ -535,6 +540,7 @@ export class YahooFinanceProvider implements FinanceProvider {
       price: currentPrice,
       market_cap: marketCap,
       dividend_yield: safeNum(sd?.dividendYield) ?? 0,
+      last_split: parseLastSplit(ks?.lastSplitFactor, ks?.lastSplitDate),
       enterprise_value: enterpriseValue,
       shares_outstanding: sharesOutstanding,
       latest,

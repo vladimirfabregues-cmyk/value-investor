@@ -12,7 +12,8 @@ import { prisma } from "@/lib/db/client";
 import type { SplitCandidate, SplitEvent } from "@/lib/scorecard/compute";
 
 const yf = new YahooFinance({ suppressNotices: ["yahooSurvey"] });
-const MAX_LOOKUPS = 80;
+const MAX_LOOKUPS = 400;
+const CONCURRENCY = 6;
 
 const toMap = (rows: { ticker: string; splits: Prisma.JsonValue }[]) =>
   new Map(
@@ -29,12 +30,13 @@ export async function loadSplits(tickers: string[]): Promise<Map<string, SplitEv
 /** Look up candidates not checked since their latest jump; return every known split. */
 export async function resolveSplits(candidates: SplitCandidate[], deadline: number): Promise<Map<string, SplitEvent[]>> {
   const known = new Map((await prisma.splitCheck.findMany()).map((c) => [c.ticker, c]));
-  let lookups = 0;
-  for (const c of candidates) {
-    const k = known.get(c.ticker);
-    if (k && k.checkedAt.toISOString() >= c.lastJumpAt) continue;
-    if (Date.now() >= deadline || lookups >= MAX_LOOKUPS) break;
-    lookups++;
+  const queue = candidates
+    .filter((c) => {
+      const k = known.get(c.ticker);
+      return !k || k.checkedAt.toISOString() < c.lastJumpAt;
+    })
+    .slice(0, MAX_LOOKUPS);
+  const lookUp = async (c: SplitCandidate) => {
     try {
       const from = new Date(Date.parse(c.firstRated) - 7 * 86_400_000).toISOString().slice(0, 10);
       const chart = await yf.chart(c.ticker, { period1: from, interval: "1wk" });
@@ -47,6 +49,15 @@ export async function resolveSplits(candidates: SplitCandidate[], deadline: numb
     } catch {
       // Delisted or throttled: the fate lookup covers the former; the next run retries the latter.
     }
-  }
+  };
+  const worker = async () => {
+    for (;;) {
+      if (Date.now() >= deadline) return;
+      const c = queue.shift();
+      if (!c) return;
+      await lookUp(c);
+    }
+  };
+  await Promise.all(Array.from({ length: CONCURRENCY }, worker));
   return toMap([...known.values()]);
 }

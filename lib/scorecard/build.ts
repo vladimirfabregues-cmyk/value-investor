@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db/client";
-import { adjustForSplits, computeScorecard, findVanished, splitCandidates, type ScoreRow, type Scorecard } from "@/lib/scorecard/compute";
+import { adjustForSplits, capturedSplits, computeScorecard, findVanished, mergeSplits, splitCandidates, type ScoreRow, type Scorecard } from "@/lib/scorecard/compute";
 import { resolveFates } from "@/lib/scorecard/fates";
 import { resolveSplits } from "@/lib/scorecard/splits";
 
@@ -17,6 +17,7 @@ export async function buildScorecard(
   const started = Date.now();
   // Paged so memory stays flat as the history grows (~6,000 rows a week).
   const rows: ScoreRow[] = [];
+  const splitRows: { ticker: string; lastSplitAt: string | null; lastSplitRatio: number | null }[] = [];
   let cursor: string | undefined;
   for (;;) {
     const page = await prisma.screenSnapshot.findMany({
@@ -26,10 +27,11 @@ export async function buildScorecard(
       select: {
         id: true, ticker: true, screenerIndex: true, screenerAt: true, verdictLabel: true, compositeScore: true,
         price: true, verdictCaps: true, valuationScore: true, healthScore: true, qualityScore: true, moatScore: true, fairValue: true,
-        dividendYield: true, marginOfSafety: true, sector: true,
+        dividendYield: true, marginOfSafety: true, sector: true, lastSplitAt: true, lastSplitRatio: true,
       },
     });
     for (const r of page) {
+      if (r.lastSplitAt) splitRows.push({ ticker: r.ticker, lastSplitAt: r.lastSplitAt, lastSplitRatio: r.lastSplitRatio });
       rows.push({
         ticker: r.ticker, index: r.screenerIndex, at: r.screenerAt.toISOString(), verdict: r.verdictLabel,
         score: r.compositeScore, price: r.price, caps: r.verdictCaps, valuationScore: r.valuationScore,
@@ -41,7 +43,7 @@ export async function buildScorecard(
     cursor = page.at(-1)!.id;
   }
 
-  const splits = await resolveSplits(splitCandidates(rows), started + SPLIT_BUDGET_MS);
+  const splits = mergeSplits(await resolveSplits(splitCandidates(rows), started + SPLIT_BUDGET_MS), capturedSplits(splitRows));
   const adjusted = adjustForSplits(rows, splits);
   const vanished = findVanished(adjusted);
   const fates = await resolveFates(vanished, started + FATE_BUDGET_MS);

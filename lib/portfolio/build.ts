@@ -14,7 +14,7 @@ import { BENCHMARK_TICKER } from "@/lib/portfolio/config";
 import { loadHistories } from "@/lib/portfolio/price-cache";
 import type { SnapshotPrices } from "@/lib/portfolio/analytics";
 import { getScorecard } from "@/lib/scorecard/build";
-import { weekOf, type SplitEvent } from "@/lib/scorecard/compute";
+import { capturedSplits, mergeSplits, weekOf, type SplitEvent } from "@/lib/scorecard/compute";
 import { loadSplits } from "@/lib/scorecard/splits";
 
 const isoDay = (d: Date): string => d.toISOString().slice(0, 10);
@@ -82,7 +82,7 @@ export async function buildPortfolios(now: Date = new Date()): Promise<BuildSumm
     where: { ticker: { in: eligible.map((e) => e.ticker) } },
     select: {
       ticker: true, currency: true, screenerIndex: true, screenerAt: true, verdictLabel: true, compositeScore: true,
-      price: true, sector: true,
+      price: true, sector: true, lastSplitAt: true, lastSplitRatio: true,
     },
   });
   const snapshotRows: SnapshotRow[] = rows.map((r) => ({ ...r, screenerAt: r.screenerAt.toISOString() }));
@@ -124,7 +124,7 @@ export async function buildPortfolios(now: Date = new Date()): Promise<BuildSumm
   const market = buildMarketData({ histories: loaded.histories, fx, stampDuty });
   const scorecard = await getScorecard();
   const indexWeekly = new Map((scorecard?.data.indexWeekly ?? []).map((p) => [`${p.index}|${p.week}`, p.mean]));
-  const splits = await loadSplits([...new Set(rows.map((r) => r.ticker))]);
+  const splits = mergeSplits(await loadSplits([...new Set(rows.map((r) => r.ticker))]), capturedSplits(rows));
   const computed = computePortfolios(signals, market, today, { ...snapshotPrices(rows, splits), indexWeekly, lastWeek: Math.max(...rows.map((r) => weekOf(r.screenerAt.toISOString()))) });
 
   const json = (v: unknown): Prisma.InputJsonValue => v as Prisma.InputJsonValue;

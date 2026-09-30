@@ -102,6 +102,8 @@ async function screenCompany(
         marketCap: dataset.market_cap > 0 ? dataset.market_cap : null,
         modelVersion: VALUATION_MODEL_VERSION,
         dividendYield: dataset.dividend_yield ?? null,
+        lastSplitAt: dataset.last_split?.at ?? null,
+        lastSplitRatio: dataset.last_split?.ratio ?? null,
       }),
     ]);
     return true;

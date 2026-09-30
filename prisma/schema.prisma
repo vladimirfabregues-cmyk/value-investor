@@ -102,6 +102,9 @@ model ScreenSnapshot {
   modelVersion    String?
   /// Forward dividend yield (fraction), so relative returns can include dividends
   dividendYield   Float?
+  /// Most recent share split as Yahoo reported it at rating time (ISO datetime, new per old)
+  lastSplitAt     String?
+  lastSplitRatio  Float?
   createdAt      DateTime @default(now())
 
   @@index([screenerIndex, screenerAt])

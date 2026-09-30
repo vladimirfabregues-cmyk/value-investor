@@ -221,6 +221,27 @@ export function adjustForSplits(rows: ScoreRow[], splits: Map<string, SplitEvent
   });
 }
 
+/** Each company's "latest split" as Yahoo reported it at rating time, deduplicated by day. */
+export function capturedSplits(
+  rows: { ticker: string; lastSplitAt: string | null; lastSplitRatio: number | null }[],
+): Map<string, SplitEvent[]> {
+  const byTicker = new Map<string, Map<string, SplitEvent>>();
+  for (const r of rows) {
+    if (!r.lastSplitAt || !r.lastSplitRatio || r.lastSplitRatio === 1) continue;
+    const days = byTicker.get(r.ticker) ?? new Map<string, SplitEvent>();
+    days.set(r.lastSplitAt.slice(0, 10), { at: r.lastSplitAt, ratio: r.lastSplitRatio });
+    byTicker.set(r.ticker, days);
+  }
+  return new Map([...byTicker].map(([t, days]) => [t, [...days.values()]]));
+}
+
+/** A Yahoo-confirmed split history wins; the captured latest split covers everyone else. */
+export function mergeSplits(checked: Map<string, SplitEvent[]>, captured: Map<string, SplitEvent[]>): Map<string, SplitEvent[]> {
+  const out = new Map(captured);
+  for (const [ticker, splits] of checked) out.set(ticker, splits);
+  return out;
+}
+
 export interface SplitCandidate {
   ticker: string;
   /** ISO date of its first rating. */

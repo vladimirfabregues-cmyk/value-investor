@@ -58,6 +58,8 @@ export interface NormalizedFinancialDataset {
   market_cap: number;
   /** Forward dividend yield as a fraction (Yahoo summaryDetail.dividendYield, unit-free); 0 when none is paid. */
   dividend_yield?: number | null;
+  /** Most recent share split (Yahoo key statistics), so raw prices can be restated. */
+  last_split?: { at: string; ratio: number } | null;
   enterprise_value: number;
   shares_outstanding: number;
   latest: FinancialSnapshot;
