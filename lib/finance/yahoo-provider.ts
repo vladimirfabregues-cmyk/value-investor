@@ -55,6 +55,9 @@ interface YFSummaryProfile {
 interface YFSummaryDetail {
   dividendRate?: number;
   trailingAnnualDividendRate?: number;
+  /** Forward yield as a fraction. Unit-free, so unlike the trailing yield it is
+   *  not thrown off by GBp prices against GBP dividends (VOD.L: 3.2% vs 0.04%). */
+  dividendYield?: number;
 }
 
 interface YFQuoteType {
@@ -531,6 +534,7 @@ export class YahooFinanceProvider implements FinanceProvider {
       cef_pb_history: cefPbHistory,
       price: currentPrice,
       market_cap: marketCap,
+      dividend_yield: safeNum(sd?.dividendYield) ?? 0,
       enterprise_value: enterpriseValue,
       shares_outstanding: sharesOutstanding,
       latest,

@@ -1,14 +1,20 @@
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db/client";
-import { computeScorecard, type Scorecard } from "@/lib/scorecard/compute";
+import { computeScorecard, findVanished, type ScoreRow, type Scorecard } from "@/lib/scorecard/compute";
+import { resolveFates } from "@/lib/scorecard/fates";
 
 const PAGE = 20_000;
+/** Stop Yahoo look-ups for vanished companies after this, leaving time to compute and save. */
+const FATE_BUDGET_MS = 20_000;
 
 /** Load every snapshot rating, grade it, and store the result for the page. */
-export async function buildScorecard(now: Date = new Date()): Promise<{ ratings: number; builtAt: string }> {
+export async function buildScorecard(
+  now: Date = new Date(),
+): Promise<{ ratings: number; builtAt: string; vanished: number; fates: number }> {
+  const started = Date.now();
   // Paged so memory stays flat as the history grows (~6,000 rows a week).
-  const rows = [];
+  const rows: ScoreRow[] = [];
   let cursor: string | undefined;
   for (;;) {
     const page = await prisma.screenSnapshot.findMany({
@@ -18,6 +24,7 @@ export async function buildScorecard(now: Date = new Date()): Promise<{ ratings:
       select: {
         id: true, ticker: true, screenerIndex: true, screenerAt: true, verdictLabel: true, compositeScore: true,
         price: true, verdictCaps: true, valuationScore: true, healthScore: true, qualityScore: true, moatScore: true, fairValue: true,
+        dividendYield: true, marginOfSafety: true, sector: true,
       },
     });
     for (const r of page) {
@@ -25,19 +32,22 @@ export async function buildScorecard(now: Date = new Date()): Promise<{ ratings:
         ticker: r.ticker, index: r.screenerIndex, at: r.screenerAt.toISOString(), verdict: r.verdictLabel,
         score: r.compositeScore, price: r.price, caps: r.verdictCaps, valuationScore: r.valuationScore,
         healthScore: r.healthScore, qualityScore: r.qualityScore, moatScore: r.moatScore, fairValue: r.fairValue,
+        dividendYield: r.dividendYield, marginOfSafety: r.marginOfSafety, sector: r.sector,
       });
     }
     if (page.length < PAGE) break;
     cursor = page.at(-1)!.id;
   }
 
-  const data = computeScorecard(rows);
+  const vanished = findVanished(rows);
+  const fates = await resolveFates(vanished, started + FATE_BUDGET_MS);
+  const data = computeScorecard(rows, fates);
   await prisma.scorecardResult.upsert({
     where: { id: "latest" },
     create: { id: "latest", data: data as unknown as Prisma.InputJsonValue, builtAt: now },
     update: { data: data as unknown as Prisma.InputJsonValue, builtAt: now },
   });
-  return { ratings: rows.length, builtAt: now.toISOString() };
+  return { ratings: rows.length, builtAt: now.toISOString(), vanished: vanished.length, fates: fates.size };
 }
 
 export async function getScorecard(): Promise<{ data: Scorecard; builtAt: string } | null> {

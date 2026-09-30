@@ -56,6 +56,8 @@ export interface NormalizedFinancialDataset {
   cef_pb_history?: Array<number | null>;
   price: number;
   market_cap: number;
+  /** Forward dividend yield as a fraction (Yahoo summaryDetail.dividendYield, unit-free); 0 when none is paid. */
+  dividend_yield?: number | null;
   enterprise_value: number;
   shares_outstanding: number;
   latest: FinancialSnapshot;

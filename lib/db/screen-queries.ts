@@ -107,6 +107,7 @@ export async function appendScreenSnapshot(data: {
   valuationMethod: string;
   marketCap: number | null;
   modelVersion: string;
+  dividendYield: number | null;
 }): Promise<void> {
   await prisma.screenSnapshot.create({ data });
 }

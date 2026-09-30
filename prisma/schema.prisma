@@ -100,6 +100,8 @@ model ScreenSnapshot {
   valuationMethod String?
   marketCap       Float?
   modelVersion    String?
+  /// Forward dividend yield (fraction), so relative returns can include dividends
+  dividendYield   Float?
   createdAt      DateTime @default(now())
 
   @@index([screenerIndex, screenerAt])
@@ -158,4 +160,18 @@ model ReportArchive {
   month   String   @id
   data    Json
   builtAt DateTime
+}
+
+/// What became of a company that stopped being rated (delisted, taken over,
+/// or still trading but no longer screened), so its ratings keep an outcome
+/// instead of silently dropping out of the scorecard.
+model TickerFate {
+  ticker    String   @id
+  /// TRADING | TAKEOVER | FAILURE
+  status    String
+  /// Last snapshot week the company was rated (ISO date)
+  lastRated String
+  /// Weekly closes after it stopped being rated (TRADING only), same units as snapshot prices
+  closes    Json?
+  checkedAt DateTime
 }

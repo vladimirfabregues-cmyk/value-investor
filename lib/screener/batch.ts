@@ -101,6 +101,7 @@ async function screenCompany(
         valuationMethod: metrics.intrinsic_value.intrinsic_method,
         marketCap: dataset.market_cap > 0 ? dataset.market_cap : null,
         modelVersion: VALUATION_MODEL_VERSION,
+        dividendYield: dataset.dividend_yield ?? null,
       }),
     ]);
     return true;
