@@ -9,7 +9,7 @@ import type { CaseRow, Pattern } from "@/lib/scorecard/compute";
 import { MIN_WEEKS, type ClaimStatus, type SeriesPoint } from "@/lib/stats";
 import { translations, type Dict } from "@/lib/i18n/translations";
 
-export const metadata = { title: "Monthly report — The Investment Casebook", robots: { index: false } };
+export const metadata = { title: "Monthly report — The Value Investor", robots: { index: false } };
 
 const CAPS = translations.en.caps as Dict;
 const flagName = (f: string) => ((CAPS[f] as Dict | undefined)?.label as string | undefined) ?? f.replaceAll("_", " ");
@@ -121,7 +121,7 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
       <div className="report mx-auto max-w-[190mm] space-y-5 p-6 print:p-0">
         <header className="flex items-end justify-between border-b-2 border-slate-900 pb-3">
           <div>
-            <p className="text-[9px] font-semibold uppercase tracking-[0.25em] text-amber-700">The Investment Casebook · Monthly report</p>
+            <p className="text-[9px] font-semibold uppercase tracking-[0.25em] text-amber-700">The Value Investor · Monthly report</p>
             <h1 className="mt-1 font-display text-3xl">{monthName(r.month)}</h1>
           </div>
           <p className="text-right text-[9px] text-slate-500">

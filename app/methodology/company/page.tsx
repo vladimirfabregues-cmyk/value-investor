@@ -10,7 +10,7 @@ import { BRAND } from "@/lib/brand";
  * <CompanyMethodology /> so it can read the locale context.
  */
 export const metadata: Metadata = {
-  title: "How company analysis works — The Investment Casebook",
+  title: "How company analysis works — The Value Investor",
   description:
     "The company scoring process: a valuation model chosen for the economics, checks on financial resilience, earnings quality and cyclicality, material-weakness caps, and how scores become a conclusion.",
   alternates: { canonical: `${BRAND.origin}/methodology/company` },

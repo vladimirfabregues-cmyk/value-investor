@@ -8,7 +8,7 @@ import { BRAND } from "@/lib/brand";
 import { cn } from "@/lib/utils/cn";
 
 /**
- * Homepage "Research tools" section — the two ways into the Casebook, given
+ * Homepage "Research tools" section — the two ways into the site, given
  * equal weight. Anchored as #research-tools so a global "Start a case" CTA can
  * jump straight here.
  *

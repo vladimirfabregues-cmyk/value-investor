@@ -8,7 +8,7 @@ const SIZES = {
   lg: { disc: "h-11 w-11 text-base", word: "text-xl sm:text-2xl" },
 } as const;
 
-interface CasebookLogoProps {
+interface BrandLogoProps {
   size?: keyof typeof SIZES;
   /** Hide the wordmark for a compact, icon-only lockup. */
   showWordmark?: boolean;
@@ -22,20 +22,20 @@ interface CasebookLogoProps {
 }
 
 /**
- * The Investment Casebook logo — a gold "IC" bookplate seal + wordmark. The
+ * The Value Investor logo — a gold "VI" bookplate seal + wordmark. The
  * seal is decorative (aria-hidden); the wordmark is selectable text and carries
  * the accessible name. Works horizontally (seal + wordmark) or compact (seal
  * only, via showWordmark={false}). The single source for the mark across the
  * topbar and the landing masthead.
  */
-export function CasebookLogo({
+export function BrandLogo({
   size = "md",
   showWordmark = true,
   wordmarkAs: Wordmark = "span",
   sublabel,
   wordmarkClassName,
   className,
-}: CasebookLogoProps) {
+}: BrandLogoProps) {
   const s = SIZES[size];
   return (
     <div className={cn("inline-flex items-center gap-2.5", className)}>
@@ -46,7 +46,7 @@ export function CasebookLogo({
           s.disc,
         )}
       >
-        IC
+        VI
       </span>
       {showWordmark && (
         <div className={cn("min-w-0", wordmarkClassName)}>

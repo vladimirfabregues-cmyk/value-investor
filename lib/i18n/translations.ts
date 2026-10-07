@@ -55,7 +55,7 @@ const en: Dict = {
     microDisclaimer: "Informational research tools · No personal recommendations · Capital at risk",
     aboutLink: "About the author",
     caseFile: {
-      label: "The Casebook method",
+      label: "The Value Investor method",
       evidence: { title: "Evidence", sub: "Source and date" },
       method: { title: "Approach", sub: "Model or peer group" },
       checks: { title: "Checks", sub: "Quality and resilience" },
@@ -589,13 +589,13 @@ const en: Dict = {
       important: "Important information",
     },
     disclaimer:
-      "The Investment Casebook provides informational research and education tools. It does not provide investment, tax or legal advice, personal recommendations, or an offer or solicitation to buy or sell any security. Capital is at risk. Data and model outputs may be delayed, incomplete or incorrect; verify material facts independently.",
+      "The Value Investor provides informational research and education tools. It does not provide investment, tax or legal advice, personal recommendations, or an offer or solicitation to buy or sell any security. Capital is at risk. Data and model outputs may be delayed, incomplete or incorrect; verify material facts independently.",
     readFull: "Read the full important information",
     methodLabel: "Method",
     rights: "All rights reserved.",
   },
   siteNav: {
-    home: "The Investment Casebook — home",
+    home: "The Value Investor — home",
     stocks: "Analyse stock",
     etfs: "ETFs",
     compare: "Compare stocks",
@@ -608,11 +608,11 @@ const en: Dict = {
   },
   legal: {
     title: "Important information",
-    intro: "This page consolidates the risk and status information that applies across The Investment Casebook. Short, context-specific warnings also appear on the relevant product pages.",
+    intro: "This page consolidates the risk and status information that applies across The Value Investor. Short, context-specific warnings also appear on the relevant product pages.",
     reviewNote: "This wording is provided for transparency and remains subject to ongoing owner and legal review.",
     s1: {
       title: "Informational purpose",
-      body: "The Investment Casebook provides informational research and education tools. It is intended to help you form and challenge your own view, not to tell you what to do.",
+      body: "The Value Investor provides informational research and education tools. It is intended to help you form and challenge your own view, not to tell you what to do.",
     },
     s2: {
       title: "No personal recommendation",
@@ -660,7 +660,7 @@ const en: Dict = {
     },
     s13: {
       title: "Regulatory status",
-      body: "The Investment Casebook is a research and education tool. It does not hold itself out as a regulated financial adviser and makes no claim of authorisation by any regulator. This notice does not change the regulatory treatment of any content; it describes how the tool is intended to be used.",
+      body: "The Value Investor is a research and education tool. It does not hold itself out as a regulated financial adviser and makes no claim of authorisation by any regulator. This notice does not change the regulatory treatment of any content; it describes how the tool is intended to be used.",
     },
     s14: {
       title: "Contact and correction requests",
@@ -1519,7 +1519,7 @@ const fr: Dict = {
     microDisclaimer: "Outils de recherche informatifs · Aucune recommandation personnalisée · Capital à risque",
     aboutLink: "À propos de l'auteur",
     caseFile: {
-      label: "La méthode Casebook",
+      label: "La méthode Value Investor",
       evidence: { title: "Preuves", sub: "Source et date" },
       method: { title: "Approche", sub: "Modèle ou groupe de pairs" },
       checks: { title: "Vérifications", sub: "Qualité et résilience" },
@@ -2053,13 +2053,13 @@ const fr: Dict = {
       important: "Informations importantes",
     },
     disclaimer:
-      "The Investment Casebook fournit des outils de recherche et d'éducation à titre informatif. Il ne fournit pas de conseil en investissement, fiscal ou juridique, ni de recommandation personnalisée, ni d'offre ou de sollicitation d'achat ou de vente d'un titre. Le capital est exposé à un risque. Les données et les sorties de modèles peuvent être différées, incomplètes ou erronées ; vérifiez les faits importants de manière indépendante.",
+      "The Value Investor fournit des outils de recherche et d'éducation à titre informatif. Il ne fournit pas de conseil en investissement, fiscal ou juridique, ni de recommandation personnalisée, ni d'offre ou de sollicitation d'achat ou de vente d'un titre. Le capital est exposé à un risque. Les données et les sorties de modèles peuvent être différées, incomplètes ou erronées ; vérifiez les faits importants de manière indépendante.",
     readFull: "Lire l'ensemble des informations importantes",
     methodLabel: "Méthode",
     rights: "Tous droits réservés.",
   },
   siteNav: {
-    home: "The Investment Casebook — accueil",
+    home: "The Value Investor — accueil",
     stocks: "Analyser une action",
     etfs: "ETF",
     compare: "Comparer des actions",
@@ -2072,11 +2072,11 @@ const fr: Dict = {
   },
   legal: {
     title: "Informations importantes",
-    intro: "Cette page regroupe les informations sur les risques et le statut qui s'appliquent à l'ensemble de The Investment Casebook. De courts avertissements contextuels figurent également sur les pages produit concernées.",
+    intro: "Cette page regroupe les informations sur les risques et le statut qui s'appliquent à l'ensemble de The Value Investor. De courts avertissements contextuels figurent également sur les pages produit concernées.",
     reviewNote: "Ce texte est fourni à des fins de transparence et reste soumis à la revue continue du propriétaire et à une revue juridique.",
     s1: {
       title: "Finalité informative",
-      body: "The Investment Casebook fournit des outils de recherche et d'éducation à titre informatif. L'objectif est de vous aider à former et à remettre en question votre propre opinion, non de vous dire quoi faire.",
+      body: "The Value Investor fournit des outils de recherche et d'éducation à titre informatif. L'objectif est de vous aider à former et à remettre en question votre propre opinion, non de vous dire quoi faire.",
     },
     s2: {
       title: "Aucune recommandation personnalisée",
@@ -2124,7 +2124,7 @@ const fr: Dict = {
     },
     s13: {
       title: "Statut réglementaire",
-      body: "The Investment Casebook est un outil de recherche et d'éducation. Il ne se présente pas comme un conseiller financier réglementé et ne revendique aucune autorisation d'un régulateur. Cette mention ne modifie pas le traitement réglementaire d'un contenu ; elle décrit l'usage prévu de l'outil.",
+      body: "The Value Investor est un outil de recherche et d'éducation. Il ne se présente pas comme un conseiller financier réglementé et ne revendique aucune autorisation d'un régulateur. Cette mention ne modifie pas le traitement réglementaire d'un contenu ; elle décrit l'usage prévu de l'outil.",
     },
     s14: {
       title: "Contact et demandes de correction",

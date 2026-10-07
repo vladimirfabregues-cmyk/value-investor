@@ -9,9 +9,9 @@ import { BRAND } from "@/lib/brand";
  * read the locale context.
  */
 export const metadata: Metadata = {
-  title: "Important information — The Investment Casebook",
+  title: "Important information — The Value Investor",
   description:
-    "Risk and status information for The Investment Casebook: informational purpose, no personal recommendation, capital at risk, data and model limitations, curated ETF coverage, and independent-verification guidance.",
+    "Risk and status information for The Value Investor: informational purpose, no personal recommendation, capital at risk, data and model limitations, curated ETF coverage, and independent-verification guidance.",
   alternates: { canonical: `${BRAND.origin}/legal` },
 };
 

@@ -8,9 +8,9 @@ import { BRAND } from "@/lib/brand";
  * in the client <GlossaryPage /> so it can read the locale context.
  */
 export const metadata: Metadata = {
-  title: "Glossary — The Investment Casebook",
+  title: "Glossary — The Value Investor",
   description:
-    "Plain-English definitions of the research terms used across The Investment Casebook: conclusion cap, margin of safety, base value, value range, data confidence, peer group and more.",
+    "Plain-English definitions of the research terms used across The Value Investor: conclusion cap, margin of safety, base value, value range, data confidence, peer group and more.",
   alternates: { canonical: `${BRAND.origin}/glossary` },
 };
 

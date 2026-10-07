@@ -7,7 +7,7 @@ import type { Route } from "next";
 import { Menu, X } from "lucide-react";
 
 import { useTranslation } from "@/lib/i18n/locale-context";
-import { CasebookLogo } from "@/components/brand/casebook-logo";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { LangSwitch } from "@/components/i18n/lang-switch";
 import { cn } from "@/lib/utils/cn";
 
@@ -71,7 +71,7 @@ export function SiteHeader() {
     <header data-no-print className="sticky top-0 z-40 border-b border-white/[0.08] bg-[rgba(6,11,20,0.85)] backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
         <Link href="/" aria-label={t("siteNav.home")} className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
-          <CasebookLogo size="md" />
+          <BrandLogo size="md" />
         </Link>
 
         {/* Desktop nav */}

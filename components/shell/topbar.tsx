@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Database, LayoutGrid, Menu } from "lucide-react";
 
-import { CasebookLogo } from "@/components/brand/casebook-logo";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { LangSwitch } from "@/components/i18n/lang-switch";
 import { SidebarHistory } from "@/components/shell/sidebar-history";
 import { HistorySkeleton } from "@/components/shell/shell-layout";
@@ -72,11 +72,11 @@ export function Topbar({ history }: TopbarProps) {
             <span className="hidden 2xl:inline">{t("nav.workspaces")}</span>
           </Link>
 
-          {/* Master-brand seal + wordmark (shared CasebookLogo). Returns to this
+          {/* Master-brand seal + wordmark (shared BrandLogo). Returns to this
               tool's home; the section label ("Companies") distinguishes it from
               the Funds zone. Seal-only below sm to save width. */}
           <Link href="/value" className="group flex items-center">
-            <CasebookLogo size="md" sublabel={t("nav.tagline")} wordmarkClassName="hidden 2xl:block" />
+            <BrandLogo size="md" sublabel={t("nav.tagline")} wordmarkClassName="hidden 2xl:block" />
           </Link>
         </div>
 

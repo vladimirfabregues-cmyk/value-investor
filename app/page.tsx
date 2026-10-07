@@ -14,7 +14,7 @@ import { DataCoverage } from "@/components/home/data-coverage";
 import { BRAND } from "@/lib/brand";
 
 /**
- * The Investment Casebook — homepage hero. Two-column on desktop (copy left,
+ * The Value Investor — homepage hero. Two-column on desktop (copy left,
  * case-file visual right); on mobile the copy + CTAs come first, then the
  * visual. Companies (/value) is the primary route; Funds (/etf, a separate
  * zone → plain <a>) the secondary. Copy is server-rendered via SSR of this

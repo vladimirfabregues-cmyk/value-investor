@@ -12,7 +12,7 @@ const ROWS = [
 ] as const;
 
 /**
- * A static, document-style illustration of the Casebook method: five ordered
+ * A static, document-style illustration of the research method: five ordered
  * chapters (evidence → conclusion) that embody "every conclusion has a case".
  * Uses the surface / ink / line / gold tokens (a dark dossier, on-brand) — no
  * fabricated figures, no price chart, no motion. It carries real text, so it is

@@ -430,7 +430,7 @@ export function ScreenView({ initialResults, initialMeta }: ScreenViewProps) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `casebook-screener-${activeIndex.toLowerCase()}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `value-investor-screener-${activeIndex.toLowerCase()}-${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();

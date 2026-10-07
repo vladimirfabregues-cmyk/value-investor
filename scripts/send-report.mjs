@@ -17,11 +17,11 @@ const res = await fetch("https://api.resend.com/emails", {
   headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
   body: JSON.stringify({
     // Resend's shared sender works without owning a domain, for mail to the account's own address.
-    from: "Investment Casebook <onboarding@resend.dev>",
+    from: "The Value Investor <onboarding@resend.dev>",
     to: [REPORT_EMAIL_TO],
-    subject: `Casebook monthly report — ${monthName}`,
+    subject: `The Value Investor — monthly report, ${monthName}`,
     html: `<p>Your monthly report for ${monthName} is attached.</p><p>Online version: <a href="${REPORT_URL}">${REPORT_URL}</a></p>`,
-    attachments: [{ filename: `casebook-report-${REPORT_MONTH}.pdf`, content: readFileSync(REPORT_PDF).toString("base64") }],
+    attachments: [{ filename: `value-investor-report-${REPORT_MONTH}.pdf`, content: readFileSync(REPORT_PDF).toString("base64") }],
   }),
 });
 const body = await res.text();

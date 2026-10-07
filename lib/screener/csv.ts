@@ -57,7 +57,7 @@ function num(value: number | null | undefined, dp = 1): string {
 
 export function buildScreenCsv(rows: ScreenResultRecord[], ctx: ScreenCsvContext): string {
   const header = [
-    "# The Investment Casebook — Market Screener export",
+    "# The Value Investor — Market Screener export",
     `# Market: ${ctx.market}`,
     `# Filters: ${ctx.filters}`,
     `# Screen run: ${ctx.runDate}`,

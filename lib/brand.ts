@@ -1,6 +1,6 @@
 /**
- * Central brand configuration — the single source of truth for The Investment
- * Casebook's name, taglines, canonical origin, SEO defaults and social links.
+ * Central brand configuration — the single source of truth for The Value
+ * Investor's name, taglines, canonical origin, SEO defaults and social links.
  * Import from here instead of hardcoding brand strings in components/metadata.
  *
  * Scope note: user-facing UI chrome that must be localised (navigation labels,
@@ -11,11 +11,11 @@
  */
 export const BRAND = {
   /** Full brand name (proper noun — identical in every language). */
-  name: "The Investment Casebook",
+  name: "The Value Investor",
   /** Without the leading article, for tighter contexts. */
-  shortName: "Investment Casebook",
+  shortName: "Value Investor",
   /** Home-screen / PWA short name. */
-  appShortName: "Casebook",
+  appShortName: "Value Investor",
 
   /** Canonical taglines. EN/FR match the deployed chooser copy. */
   tagline: {
@@ -45,9 +45,9 @@ export const BRAND = {
     "Independent investment research — company analysis and ETF research, with the reasoning behind every conclusion. Informational only; not investment advice.",
 
   seo: {
-    title: "The Investment Casebook",
+    title: "The Value Investor",
     /** OG/Twitter headline: brand + tagline. */
-    ogTitle: "The Investment Casebook — Every conclusion has a case.",
+    ogTitle: "The Value Investor — Every conclusion has a case.",
   },
 
   social: {

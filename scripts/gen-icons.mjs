@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * The Investment Casebook — app icons (PWA + favicon + Apple touch), generated
- * with zero dependencies: the gold "IC" bookplate seal (navy field, gold disc,
+ * The Value Investor — app icons (PWA + favicon + Apple touch), generated
+ * with zero dependencies: the gold "VI" bookplate seal (navy field, gold disc,
  * navy serifed monogram) on the app's near-black navy, drawn with supersampled
  * coverage and encoded to PNG by hand. Matches the in-app seal and the Funds
  * zone icons.
@@ -47,7 +47,7 @@ function encodePng(w, h, rgba) {
   return Buffer.concat([sig, chunk("IHDR", ihdr), chunk("IDAT", idat), chunk("IEND", Buffer.alloc(0))]);
 }
 
-// ── The "IC" seal ────────────────────────────────────────────────────────────
+// ── The "VI" seal ────────────────────────────────────────────────────────────
 function render(N) {
   const rgba = Buffer.alloc(N * N * 4);
   const c = N / 2;
@@ -55,28 +55,41 @@ function render(N) {
   const discR = 0.46 * N;
 
   const H = 0.40 * N;              // cap height
-  const stemHalf = 0.030 * N;
+  const top = c - H / 2;
+  const bottom = c + H / 2;
+  const stemHalf = 0.030 * N;      // I stem
   const serifHalfW = 0.062 * N;
   const serifT = 0.030 * N;        // serif half-thickness
-  const rC = 0.20 * N;             // C outer radius
-  const tC = 0.066 * N;            // C ring thickness
-  const gap = 0.055 * N;
-  const groupW = 2 * serifHalfW + gap + 2 * rC;
-  const leftX = c - groupW / 2;
-  const Ix = leftX + serifHalfW;
-  const Cx = leftX + 2 * serifHalfW + gap + rC;
+  const vHalfW = 0.150 * N;        // V: stroke centres at the top sit ±this from its axis
+  const vSerif = 0.050 * N;
+  const gap = 0.105 * N;           // V arm to I serif
+  // Stroke thickness measured across the stroke, as in a serif face: thick left, thin right.
+  const cosA = H / Math.hypot(H, vHalfW);
+  const hThick = (0.036 * N) / cosA;
+  const hThin = (0.018 * N) / cosA;
 
+  // Centre the pair on its visible extent (V's left serif to I's right serif).
+  const extent = vSerif + 2 * vHalfW + gap + 2 * serifHalfW;
+  const Vx = c - extent / 2 + vSerif + vHalfW;
+  const Ix = Vx + vHalfW + gap + serifHalfW;
+
+  const inV = (x, y) => {
+    if (y >= top && y <= bottom) {
+      const f = (y - top) / H; // 0 at the top, 1 at the point
+      if (Math.abs(x - (Vx - vHalfW * (1 - f))) <= hThick) return true;
+      if (Math.abs(x - (Vx + vHalfW * (1 - f))) <= hThin) return true;
+    }
+    if (Math.abs(y - top) <= serifT) {
+      if (Math.abs(x - (Vx - vHalfW)) <= vSerif) return true;
+      if (Math.abs(x - (Vx + vHalfW)) <= vSerif * 0.8) return true;
+    }
+    return false;
+  };
   const inI = (x, y) => {
     const dy = Math.abs(y - c);
     if (Math.abs(x - Ix) <= stemHalf && dy <= H / 2) return true;
     if (Math.abs(x - Ix) <= serifHalfW && Math.abs(dy - H / 2) <= serifT) return true;
     return false;
-  };
-  const inC = (x, y) => {
-    const d = Math.hypot(x - Cx, y - c);
-    if (d < rC - tC || d > rC) return false;
-    const ang = Math.abs(Math.atan2(y - c, x - Cx) * 180 / Math.PI);
-    return ang > 38; // opening to the right
   };
 
   for (let py = 0; py < N; py++) {
@@ -87,7 +100,7 @@ function render(N) {
           const x = px + (sx + 0.5) / SS;
           const y = py + (sy + 0.5) / SS;
           if (Math.hypot(x - c, y - c) <= discR) discCov++;
-          if (inI(x, y) || inC(x, y)) inkCov++;
+          if (inV(x, y) || inI(x, y)) inkCov++;
         }
       }
       const disc = discCov / (SS * SS);

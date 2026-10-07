@@ -9,7 +9,7 @@ import { BRAND } from "@/lib/brand";
  * <CoveragePage /> so it can use the locale context.
  */
 export const metadata: Metadata = {
-  title: "Data and coverage — The Investment Casebook",
+  title: "Data and coverage — The Value Investor",
   description:
     "What the research tools cover and what they do not: supported markets, data sources, update cadence, curated-versus-live fields, missing-data handling, methodology versions and primary-source verification guidance.",
   alternates: { canonical: `${BRAND.origin}/data-and-coverage` },

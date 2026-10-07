@@ -1,5 +1,5 @@
 /**
- * The claims the Casebook rests on, written down on CLAIMS_STATED_ON before
+ * The claims the system rests on, written down on CLAIMS_STATED_ON before
  * the evidence arrived, and graded every month. Ratings claims use every
  * rating the (unchanged) model has made; lab claims use only weeks after the
  * lab rules were fixed. Never reword a claim after the fact — add a new one.
