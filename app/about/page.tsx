@@ -28,7 +28,7 @@ export default function AboutPage() {
             width={320}
             height={290}
             priority
-            className="order-1 h-36 w-36 shrink-0 rounded-2xl border border-white/10 object-cover shadow-panel sm:order-2 sm:h-40 sm:w-40"
+            className="order-1 h-36 w-36 shrink-0 rounded-full border border-white/10 object-cover shadow-panel sm:order-2 sm:h-40 sm:w-40"
           />
 
           <div className="order-2 min-w-0 flex-1 sm:order-1">
