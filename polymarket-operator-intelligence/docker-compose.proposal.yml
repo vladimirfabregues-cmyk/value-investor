@@ -1,0 +1,102 @@
+# Polymarket Operator Intelligence: local stack (PROPOSAL, Phase 0)
+#
+# Becomes docker-compose.yml in Phase 1, once backend/ and frontend/ exist.
+# Only postgres, minio and minio-init are runnable today:
+#   docker compose -f docker-compose.proposal.yml up -d postgres minio minio-init
+#
+# All secrets come from .env (gitignored). Defaults are for local development only.
+
+name: poi
+
+x-backend-env: &backend-env
+  POI_ENV: ${POI_ENV:-local}
+  POI_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-poi}:${POSTGRES_PASSWORD:-poi_local_only}@postgres:5432/${POSTGRES_DB:-poi}
+  POI_S3_ENDPOINT_URL: http://minio:9000
+  POI_S3_BUCKET_RAW: ${POI_S3_BUCKET_RAW:-poi-raw}
+  POI_S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-poi}
+  POI_S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-poi_local_only}
+  POI_LOG_LEVEL: ${POI_LOG_LEVEL:-INFO}
+  # Phase 2+ (left empty in Phase 1; the app must start without them)
+  POI_POLYGON_RPC_HTTP_URL: ${POI_POLYGON_RPC_HTTP_URL:-}
+  POI_POLYGON_RPC_WS_URL: ${POI_POLYGON_RPC_WS_URL:-}
+  POI_POLYMARKET_DATA_API_TOKEN: ${POI_POLYMARKET_DATA_API_TOKEN:-}   # optional; v2 documented as public
+  POI_SENTRY_DSN: ${POI_SENTRY_DSN:-}
+
+services:
+  postgres:
+    image: postgres:16.4-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-poi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-poi_local_only}
+      POSTGRES_DB: ${POSTGRES_DB:-poi}
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    image: minio/minio:RELEASE.2024-08-17T01-24-54Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-poi}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-poi_local_only}
+    ports: ["127.0.0.1:9000:9000", "127.0.0.1:9001:9001"]
+    volumes: [miniodata:/data]
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio-init:
+    image: minio/mc:RELEASE.2024-08-17T11-33-50Z
+    depends_on:
+      minio: {condition: service_healthy}
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD} &&
+      mc mb --ignore-existing local/$${POI_S3_BUCKET_RAW} &&
+      mc version enable local/$${POI_S3_BUCKET_RAW}"
+    # Immutability: the app writes content-addressed keys and never overwrites.
+    # In production, enable S3 Object Lock (compliance mode) on the raw bucket.
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-poi}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-poi_local_only}
+      POI_S3_BUCKET_RAW: ${POI_S3_BUCKET_RAW:-poi-raw}
+    restart: "no"
+
+  api:
+    build: {context: ./backend}
+    command: ["sh", "-c", "alembic upgrade head && uvicorn poi.api.main:app --host 0.0.0.0 --port 8000"]
+    environment: *backend-env
+    depends_on:
+      postgres: {condition: service_healthy}
+      minio-init: {condition: service_completed_successfully}
+    ports: ["127.0.0.1:8000:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health/ready').status==200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  worker:
+    build: {context: ./backend}
+    command: ["poi", "worker"]
+    environment: *backend-env
+    depends_on:
+      api: {condition: service_healthy}   # api runs migrations first
+
+  web:
+    build: {context: ./frontend}
+    environment:
+      POI_API_BASE_URL: http://api:8000
+    depends_on:
+      api: {condition: service_healthy}
+    ports: ["127.0.0.1:3000:3000"]
+
+volumes:
+  pgdata:
+  miniodata:
