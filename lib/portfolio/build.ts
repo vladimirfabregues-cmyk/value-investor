@@ -123,7 +123,10 @@ export async function buildPortfolios(now: Date = new Date()): Promise<BuildSumm
 
   const market = buildMarketData({ histories: loaded.histories, fx, stampDuty });
   const scorecard = await getScorecard();
-  const indexWeekly = new Map((scorecard?.data.indexWeekly ?? []).map((p) => [`${p.index}|${p.week}`, p.mean]));
+  const indexWeekly = new Map([
+    ...(scorecard?.data.indexWeekly ?? []).map((p) => [`${p.index}|${p.week}`, p.mean] as const),
+    ...(scorecard?.data.sectorWeekly ?? []).map((p) => [`${p.index}|${p.sector}|${p.week}`, p.mean] as const),
+  ]);
   const splits = mergeSplits(await loadSplits([...new Set(rows.map((r) => r.ticker))]), capturedSplits(rows));
   const computed = computePortfolios(signals, market, today, { ...snapshotPrices(rows, splits), indexWeekly, lastWeek: Math.max(...rows.map((r) => weekOf(r.screenerAt.toISOString()))) });
 

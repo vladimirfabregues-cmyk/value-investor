@@ -19,7 +19,10 @@ export interface SnapshotPrices {
   sector(ticker: string): string | null;
 }
 
-/** `${index}|${weekStart}` → equal-weighted price return of that index over the following week. */
+/**
+ * Equal-weighted price return over the following week: `${index}|${weekStart}`
+ * for a whole index, `${index}|${sector}|${weekStart}` for one sector of it.
+ */
 export type IndexWeekly = Map<string, number>;
 
 export interface AttributionPoint {
@@ -28,6 +31,9 @@ export interface AttributionPoint {
   total: number;
   currency: number;
   market: number;
+  /** The holdings' sectors against their whole index (absent on builds before sector adjustment). */
+  sector?: number;
+  /** Each holding against the average company in its own sector and index. */
   selection: number;
   dividends: number;
   costs: number;
@@ -37,6 +43,7 @@ export interface AttributionSummary {
   total: number;
   currency: number;
   market: number;
+  sector: number;
   selection: number;
   dividends: number;
   costs: number;
@@ -132,6 +139,7 @@ export function attribution(
     const [w0, w1] = [weekOf(`${d0}T12:00:00Z`), weekOf(`${d1}T12:00:00Z`)];
     let currency = 0;
     let marketPart = 0;
+    let sectorPart = 0;
     let selection = 0;
     for (const [ticker, p] of positionsAt(result.transactions, d0)) {
       const w = valueOf(market, ticker, p.currency, p.shares, d0) / v0;
@@ -142,8 +150,12 @@ export function attribution(
       const s0 = snap.price(ticker, w0);
       const s1 = snap.price(ticker, w1);
       if (m !== undefined && s0 && s1 && s1 / s0 < MAX_RATIO && s1 / s0 > 1 / MAX_RATIO) {
+        const sec = snap.sector(ticker);
+        const peers = sec ? indexWeekly.get(`${home}|${sec}|${weekStart(w0)}`) : undefined;
+        const benchmark = peers ?? m;
         marketPart += w * m;
-        selection += w * (s1 / s0 - 1 - m);
+        sectorPart += w * (benchmark - m);
+        selection += w * (s1 / s0 - 1 - benchmark);
       }
     }
     const inWeek = result.transactions.filter((t) => t.date > d0 && t.date <= d1);
@@ -152,6 +164,7 @@ export function attribution(
       total: values.get(d1)! / v0 - 1,
       currency,
       market: marketPart,
+      sector: sectorPart,
       selection,
       dividends: inWeek.filter((t) => t.type === "DIVIDEND").reduce((s, t) => s + t.grossGbp, 0) / v0,
       costs: inWeek.reduce((s, t) => s + t.costGbp, 0) / v0,
@@ -164,13 +177,20 @@ export function attribution(
 export function summarizeAttribution(points: AttributionPoint[], from: string, to: string): AttributionSummary | null {
   const pts = points.filter((p) => p.date > from && p.date <= to);
   if (!pts.length) return null;
-  const sum = (k: keyof Omit<AttributionPoint, "date">) => pts.reduce((s, p) => s + p[k], 0);
+  const sum = (k: keyof Omit<AttributionPoint, "date">) => pts.reduce((s, p) => s + (p[k] ?? 0), 0);
   const total = pts.reduce((g, p) => g * (1 + p.total), 1) - 1;
-  const parts = { currency: sum("currency"), market: sum("market"), selection: sum("selection"), dividends: sum("dividends"), costs: sum("costs") };
+  const parts = {
+    currency: sum("currency"),
+    market: sum("market"),
+    sector: sum("sector"),
+    selection: sum("selection"),
+    dividends: sum("dividends"),
+    costs: sum("costs"),
+  };
   return {
     total,
     ...parts,
-    other: total - (parts.currency + parts.market + parts.selection + parts.dividends - parts.costs),
+    other: total - (parts.currency + parts.market + parts.sector + parts.selection + parts.dividends - parts.costs),
     weeks: pts.length,
   };
 }

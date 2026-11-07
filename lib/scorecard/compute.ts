@@ -15,7 +15,7 @@
  * Pure: no I/O. build.ts loads the rows and fates and persists the result.
  */
 
-import { median, type SeriesPoint } from "@/lib/stats";
+import { interval, median, type Interval, type SeriesPoint } from "@/lib/stats";
 
 export interface ScoreRow {
   ticker: string;
@@ -53,6 +53,8 @@ const BUYISH = new Set(["STRONG_BUY", "BUY"]);
 const SUB_SCORES = ["valuationScore", "healthScore", "qualityScore", "moatScore"] as const;
 /** A cohort smaller than this has no meaningful "average name". */
 const MIN_COHORT = 20;
+/** A sector average needs this many names in the index that week, else the index average stands in. */
+const MIN_SECTOR = 5;
 /** A price ratio beyond this is a data error (e.g. pence/pounds flip), not a move. */
 const MAX_RATIO = 5;
 /** A yield above this is a data error, not a dividend. */
@@ -88,6 +90,12 @@ export interface VerdictStat {
   meanExcess: number | null;
   medianExcess: number | null;
   hitRate: number | null;
+  /**
+   * 95% range for the average relative return, from one value per starting
+   * week and allowing for overlapping windows (h-week returns started weekly
+   * share h−1 weeks). Absent on scorecards built before it existed.
+   */
+  range?: Interval | null;
 }
 
 export interface IcStat {
@@ -152,6 +160,8 @@ export interface Scorecard {
   };
   /** Equal-weighted 1-week price return of each index, keyed by the starting week. */
   indexWeekly: { index: string; week: string; mean: number; n: number }[];
+  /** The same within each sector of an index (sectors with at least MIN_SECTOR names). */
+  sectorWeekly?: { index: string; sector: string; week: string; mean: number; n: number }[];
   cases: {
     weeks: number;
     best: CaseRow[];
@@ -492,6 +502,8 @@ export function computeScorecard(rows: ScoreRow[], fates: Map<string, Fate> = ne
     const byVerdict = VERDICTS.map((v): VerdictStat => {
       const xs = obs.filter((o) => o.row.verdict === v);
       const ex = xs.map((o) => o.excess);
+      const perWeek = new Map<number, number[]>();
+      for (const o of xs) perWeek.set(o.week, [...(perWeek.get(o.week) ?? []), o.excess]);
       return {
         verdict: v,
         n: xs.length,
@@ -499,6 +511,7 @@ export function computeScorecard(rows: ScoreRow[], fates: Map<string, Fate> = ne
         meanExcess: mean(ex),
         medianExcess: median(ex),
         hitRate: ex.length ? ex.filter((e) => e > 0).length / ex.length : null,
+        range: interval([...perWeek.values()].map((w) => mean(w)!), h),
       };
     });
 
@@ -533,11 +546,17 @@ export function computeScorecard(rows: ScoreRow[], fates: Map<string, Fate> = ne
   for (const list of weekCohorts.values()) byWeek.set(list[0].week, [...(byWeek.get(list[0].week) ?? []), list]);
   const weekly: Scorecard["weekly"] = { spread: [], ic: [], flags: {}, qualityValue: [] };
   const indexWeekly: Scorecard["indexWeekly"] = [];
+  const sectorWeekly: NonNullable<Scorecard["sectorWeekly"]> = [];
   for (const [w, lists] of [...byWeek].sort((a, b) => a[0] - b[0])) {
     const date = weekStart(w);
     const all = lists.flat();
     for (const list of lists) {
       indexWeekly.push({ index: list[0].index, week: date, mean: mean(list.map((x) => x.priceRet))!, n: list.length });
+      const bySector = new Map<string, number[]>();
+      for (const x of list) if (x.row.sector) bySector.set(x.row.sector, [...(bySector.get(x.row.sector) ?? []), x.priceRet]);
+      for (const [sector, rets] of bySector) {
+        if (rets.length >= MIN_SECTOR) sectorWeekly.push({ index: list[0].index, sector, week: date, mean: mean(rets)!, n: rets.length });
+      }
     }
 
     const buy = all.filter((o) => BUYISH.has(o.row.verdict)).map((o) => o.excess);
@@ -625,6 +644,7 @@ export function computeScorecard(rows: ScoreRow[], fates: Map<string, Fate> = ne
     horizons,
     weekly,
     indexWeekly,
+    sectorWeekly,
     cases,
   };
 }

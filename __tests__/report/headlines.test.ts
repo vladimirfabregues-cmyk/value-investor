@@ -18,7 +18,7 @@ const report = (spreadWeeks: number): MonthlyReport => ({
     {
       strategy: "LAB_JP",
       month: null,
-      sinceFixed: { total: 0.05, currency: 0.02, market: 0.02, selection: 0.012, dividends: 0.002, costs: 0.004, other: 0, weeks: 9 },
+      sinceFixed: { total: 0.05, currency: 0.02, market: 0.02, sector: 0, selection: 0.012, dividends: 0.002, costs: 0.004, other: 0, weeks: 9 },
       concentration: { holdings: 3, effectiveNames: 2.5, topSector: "Financials", topSectorWeight: 0.7, regions: { JP: 1 }, cashWeight: 0, warning: true },
       profile: null, switches: [], tradingMonth: null, tradingAvg: null, tradingMonths: 0,
     },
