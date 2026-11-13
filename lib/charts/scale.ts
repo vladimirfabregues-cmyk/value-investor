@@ -49,7 +49,7 @@ export function buildTrendGeometry(
   if (nums.length === 0) return null;
 
   // Always anchor the domain at zero so the baseline is meaningful.
-  let min = Math.min(0, ...nums);
+  const min = Math.min(0, ...nums);
   let max = Math.max(0, ...nums);
   if (min === max) max = min + 1; // all-zero series: avoid divide-by-zero
 

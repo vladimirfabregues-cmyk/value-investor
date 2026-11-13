@@ -1,143 +1,106 @@
-# Value Investor
+# The Value Investor
 
-Value Investor is a premium dark-mode web app for Graham/Buffett-style equity analysis. It combines the OpenAI Responses API, built-in web search, strict function tools, deterministic finance math, Prisma persistence, and structured JSON rendering into a clean card-based interface.
+A value-investing screen in the style of Benjamin Graham and Warren Buffett. It ranks
+listed companies on intrinsic value, margin of safety, balance-sheet strength, business
+quality and downside protection, and it checks itself: every rating it publishes is later
+graded against what the company's index cohort did.
 
-## What It Does
+## What it does
 
-- Analyzes a stock ticker with a conservative value-investing lens
-- Uses OpenAI Responses API, not Chat Completions
-- Declares built-in web search for recent qualitative context
-- Executes strict server-side function tools for finance data and math
-- Validates tool arguments, tool outputs, and final model output with Zod
-- Persists completed analyses to SQLite with Prisma
-- Shows saved analysis history in a fixed sidebar
-- Supports side-by-side comparison for two saved analyses
+- **Ticker analysis** (`/`, `POST /api/analyze`): a single company, scored with a fixed
+  set of finance rules. Sub-scores for valuation, health, quality and moat; intrinsic value
+  by sector (DCF, NAV, DDM or justified P/B); verdict gates; red-flag caps (dilution,
+  accruals, recent IPO, peak earnings). Every number comes from code, and the prose is
+  generated from those numbers.
+- **Market screener** (`/value/screen`): the same scoring across index universes: S&P 500
+  and 400, Russell 2000 and mid-cap, FTSE 100 and 250, AIM, CAC 40, MSCI Europe Small Cap
+  and TOPIX Small, about 6,500 names in all. A weekly GitHub Actions job precomputes the
+  result, so visitors read a cached snapshot.
+- **Scorecard** (`/value/scorecard`): every weekly rating is graded against its index
+  cohort at 4, 13, 26 and 52 weeks. Companies that stop trading are classified as takeovers
+  or failures, so delisted names count against the record.
+- **Paper portfolios** (`/value/portfolio`): simulated Strong-Buy books, and a strategy lab
+  whose rules were frozen before any result was known.
+- **Monthly report** (`/value/report`): a PDF with the claims scoreboard, best and worst
+  lists and red-flag summary, emailed on the 1st of each month through Resend.
+- **Languages**: English and French, with parity tests.
+
+No language model is called in the live path. The analyser is deterministic.
+`lib/claude/instructions.ts` holds an unused prompt from an earlier design.
 
 ## Stack
 
-- Next.js 15 App Router
-- TypeScript
-- Tailwind CSS
-- shadcn/ui-style components
-- lucide-react
-- OpenAI Node SDK
-- Zod
-- Prisma
-- SQLite for local dev
+Next.js 15 (App Router), TypeScript, Tailwind CSS, Prisma with PostgreSQL (Neon in
+production), `yahoo-finance2` for prices and statements, SEC EDGAR XBRL as a US
+gap-filler, Zod for validation, Vitest for tests, Resend for email.
 
-## Project Structure
-
-Core directories:
-
-- `app/` for routes, pages, and API handlers
-- `components/` for shell, ticker, analysis, compare, and UI components
-- `lib/openai/` for Responses orchestration and strict tool configuration
-- `lib/finance/` for provider abstraction, fixtures, and deterministic valuation math
-- `lib/db/` for Prisma client and queries
-- `lib/validation/` for Zod schemas
-- `prisma/` for the schema and initial migration
-- `types/` for shared TypeScript types
-
-## Mock Finance Provider
-
-The app ships with a working mock finance provider so it runs locally without a paid market-data API.
-
-Bundled fixtures:
-
-- `AAPL`
-- `MSFT`
-- `BRK.B`
-- `INTC`
-
-If a ticker is not present in the fixture set, the analyze API returns a friendly `404`.
-
-## Environment Variables
-
-Copy `.env.example` to `.env` and set:
+## Local development
 
 ```bash
-OPENAI_API_KEY=your_key_here
-OPENAI_MODEL=gpt-5.4-mini
-DATABASE_URL=file:./dev.db
-FINANCE_PROVIDER=mock
+npm install            # runs prisma generate
+cp .env.example .env   # then set DATABASE_URL to a PostgreSQL database
+npx prisma migrate dev
+npm run dev            # http://localhost:3000
 ```
 
-Notes:
+The schema is PostgreSQL. A local SQLite file will not work.
 
-- `OPENAI_API_KEY` is required for `/api/analyze`
-- `FINANCE_PROVIDER=mock` is the only bundled provider in this V1
-- The database path is set up for local SQLite development
-
-## Install
+## Checks
 
 ```bash
-npm install
+npm run lint           # ESLint (next/core-web-vitals + next/typescript); fails on errors
+npm run typecheck      # tsc --noEmit
+npm run test           # Vitest
+npm run check          # all three, as CI runs them
 ```
 
-## Prisma Setup
+## Environment variables
 
-Generate the Prisma client:
+| Variable | Used by | Purpose |
+|---|---|---|
+| `DATABASE_URL` | app, Prisma | PostgreSQL connection string |
+| `FINANCE_PROVIDER` | app | `mock` (the default, four bundled tickers) or `yahoo` (any ticker, live) |
+| `SCREEN_RUN_URL`, `SCREEN_RUN_TOKEN` | GitHub Actions | the deployed screener endpoint and its shared secret, used by the weekly refresh and the monthly report |
+| `SCREEN_INDICES` | weekly refresh | optional comma-separated subset of indices to refresh |
+| `RESEND_API_KEY`, `REPORT_EMAIL_TO` | monthly report | Resend key and recipient, stored as GitHub secrets |
 
-```bash
-npm run db:generate
+## Deployment and automation
+
+- **Vercel** builds the app from `vercel.json`. The build command runs
+  `prisma db push --accept-data-loss` before `next build`, which is convenient for a
+  single-owner project but means every deploy changes the production schema. Replacing it
+  with `prisma migrate deploy` is open work.
+- **Weekly refresh** (`.github/workflows/refresh-screen.yml`, Mondays 06:00 UTC): precomputes
+  the screener, then rebuilds the simulated portfolios from its snapshot history. The two
+  run in order and never in parallel.
+- **Monthly report** (`.github/workflows/monthly-report.yml`): builds the PDF and emails it.
+
+## Layout
+
+```
+app/                 routes and API handlers (app/api/*)
+components/          UI: analysis, screen, scorecard, portfolio, report, shell
+lib/finance/         data providers, ratios, scoring, verdicts, prose
+lib/screener/        index universes and the screening funnel
+lib/scorecard/       outcome grading and fate classification
+lib/portfolio/       simulated portfolios and the strategy lab
+lib/report/          monthly report content
+lib/i18n/            translations (en, fr)
+prisma/              schema, seed data
+scripts/             weekly refresh, portfolio build, report sender, backtest
+__tests__/           Vitest suites
+docs/                design audits
 ```
 
-Initialize the database with Prisma:
+## Related projects
 
-```bash
-npx prisma migrate dev --name init
-```
+- **ETF Compass** is a separate repository. It is served under `/etf` through a
+  Multi-Zones rewrite (`ETF_ZONE_URL`, see `next.config.ts`).
+- **The Breakthrough Engine** (a second, research-only lens) lives in a private repository.
 
-If you are in a restricted environment and Prisma's schema engine errors before creating the SQLite file, apply the included migration SQL directly:
+## Limits to keep in mind
 
-```bash
-sqlite3 prisma/dev.db < prisma/migrations/20260326223000_init/migration.sql
-```
-
-## Run Locally
-
-```bash
-npm run dev
-```
-
-Then open:
-
-- `http://localhost:3000`
-- `http://localhost:3000/compare`
-
-If port `3000` is already in use, Next.js will automatically choose another port and print it in the terminal.
-
-## Analyzer Flow
-
-1. User submits a ticker
-2. `POST /api/analyze` validates the request
-3. The server starts an OpenAI Responses loop
-4. The model can call:
-   - `fetch_financial_dataset`
-   - `web_search`
-   - `calculate_value_metrics`
-5. Local server code executes deterministic tools
-6. Final structured JSON is validated
-7. Result is saved to Prisma
-8. UI renders verdict, valuation, health, quality, intrinsic value, thesis, and sources
-
-## Verification Commands
-
-```bash
-npm run build
-curl -s http://127.0.0.1:3000/api/history
-```
-
-## Limitations Of The Mock Provider
-
-- Only four bundled tickers are supported
-- Fixture data is normalized and coherent, but not live market data
-- Recent qualitative context still depends on OpenAI web search
-- The mock provider is designed for local development, not production market-data coverage
-
-## Extending Later
-
-- Swap `lib/finance/mock-provider.ts` for a live provider behind the same interface
-- Move SQLite to Postgres by updating `prisma/schema.prisma` datasource config
-- Add dedicated saved-analysis detail routes if you want stable shareable URLs
-- Add auth and portfolio/watchlist features on top of the persisted analysis table
+- Prices and statements come from Yahoo Finance, which is unofficial and may change or
+  drop series without notice. EDGAR fills US gaps only.
+- The scores are a screen, not a forecast, and are not investment advice. The scorecard
+  exists so that their record can be checked.
