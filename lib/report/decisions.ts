@@ -56,4 +56,16 @@ export const DECISION_LOG: DecisionEntry[] = [
     why: "Snapshot prices are raw: MQ's 1-for-4 and DuPont's 1-for-3 reverse splits read as +330% and +190% 'returns'.",
     expected: "Those false winners disappear from the case lists; averages shift slightly.",
   },
+  {
+    date: "2026-11-13",
+    change: "Report reorganised around investment readiness; Top 20, capped fixed as the main strategy; a six-condition readiness test written down.",
+    why: "The report answered a researcher's question (is each claim proven?) rather than an investor's (is this ready for real money?), and led with whichever book happened to be ahead.",
+    expected: "Status stays 'research and observation' until at least 29 Sept 2027 (12 months of prospective results).",
+  },
+  {
+    date: "2026-11-13",
+    change: "Stock picking split into sector bets and picking within sectors; 95% ranges, volatility, tracking error and beta added (Sharpe and Sortino from 26 weeks).",
+    why: "The books lean heavily on Financials, so part of what read as stock picking was a sector bet; raw returns without ranges overstated how much a few weeks show.",
+    expected: "Stock picking shrinks where books are concentrated in one sector; ranges are wide for months. Claim 7 keeps its original measure (sector and within-sector together).",
+  },
 ];

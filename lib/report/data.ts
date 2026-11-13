@@ -15,9 +15,11 @@ import type { Transaction, ValuationPoint } from "@/lib/portfolio/types";
 import { summarizeAttribution, type AttributionSummary, type Concentration, type Profile } from "@/lib/portfolio/analytics";
 import { getScorecard } from "@/lib/scorecard/build";
 import type { CaseRow, OutcomeCounts, Pattern, VerdictStat } from "@/lib/scorecard/compute";
-import { evaluateClaims, proposals, type ClaimResult, type EtfForward } from "@/lib/report/claims";
+import { evaluateClaims, proposals, weeklyReturns, type ClaimResult, type EtfForward } from "@/lib/report/claims";
 import { DECISION_LOG, type DecisionEntry } from "@/lib/report/decisions";
-import { median, strength, summarize, type SeriesPoint, type Strength, type Summary } from "@/lib/stats";
+import { BOOK_NAMES, RULEBOOKS } from "@/lib/report/headlines";
+import { MAIN_BOOK, SPREAD_PER_TRADE, assessReadiness, longDate, type LiveStats, type Readiness } from "@/lib/report/readiness";
+import { interval, median, riskStats, scaleInterval, strength, summarize, type SeriesPoint, type Strength, type Summary } from "@/lib/stats";
 
 export interface BookLine {
   strategy: string;
@@ -29,7 +31,12 @@ export interface BookLine {
   costsPct: number;
   holdings: number;
   tradesInMonth: number;
+  /** Trailing returns; a window is shown only once it starts after the rules were fixed. */
   rolling?: { m3: number | null; m6: number | null; m12: number | null };
+  /** The honest test: figures since the rules were fixed (reports from Nov 2026 on). */
+  live?: LiveStats | null;
+  /** Inception to the day the rules were fixed: a back-test, not evidence. */
+  backtest?: { from: string; returnPct: number | null; maxDrawdownPct: number | null } | null;
 }
 
 export interface SwitchStat extends Summary {
@@ -110,6 +117,8 @@ export interface MonthlyReport {
   health: { runWeeks: number; fullRunWeeks: number; badPrices: number | null };
   integrity?: { modelVersions: { version: string; ratings: number; buyShare: number }[] };
   etf: EtfSummary | null;
+  /** The investor's dashboard and the written readiness test (reports from Nov 2026 on). */
+  readiness?: Readiness;
 }
 
 /** "2026-11" → first day of that month and of the next, as ISO dates. */
@@ -208,26 +217,64 @@ export async function buildMonthlyReport(month: string, now: Date = new Date()):
     stored.map((r) => [r.strategy, { valuations: r.valuations as unknown as ValuationPoint[], metrics: r.metrics as unknown as PortfolioMetrics }]),
   );
 
+  const fixedOn = LAB_RULES.fixedOn;
+  const upTo = (r: (typeof stored)[number]) => (r.valuations as unknown as ValuationPoint[]).filter((v) => v.date <= lastDay);
+  const benchRow = stored.find((r) => r.strategy === "BENCHMARK");
+  const benchWeekly = benchRow && lastDay >= fixedOn ? weeklyReturns(upTo(benchRow), fixedOn) : new Map<number, number>();
+  const benchVals = benchRow ? upTo(benchRow) : [];
+  const benchSince = benchRow && benchRow.inceptionDate <= fixedOn ? change(valueAt(benchVals, lastDay), valueAt(benchVals, fixedOn)) : null;
+
   const books = stored.map((r): BookLine => {
-    const valuations = (r.valuations as unknown as ValuationPoint[]).filter((v) => v.date <= lastDay);
+    const valuations = upTo(r);
     const tx = r.transactions as unknown as Transaction[];
     const v1 = valueAt(valuations, lastDay);
     const v0 = valueAt(valuations, dayBefore) ?? (r.inceptionDate <= lastDay ? r.capitalGbp : null);
     const back = (months: number) => {
       const from = shiftMonths(lastDay, -months);
-      return from >= r.inceptionDate ? change(v1, valueAt(valuations, from)) : null;
+      return from >= r.inceptionDate && from >= fixedOn ? change(v1, valueAt(valuations, from)) : null;
     };
+    const vFixed = valueAt(valuations, fixedOn);
+    const sinceFixed = r.inceptionDate <= fixedOn && lastDay >= fixedOn ? change(v1, vFixed) : null;
+
+    let live: LiveStats | null = null;
+    if (sinceFixed !== null && vFixed) {
+      const weekly = weeklyReturns(valuations, fixedOn);
+      const weeks = [...weekly.keys()].filter((w) => benchWeekly.has(w)).sort((a, b) => a - b);
+      const book = weeks.map((w) => weekly.get(w)!);
+      const bench = weeks.map((w) => benchWeekly.get(w)!);
+      const gaps = book.map((x, i) => x - bench[i]);
+      const liveTx = tx.filter((t) => t.date > fixedOn && t.date <= lastDay);
+      const traded = liveTx.filter((t) => t.type === "BUY" || t.type === "SELL").reduce((s, t) => s + Math.abs(t.grossGbp), 0);
+      live = {
+        weeks: weekly.size,
+        vsBenchmark: benchSince === null ? null : sinceFixed - benchSince,
+        // A range for the whole period: the weekly mean's range times the number of weeks.
+        vsBenchmarkRange: r.strategy === "BENCHMARK" ? null : scaleInterval(interval(gaps), gaps.length),
+        weeklyGaps: r.strategy === "BENCHMARK" ? [] : gaps,
+        maxDrawdownPct: maxDrawdown(valuations.filter((v) => v.date >= fixedOn).map((v) => v.totalGbp)),
+        risk: book.length ? riskStats(book, bench) : null,
+        costsPct: liveTx.reduce((s, t) => s + t.costGbp, 0) / vFixed,
+        spreadPct: (traded * SPREAD_PER_TRADE) / vFixed,
+      };
+    }
+    const pre = valuations.filter((v) => v.date <= fixedOn);
+    const backtest = r.inceptionDate < fixedOn
+      ? { from: r.inceptionDate, returnPct: change(vFixed, r.capitalGbp), maxDrawdownPct: maxDrawdown(pre.map((v) => v.totalGbp)) }
+      : null;
+
     return {
       strategy: r.strategy,
       valueGbp: v1 ?? r.capitalGbp,
       monthPct: change(v1, v0),
-      sinceFixedPct: r.inceptionDate <= LAB_RULES.fixedOn && lastDay >= LAB_RULES.fixedOn ? change(v1, valueAt(valuations, LAB_RULES.fixedOn)) : null,
+      sinceFixedPct: sinceFixed,
       sinceInceptionPct: change(v1, r.capitalGbp) ?? 0,
       maxDrawdownPct: maxDrawdown(valuations.map((v) => v.totalGbp)),
       costsPct: tx.filter((t) => t.date <= lastDay).reduce((s, t) => s + t.costGbp, 0) / r.capitalGbp,
       holdings: (r.holdings as unknown[]).length,
       tradesInMonth: tx.filter((t) => (t.type === "BUY" || t.type === "SELL") && t.date >= start && t.date < end).length,
       rolling: { m3: back(3), m6: back(6), m12: back(12) },
+      live,
+      backtest,
     };
   });
   books.sort((a, b) => (b.sinceFixedPct ?? -Infinity) - (a.sinceFixedPct ?? -Infinity));
@@ -301,6 +348,23 @@ export async function buildMonthlyReport(month: string, now: Date = new Date()):
     etf = null;
   }
 
+  const outcomes = h(4)?.outcomes ?? null;
+  const mainLine = books.find((b) => b.strategy === MAIN_BOOK);
+  const readiness = assessReadiness({
+    mainName: BOOK_NAMES[MAIN_BOOK],
+    mainSinceFixed: mainLine?.sinceFixedPct ?? null,
+    benchSinceFixed: benchSince,
+    main: mainLine?.live ?? null,
+    bench: books.find((b) => b.strategy === "BENCHMARK")?.live ?? null,
+    concentration: diagnostics.find((d) => d.strategy === MAIN_BOOK)?.concentration ?? null,
+    others: books.filter((b) => RULEBOOKS.has(b.strategy) && b.strategy !== MAIN_BOOK && b.live?.vsBenchmark != null).map((b) => b.live!.vsBenchmark!),
+    outcomes,
+    badPrices: sc?.data.badPrices ?? null,
+    runWeeks: perWeek.size,
+    fullRunWeeks: [...perWeek.values()].filter((n) => n >= typical * 0.5).length,
+    fixedLabel: longDate(fixedOn),
+  });
+
   const claims = evaluateClaims({ scorecard: sc?.data ?? null, books: bookData, etfForward: etf?.forwardTest ?? [] });
   const spreadSeries = sc?.data.weekly?.spread ?? [];
   let cum = 0;
@@ -338,7 +402,7 @@ export async function buildMonthlyReport(month: string, now: Date = new Date()):
           missed: sc.data.cases?.missed?.slice(0, 5) ?? [],
           flaglessLosers: sc.data.cases?.flaglessLosers?.slice(0, 5) ?? [],
           patterns: sc.data.cases?.patterns ?? { missed: null, flaglessLosers: null },
-          outcomes: h(4)?.outcomes ?? null,
+          outcomes,
           caseWeeks: sc.data.cases?.weeks ?? null,
         }
       : null,
@@ -357,6 +421,7 @@ export async function buildMonthlyReport(month: string, now: Date = new Date()):
       modelVersions: [...byVersion].map(([version, e]) => ({ version, ratings: e.ratings, buyShare: e.ratings ? e.buy / e.ratings : 0 })),
     },
     etf,
+    readiness,
   };
 }
 

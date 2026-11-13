@@ -10,7 +10,7 @@ import type { PortfolioMetrics } from "@/lib/portfolio/metrics";
 import type { ValuationPoint } from "@/lib/portfolio/types";
 import type { Scorecard } from "@/lib/scorecard/compute";
 import { weekOf } from "@/lib/scorecard/compute";
-import { MIN_WEEKS, claimStatus, strength, summarize, type ClaimStatus, type SeriesPoint, type Strength, type Summary } from "@/lib/stats";
+import { MIN_WEEKS, claimStatus, interval, strength, summarize, type ClaimStatus, type SeriesPoint, type Strength, type Summary } from "@/lib/stats";
 
 export const CLAIMS_STATED_ON = "2026-09-30";
 
@@ -66,7 +66,11 @@ const values = (s: SeriesPoint[] | undefined) => (s ?? []).map((p) => p.value);
 const annual = (s: Summary) => (s.mean === null ? null : s.mean * 52);
 /** Scaling one or two weeks up to "a year" is noise, so figures wait for MIN_WEEKS. */
 const early = (s: Summary, unit = "week") => (s.n < MIN_WEEKS ? `${s.n} ${unit}${s.n === 1 ? "" : "s"} so far` : null);
-const perYear = (s: Summary) => early(s) ?? `${pts(annual(s))} a year`;
+/** "+3.1 pts a year (95% range −1.0 to +7.2)": the yearly rate with its uncertainty. */
+const perYear = (s: Summary, xs: number[]) => {
+  const r = interval(xs);
+  return early(s) ?? `${pts(annual(s))} a year${r ? ` (95% range ${pts(r.low * 52).replace(" pts", "")} to ${pts(r.high * 52)})` : ""}`;
+};
 
 function result(
   id: number,
@@ -85,25 +89,27 @@ export function evaluateClaims(inp: ClaimInputs): ClaimResult[] {
 
   const spread = summarize(values(w?.spread));
   out.push(result(1, "Buy-rated companies beat Avoid-rated ones in the same market by at least 2 points a year.",
-    spread, claimStatus(spread, 0.02 / 52), perYear(spread), "weekly Buy-minus-Avoid gap, all ratings"));
+    spread, claimStatus(spread, 0.02 / 52), perYear(spread, values(w?.spread)), "weekly Buy-minus-Avoid gap, all ratings"));
 
   const ic = summarize(values(w?.ic));
   out.push(result(2, "A higher overall score leads to a better relative return.",
     ic, claimStatus(ic), early(ic) ?? `rank correlation ${ic.mean! >= 0 ? "+" : "−"}${Math.abs(ic.mean!).toFixed(3)} a week`,
     "weekly score-vs-return rank correlation"));
 
-  const capped = summarize(bookGap(inp, "LAB_TOP20", "REBALANCED"));
+  const cappedGap = bookGap(inp, "LAB_TOP20", "REBALANCED");
+  const capped = summarize(cappedGap);
   const dd = (k: string) => inp.books.get(k)?.metrics.maxDrawdownPct;
   out.push(result(3, "Capped, diversified books beat the uncapped Strong Buy rule once risk is counted.",
     capped, claimStatus(capped),
-    `${perYear(capped)}; worst fall so far ${pts(-(dd("LAB_TOP20") ?? 0))} vs ${pts(-(dd("REBALANCED") ?? 0))}`,
+    `${perYear(capped, cappedGap)}; worst fall so far ${pts(-(dd("LAB_TOP20") ?? 0))} vs ${pts(-(dd("REBALANCED") ?? 0))}`,
     "Top 20 capped minus Strong Buy only, weekly, since the rules were fixed"));
 
   const monthly = bookGap(inp, "LAB_MONTHLY", "LAB_TOP20");
   const sticky = bookGap(inp, "LAB_STICKY", "LAB_TOP20");
-  const slow = summarize(monthly.map((x, i) => (sticky[i] !== undefined ? (x + sticky[i]) / 2 : x)));
+  const slowGap = monthly.map((x, i) => (sticky[i] !== undefined ? (x + sticky[i]) / 2 : x));
+  const slow = summarize(slowGap);
   out.push(result(4, "Slower trading (monthly, or selling only on a downgrade) beats weekly trading after costs.",
-    slow, claimStatus(slow), perYear(slow), "average of monthly and slow-selling minus weekly Top 20, since the rules were fixed"));
+    slow, claimStatus(slow), perYear(slow, slowGap), "average of monthly and slow-selling minus weekly Top 20, since the rules were fixed"));
 
   // Claim 5 holds when flagged names do worse, so it is graded on the negated gap.
   const byDate = new Map<string, number[]>();
@@ -118,14 +124,17 @@ export function evaluateClaims(inp: ClaimInputs): ClaimResult[] {
 
   const qv = summarize(values(w?.qualityValue));
   out.push(result(6, "Cheap and high-quality beats cheap alone.",
-    qv, claimStatus(qv), perYear(qv), "cheapest third: high minus low quality, weekly (sub-scores from 5 Oct 2026)"));
+    qv, claimStatus(qv), perYear(qv, values(w?.qualityValue)), "cheapest third: high minus low quality, weekly (sub-scores from 5 Oct 2026)"));
 
   // Claim 7 says stock picking is NOT what drives Japan: it is contradicted by a
-  // consistently positive selection effect.
+  // consistently positive selection effect. "Stock picking" here keeps the
+  // meaning it had when the claim was written: holdings against their whole
+  // index, so sector bets and within-sector picks together.
   const jp = inp.books.get("LAB_JP")?.metrics.analytics?.attribution ?? [];
   const since = jp.filter((p) => p.date > LAB_RULES.fixedOn);
-  const sel = summarize(since.map((p) => p.selection));
-  const sum = (k: "currency" | "market" | "selection") => since.reduce((s, p) => s + p[k], 0);
+  const picking = (p: (typeof since)[number]) => p.selection + (p.sector ?? 0);
+  const sel = summarize(since.map(picking));
+  const sum = (k: "currency" | "market") => since.reduce((s, p) => s + p[k], 0);
   let jpStatus: ClaimStatus;
   if (sel.n < 12 || sel.t === null) jpStatus = "too early";
   else if (sel.t >= 2.5 && sel.n >= 26) jpStatus = "rejected";
@@ -133,7 +142,7 @@ export function evaluateClaims(inp: ClaimInputs): ClaimResult[] {
   else if (sel.n >= 26 && sel.t < 1) jpStatus = "established";
   else jpStatus = "leaning yes";
   out.push(result(7, "Japan's lead comes from the yen and its market, not from stock picking.",
-    sel, jpStatus, `since fixed: currency ${pts(sum("currency"))}, market ${pts(sum("market"))}, picking ${pts(sum("selection"))}`,
+    sel, jpStatus, `since fixed: currency ${pts(sum("currency"))}, market ${pts(sum("market"))}, picking ${pts(since.reduce((s, p) => s + picking(p), 0))}`,
     "Japan book's weekly stock-picking effect, since the rules were fixed"));
 
   const etf = summarize(inp.etfForward.map((o) => o.topReturn - o.peersReturn));

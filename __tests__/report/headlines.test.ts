@@ -44,7 +44,7 @@ describe("headlines", () => {
   const h = headlines(report(30), null);
   it("leads with results since the rules were fixed and where they came from", () => {
     expect(h.some((l) => l.includes("best Japan only +5.0%") && l.includes("1 of 2 rulebooks are ahead"))).toBe(true);
-    expect(h.some((l) => l.includes("stock picking +1.2 pts"))).toBe(true);
+    expect(h.some((l) => l.includes("sector bets +0.0 pts, stock picking within sectors +1.2 pts"))).toBe(true);
   });
   it("warns about concentration and missing outcomes", () => {
     expect(h.some((l) => l.startsWith("Concentration warning: Japan only (effectively 2.5 positions; Financials 70%)"))).toBe(true);
@@ -87,7 +87,7 @@ describe("claims", () => {
     const [c1] = evaluateClaims({ scorecard: card(5), books: new Map(), etfForward: [] });
     expect(c1.metric).toBe("5 weeks so far");
     const [c1Later] = evaluateClaims({ scorecard: card(30), books: new Map(), etfForward: [] });
-    expect(c1Later.metric).toBe("+5.2 pts a year");
+    expect(c1Later.metric).toBe("+5.2 pts a year (95% range +4.8 to +5.6 pts)");
   });
 
   it("reads one return per week from a value curve", () => {

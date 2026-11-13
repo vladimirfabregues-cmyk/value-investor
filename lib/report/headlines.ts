@@ -38,16 +38,24 @@ export function headlines(r: MonthlyReport, previous: MonthlyReport | null): str
 
   const bench = r.books.find((b) => b.strategy === "BENCHMARK");
   const rules = r.books.filter((b) => RULEBOOKS.has(b.strategy) && b.sinceFixedPct !== null).sort((a, b) => b.sinceFixedPct! - a.sinceFixedPct!);
+  // Reports from Nov 2026 lead with the pre-chosen main book; earlier ones led with the best.
+  const main = r.readiness ? rules.find((b) => b.strategy === r.readiness!.mainBook) : undefined;
   if (rules.length && bench?.sinceFixedPct != null) {
     const [best, worst] = [rules[0], rules.at(-1)!];
     const ahead = rules.filter((b) => b.sinceFixedPct! > bench.sinceFixedPct!).length;
     out.push(
-      `Since the rules were fixed on 29 Sept: best ${BOOK_NAMES[best.strategy]} ${fmtPct(best.sinceFixedPct)}, weakest ${BOOK_NAMES[worst.strategy]} ${fmtPct(worst.sinceFixedPct)}; benchmark ${fmtPct(bench.sinceFixedPct)}. ${ahead} of ${rules.length} rulebooks are ahead.`,
+      main
+        ? `Since the rules were fixed on 29 Sept, the main strategy (${BOOK_NAMES[main.strategy]}) returned ${fmtPct(main.sinceFixedPct)} against the benchmark's ${fmtPct(bench.sinceFixedPct)}. ${ahead} of ${rules.length} rulebooks are ahead (range ${fmtPct(worst.sinceFixedPct)} to ${fmtPct(best.sinceFixedPct)}); the leader is not singled out, because with ${rules.length} books one usually leads by chance.`
+        : `Since the rules were fixed on 29 Sept: best ${BOOK_NAMES[best.strategy]} ${fmtPct(best.sinceFixedPct)}, weakest ${BOOK_NAMES[worst.strategy]} ${fmtPct(worst.sinceFixedPct)}; benchmark ${fmtPct(bench.sinceFixedPct)}. ${ahead} of ${rules.length} rulebooks are ahead.`,
     );
-    const split = r.diagnostics?.find((d) => d.strategy === best.strategy)?.sinceFixed;
+    const subject = main ?? best;
+    const split = r.diagnostics?.find((d) => d.strategy === subject.strategy)?.sinceFixed;
     if (split) {
+      const picking = split.sector === undefined
+        ? `stock picking ${fmtPts(split.selection)}`
+        : `sector bets ${fmtPts(split.sector)}, stock picking within sectors ${fmtPts(split.selection)}`;
       out.push(
-        `Where ${BOOK_NAMES[best.strategy]}'s return came from: currency ${fmtPts(split.currency)}, the markets it held ${fmtPts(split.market)}, stock picking ${fmtPts(split.selection)}, dividends ${fmtPts(split.dividends)}, costs ${fmtPts(-split.costs)}.`,
+        `Where ${BOOK_NAMES[subject.strategy]}'s return came from: currency ${fmtPts(split.currency)}, the markets it held ${fmtPts(split.market)}, ${picking}, dividends ${fmtPts(split.dividends)}, costs ${fmtPts(-split.costs)}.`,
       );
     }
   }

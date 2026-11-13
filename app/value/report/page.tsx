@@ -6,7 +6,8 @@ import { getArchivedReport, getMonthlyReport, previousMonth, type MonthlyReport 
 import { BOOK_NAMES, RULEBOOKS, fmtPct, fmtPts, headlines } from "@/lib/report/headlines";
 import { LAB_RULES } from "@/lib/portfolio/lab";
 import type { CaseRow, Pattern } from "@/lib/scorecard/compute";
-import { MIN_WEEKS, type ClaimStatus, type SeriesPoint } from "@/lib/stats";
+import { SPREAD_PER_TRADE, gapRange, longDate, type Tone } from "@/lib/report/readiness";
+import { CASH_RATE, MIN_WEEKS, interval, type ClaimStatus, type Interval, type SeriesPoint } from "@/lib/stats";
 import { translations, type Dict } from "@/lib/i18n/translations";
 
 export const metadata = { title: "Monthly report — The Value Investor", robots: { index: false } };
@@ -26,6 +27,10 @@ const STATUS_TONE: Record<ClaimStatus, string> = {
   established: "font-semibold text-emerald-800",
   rejected: "font-semibold text-red-700",
 };
+const TONE: Record<Tone, string> = { good: "text-emerald-800", neutral: "text-slate-900", caution: "text-amber-800", bad: "text-red-700" };
+const range = (i: { low: number; high: number } | null | undefined, unit: "%" | " pts" = "%") =>
+  i ? `${fmtPct(i.low).replace("%", "")} to ${unit === "%" ? fmtPct(i.high) : fmtPts(i.high)}` : "—";
+const ratio = (x: number | null | undefined) => (x === null || x === undefined ? "—" : x.toFixed(2));
 const gbp = (n: number) => `£${Math.round(n).toLocaleString("en-GB")}`;
 const pct0 = (x: number | null | undefined) => (x === null || x === undefined ? "—" : `${Math.round(x * 100)}%`);
 const monthName = (m: string) => new Date(`${m}-01T00:00:00Z`).toLocaleString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
@@ -40,7 +45,7 @@ function Th({ children, left }: { children?: ReactNode; left?: boolean }) {
   );
 }
 function Td({ children, left, bold, className = "" }: { children?: ReactNode; left?: boolean; bold?: boolean; className?: string }) {
-  return <td className={`border-b border-slate-100 py-1 pr-2 tabular-nums ${left ? "text-left" : "text-right"} ${bold ? "font-semibold" : ""} ${className}`}>{children}</td>;
+  return <td className={`border-b border-slate-100 py-1 pr-2 tabular-nums ${left ? "text-left" : "whitespace-nowrap text-right"} ${bold ? "font-semibold" : ""} ${className}`}>{children}</td>;
 }
 function Section({ title, note, children, pageBreak }: { title: string; note?: string; children: ReactNode; pageBreak?: boolean }) {
   return (
@@ -113,6 +118,12 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
   const books = [...r.books].sort((a, b) => REFERENCE_ORDER(a.strategy) - REFERENCE_ORDER(b.strategy) || (b.sinceFixedPct ?? -9) - (a.sinceFixedPct ?? -9));
   const traded = books.filter((b) => b.strategy !== "BENCHMARK");
   const sc = r.scorecard;
+  const hasRange = (sc?.horizons ?? []).some((h) => h.byVerdict.some((v) => v.range !== undefined));
+  const spreadRange: Interval | null = sc?.spread
+    ? interval(sc.spread.points.map((p, i, all) => p.value - (i ? all[i - 1].value : 0)))
+    : null;
+  const hasLive = r.books.some((b) => b.live !== undefined);
+  const hasSector = (r.diagnostics ?? []).some((d) => d.sinceFixed?.sector !== undefined);
   const fixed = new Date(`${LAB_RULES.fixedOn}T00:00:00Z`).toLocaleString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
 
   return (
@@ -131,7 +142,44 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
           </p>
         </header>
 
-        <Section title="Key findings">
+        {r.readiness && (
+          <Section
+            title="Investment readiness"
+            note={`The investor's question: could this be trusted with real money? Answered for the main strategy, ${bookName(r.readiness.mainBook)}, chosen in advance on ${longDate(r.readiness.statedOn)}; the other books are alternatives.`}
+          >
+            <table className="w-full border-collapse">
+              <tbody>
+                {r.readiness.dashboard.map((d) => (
+                  <tr key={d.question} className="align-top">
+                    <td className="w-[52mm] border-b border-slate-200 py-1.5 pr-3 text-slate-600">{d.question}</td>
+                    <td className={`w-[48mm] border-b border-slate-200 py-1.5 pr-3 text-[11.5px] font-semibold ${TONE[d.tone]}`}>{d.answer}</td>
+                    <td className="border-b border-slate-200 py-1.5 text-slate-700">{d.detail}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <h3 className="mt-4 text-[8.5px] font-semibold uppercase tracking-wider text-slate-500">
+              Readiness test — all must hold before real money (written down {longDate(r.readiness.statedOn)})
+            </h3>
+            <table className="mt-1 w-full border-collapse">
+              <tbody>
+                {r.readiness.conditions.map((c, i) => (
+                  <tr key={c.text} className="align-top">
+                    <Td left className="w-4 text-slate-500">{i + 1}</Td>
+                    <Td left>{c.text}</Td>
+                    <Td left className="whitespace-nowrap text-slate-700">{c.current}</Td>
+                    <Td left className={`w-14 whitespace-nowrap font-semibold ${c.met ? "text-emerald-800" : "text-slate-400"}`}>{c.met ? "✓ met" : "not met"}</Td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <Small>
+              Ranges are 95% ranges from weekly results: the band the true figure probably lies in, given how much the weeks vary. Spreads are an estimate, not measured.
+            </Small>
+          </Section>
+        )}
+
+        <Section title="Key findings" pageBreak={!!r.readiness}>
           <ul className="list-disc space-y-1 pl-4">
             {findings.map((f) => (
               <li key={f}>{f}</li>
@@ -193,42 +241,133 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
           </Section>
         )}
 
-        <Section pageBreak title="Strategy lab: results since the rules were fixed" note={`Simulated £10,000 books. The honest test starts on ${fixed}; earlier returns are a back-test and the rules were chosen after seeing it.`}>
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                <Th left>Book</Th>
-                <Th>Since {fixed}</Th>
-                <Th>3 months</Th>
-                <Th>6 months</Th>
-                <Th>12 months</Th>
-                <Th>Since June*</Th>
-                <Th>Worst fall</Th>
-                <Th>Costs</Th>
-                <Th>Value</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {books.map((b) => (
-                <tr key={b.strategy} className={RULEBOOKS.has(b.strategy) ? "" : "text-slate-500"}>
-                  <Td left>{bookName(b.strategy)}</Td>
-                  <Td bold>{fmtPct(b.sinceFixedPct)}</Td>
-                  <Td>{fmtPct(b.rolling?.m3)}</Td>
-                  <Td>{fmtPct(b.rolling?.m6)}</Td>
-                  <Td>{fmtPct(b.rolling?.m12)}</Td>
-                  <Td>{fmtPct(b.sinceInceptionPct)}</Td>
-                  <Td>{b.maxDrawdownPct === null ? "—" : fmtPct(-b.maxDrawdownPct)}</Td>
-                  <Td>{`${(b.costsPct * 100).toFixed(1)}%`}</Td>
-                  <Td>{gbp(b.valueGbp)}</Td>
+        {hasLive ? (
+          <>
+            <Section
+              pageBreak
+              title={`Prospective results: the honest test since ${fixed}`}
+              note={`Simulated £10,000 books, measured only on weeks after the rules were fixed. ${bookName(r.readiness?.mainBook ?? "LAB_TOP20")} is the main strategy, chosen in advance; the rest are alternatives.`}
+            >
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr>
+                    <Th left>Book</Th>
+                    <Th>Return</Th>
+                    <Th>vs benchmark (95% range)</Th>
+                    <Th>Worst fall</Th>
+                    <Th>Volatility</Th>
+                    <Th>Tracking error</Th>
+                    <Th>Beta</Th>
+                    <Th>Sharpe · Sortino</Th>
+                    <Th>Costs + spreads</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {books.map((b) => {
+                    const l = b.live;
+                    const isMain = b.strategy === r.readiness?.mainBook;
+                    const isBench = b.strategy === "BENCHMARK";
+                    return (
+                      <tr key={b.strategy} className={isMain ? "bg-amber-50" : RULEBOOKS.has(b.strategy) ? "" : "text-slate-500"}>
+                        <Td left bold={isMain}>
+                          {bookName(b.strategy)}
+                          {isMain && <span className="ml-1 text-[8px] font-semibold uppercase tracking-wider text-amber-700">main</span>}
+                        </Td>
+                        <Td bold>{fmtPct(b.sinceFixedPct)}</Td>
+                        <Td className="whitespace-nowrap">
+                          {!isBench && (
+                            <>
+                              {fmtPts(l?.vsBenchmark)}
+                              {gapRange(l ?? null) && <span className="block text-[9px] text-slate-500">{range(gapRange(l ?? null), " pts")}</span>}
+                            </>
+                          )}
+                        </Td>
+                        <Td>{l?.maxDrawdownPct == null ? "—" : fmtPct(-l.maxDrawdownPct)}</Td>
+                        <Td>{pct0(l?.risk?.volatility)}</Td>
+                        <Td>{isBench ? "" : pct0(l?.risk?.trackingError)}</Td>
+                        <Td>{isBench ? "" : ratio(l?.risk?.beta)}</Td>
+                        <Td className="whitespace-nowrap">{l?.risk?.sharpe == null && l?.risk?.sortino == null ? "—" : `${ratio(l?.risk?.sharpe)} · ${ratio(l?.risk?.sortino)}`}</Td>
+                        <Td>{l ? `${((l.costsPct + l.spreadPct) * 100).toFixed(1)}%` : "—"}</Td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <Small>
+                vs benchmark: the book&apos;s return minus the benchmark&apos;s; the 95% range around it comes from the weekly gaps. Volatility and tracking error are yearly rates from weekly returns; beta is the book&apos;s sensitivity to the benchmark (1 = moves with it). Sharpe and Sortino (return over cash at {Math.round(CASH_RATE * 100)}% per unit of risk) appear after 26 weeks; before that they are noise. Costs + spreads: modelled costs plus bid-ask spreads estimated at {(SPREAD_PER_TRADE * 100).toFixed(1)}% a trade, as a share of the book at {fixed}.
+              </Small>
+            </Section>
+
+            <section className="rounded border border-dashed border-slate-400 bg-slate-50 p-3 text-slate-600">
+              <h2 className="font-display text-base text-slate-700">Back-test, before {fixed} — not evidence</h2>
+              <p className="text-[10px]">
+                These rules were chosen after seeing this period, so these figures show how the rules were picked, not how well they work. They are kept apart from the results above on purpose.
+              </p>
+              <table className="mt-2 w-full border-collapse">
+                <thead>
+                  <tr>
+                    <Th left>Book</Th>
+                    <Th>Start</Th>
+                    <Th>Return to {fixed}</Th>
+                    <Th>Worst fall</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {books.map((b) => (
+                    <tr key={b.strategy}>
+                      <Td left>{bookName(b.strategy)}</Td>
+                      <Td>{b.backtest?.from ?? "—"}</Td>
+                      <Td>{fmtPct(b.backtest?.returnPct)}</Td>
+                      <Td>{b.backtest?.maxDrawdownPct == null ? "—" : fmtPct(-b.backtest.maxDrawdownPct)}</Td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          </>
+        ) : (
+          <Section pageBreak title="Strategy lab: results since the rules were fixed" note={`Simulated £10,000 books. The honest test starts on ${fixed}; earlier returns are a back-test and the rules were chosen after seeing it.`}>
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <Th left>Book</Th>
+                  <Th>Since {fixed}</Th>
+                  <Th>3 months</Th>
+                  <Th>6 months</Th>
+                  <Th>12 months</Th>
+                  <Th>Since June*</Th>
+                  <Th>Worst fall</Th>
+                  <Th>Costs</Th>
+                  <Th>Value</Th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <Small>*Back-test before {fixed}. Rolling columns fill in as history builds. Costs are cumulative, as a share of capital; bid-ask spreads are not included.</Small>
-        </Section>
+              </thead>
+              <tbody>
+                {books.map((b) => (
+                  <tr key={b.strategy} className={RULEBOOKS.has(b.strategy) ? "" : "text-slate-500"}>
+                    <Td left>{bookName(b.strategy)}</Td>
+                    <Td bold>{fmtPct(b.sinceFixedPct)}</Td>
+                    <Td>{fmtPct(b.rolling?.m3)}</Td>
+                    <Td>{fmtPct(b.rolling?.m6)}</Td>
+                    <Td>{fmtPct(b.rolling?.m12)}</Td>
+                    <Td>{fmtPct(b.sinceInceptionPct)}</Td>
+                    <Td>{b.maxDrawdownPct === null ? "—" : fmtPct(-b.maxDrawdownPct)}</Td>
+                    <Td>{`${(b.costsPct * 100).toFixed(1)}%`}</Td>
+                    <Td>{gbp(b.valueGbp)}</Td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <Small>*Back-test before {fixed}. Rolling columns fill in as history builds. Costs are cumulative, as a share of capital; bid-ask spreads are not included.</Small>
+          </Section>
+        )}
 
         {r.diagnostics && (
-          <Section title={`Where the returns came from (since ${fixed})`} note="Each book's return split into currency moves, the average move of the markets it held, stock picking (its holdings against the average company in their own index), dividends and costs. 'Other' is what the parts do not explain: cash, timing and compounding.">
+          <Section title={`Where the returns came from (since ${fixed})`} note={
+              hasSector
+                ? "Each book's return split into currency moves, the average move of the markets it held, its sector bets (its holdings' sectors against their whole index), stock picking within sectors (each holding against the average company in its own sector and index), dividends and costs. 'Other' is what the parts do not explain: cash, timing and compounding."
+                : "Each book's return split into currency moves, the average move of the markets it held, stock picking (its holdings against the average company in their own index), dividends and costs. 'Other' is what the parts do not explain: cash, timing and compounding."
+            }
+          >
             <table className="w-full border-collapse">
               <thead>
                 <tr>
@@ -236,7 +375,8 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
                   <Th>Return</Th>
                   <Th>Currency</Th>
                   <Th>Markets held</Th>
-                  <Th>Stock picking</Th>
+                  {hasSector && <Th>Sector bets</Th>}
+                  <Th>{hasSector ? "Picking within sectors" : "Stock picking"}</Th>
                   <Th>Dividends</Th>
                   <Th>Costs</Th>
                   <Th>Other</Th>
@@ -253,13 +393,14 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
                           <Td bold>{fmtPct(s.total)}</Td>
                           <Td>{fmtPts(s.currency)}</Td>
                           <Td>{fmtPts(s.market)}</Td>
+                          {hasSector && <Td>{fmtPts(s.sector)}</Td>}
                           <Td bold>{fmtPts(s.selection)}</Td>
                           <Td>{fmtPts(s.dividends)}</Td>
                           <Td>{fmtPts(-s.costs)}</Td>
                           <Td className="text-slate-500">{fmtPts(s.other)}</Td>
                         </>
                       ) : (
-                        <td colSpan={7} className="border-b border-slate-100 py-1 text-right text-slate-400">No weeks since the rules were fixed yet</td>
+                        <td colSpan={hasSector ? 8 : 7} className="border-b border-slate-100 py-1 text-right text-slate-400">No weeks since the rules were fixed yet</td>
                       )}
                     </tr>
                   );
@@ -364,7 +505,8 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
                     `${sc.spread.summary.n} week(s) so far; the average and its evidence appear after ${MIN_WEEKS} weeks (scaling a few weeks up to a year is noise).`
                   ) : (
                     <>
-                      {sc.spread.summary.n} weeks: average {fmtPts(sc.spread.summary.mean! * 52)} a year, positive in {pct0(sc.spread.summary.positiveShare)} of weeks. Evidence:{" "}
+                      {sc.spread.summary.n} weeks: average {fmtPts(sc.spread.summary.mean! * 52)} a year
+                      {spreadRange ? ` (95% range ${range({ low: spreadRange.low * 52, high: spreadRange.high * 52 }, " pts")})` : ""}, positive in {pct0(sc.spread.summary.positiveShare)} of weeks. Evidence:{" "}
                       <span className="font-semibold">{sc.spread.strength}</span>
                       {sc.ic ? `. Score ranking: average weekly rank correlation ${sc.ic.summary.mean === null ? "—" : sc.ic.summary.mean.toFixed(3)} (${sc.ic.strength}).` : "."}
                     </>
@@ -381,6 +523,7 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
                       <Th left>{h.weeks} weeks</Th>
                       <Th>Ratings</Th>
                       <Th>Average</Th>
+                      {hasRange && <Th>95% range</Th>}
                       <Th>Beat mkt</Th>
                       <Th>Last month</Th>
                     </tr>
@@ -393,6 +536,7 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
                           <Td left>{VERDICT[v.verdict]}</Td>
                           <Td>{v.n.toLocaleString("en-GB")}</Td>
                           <Td bold>{fmtPct(v.meanExcess)}</Td>
+                          {hasRange && <Td className="whitespace-nowrap text-slate-600">{range(v.range)}</Td>}
                           <Td>{pct0(v.hitRate)}</Td>
                           <Td>{fmtPct(was?.meanExcess)}</Td>
                         </tr>
@@ -402,7 +546,10 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
                 </table>
               ))}
             </div>
-            <Small>Grey rows have fewer than 100 ratings and are not findings yet.</Small>
+            <Small>
+              Grey rows have fewer than 100 ratings and are not findings yet.
+              {hasRange && " The 95% range comes from one average per starting week and allows for back-to-back windows overlapping, so it is wider than a count of ratings would suggest: the same company rated ten weeks running is not ten independent results."}
+            </Small>
 
             {sc.flagAudit && (
               <div className="mt-3">
