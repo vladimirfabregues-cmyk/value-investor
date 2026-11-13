@@ -30,7 +30,7 @@ const STATUS_TONE: Record<ClaimStatus, string> = {
 const TONE: Record<Tone, string> = { good: "text-emerald-800", neutral: "text-slate-900", caution: "text-amber-800", bad: "text-red-700" };
 const range = (i: { low: number; high: number } | null | undefined, unit: "%" | " pts" = "%") =>
   i ? `${fmtPct(i.low).replace("%", "")} to ${unit === "%" ? fmtPct(i.high) : fmtPts(i.high)}` : "—";
-const ratio = (x: number | null | undefined) => (x === null || x === undefined ? "—" : x.toFixed(2));
+const ratio = (x: number | null | undefined) => (x === null || x === undefined ? "—" : `${x < 0 ? "−" : ""}${Math.abs(x).toFixed(2)}`);
 const gbp = (n: number) => `£${Math.round(n).toLocaleString("en-GB")}`;
 const pct0 = (x: number | null | undefined) => (x === null || x === undefined ? "—" : `${Math.round(x * 100)}%`);
 const monthName = (m: string) => new Date(`${m}-01T00:00:00Z`).toLocaleString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
