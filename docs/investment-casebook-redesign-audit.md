@@ -4,6 +4,10 @@
 > **Purpose:** unify the existing company-analysis tool and the ETF-research tool
 > under one coherent, premium investment-research brand.
 > **Status:** audit only — no redesign code has been written (this document excepted).
+> **Decision (2026-11-13):** the app keeps the name **The Value Investor**. The
+> "Investment Casebook" name in this audit is not adopted, so the rebrand and the
+> cross-repository token work it describes are not planned. The rest of the audit's
+> constraints (the Multi-Zones topology, the deploy order) still apply.
 > **Date of audit:** 2026-08-03.
 
 This is a read-only inventory to de-risk the rebrand/redesign. It maps what exists,
