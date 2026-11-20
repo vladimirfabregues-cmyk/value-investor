@@ -23,6 +23,10 @@ on:
         description: "Skip the screener and only rebuild the portfolio"
         required: false
         default: "false"
+      backup_only:
+        description: "Only take the database backup (skip everything else)"
+        required: false
+        default: "false"
 
 # Never run two refreshes at once.
 concurrency:
@@ -40,7 +44,7 @@ jobs:
           node-version: "20"
 
       - name: Refresh screens
-        if: ${{ github.event.inputs.skip_screener != 'true' }}
+        if: ${{ github.event.inputs.skip_screener != 'true' && github.event.inputs.backup_only != 'true' }}
         env:
           SCREEN_RUN_URL: ${{ secrets.SCREEN_RUN_URL }}
           SCREEN_RUN_TOKEN: ${{ secrets.SCREEN_RUN_TOKEN }}
@@ -49,7 +53,7 @@ jobs:
 
       # Grades every past rating by what happened next; reads the same snapshots.
       - name: Rebuild rating scorecard
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && github.event.inputs.backup_only != 'true' }}
         env:
           SCREEN_RUN_URL: ${{ secrets.SCREEN_RUN_URL }}
           SCREEN_RUN_TOKEN: ${{ secrets.SCREEN_RUN_TOKEN }}
@@ -69,7 +73,7 @@ jobs:
       # Reads the snapshot history the refresh extended, and the index averages
       # the scorecard just saved (for each book's return split).
       - name: Rebuild simulated portfolios
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && github.event.inputs.backup_only != 'true' }}
         env:
           SCREEN_RUN_URL: ${{ secrets.SCREEN_RUN_URL }}
           SCREEN_RUN_TOKEN: ${{ secrets.SCREEN_RUN_TOKEN }}
@@ -91,3 +95,28 @@ jobs:
             [ "$attempt" -lt 6 ] && sleep 180
           done
           exit 1
+
+      # The weekly ratings, frozen reports and saved analyses cannot be rebuilt,
+      # so keep an encrypted copy outside the database. The repository is
+      # public, so the file is encrypted with SCREEN_RUN_TOKEN; restore steps
+      # are at the top of scripts/restore-db.mjs. Each copy is kept 90 days.
+      - name: Back up the database
+        if: ${{ !cancelled() }}
+        env:
+          SCREEN_RUN_URL: ${{ secrets.SCREEN_RUN_URL }}
+          SCREEN_RUN_TOKEN: ${{ secrets.SCREEN_RUN_TOKEN }}
+        run: |
+          set -euo pipefail
+          node scripts/backup-db.mjs backup
+          tar czf - backup | openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+            -pass env:SCREEN_RUN_TOKEN -out backup.tar.gz.enc
+          ls -l backup.tar.gz.enc
+
+      - name: Keep the backup
+        if: ${{ !cancelled() && hashFiles('backup.tar.gz.enc') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-backup
+          path: backup.tar.gz.enc
+          retention-days: 90
+          if-no-files-found: error
